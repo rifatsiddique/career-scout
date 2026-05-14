@@ -1,0 +1,38 @@
+# career-scout candidate profile
+# Fill in your details. Fields marked (optional) can be left blank.
+
+candidate:
+  full_name: ""
+  email: ""
+  phone: ""                          # (optional)
+  location: ""                       # e.g. "San Francisco, CA"
+  linkedin: ""                       # e.g. "linkedin.com/in/yourname"
+  portfolio_url: ""                  # (optional)
+  github: ""                         # (optional)
+
+target_roles:
+  primary: []                        # e.g. ["Senior AI Engineer", "Staff ML Engineer"]
+  archetypes: []                     # Defined in modes/_profile.md — populated during /setup
+
+narrative:
+  headline: ""                       # One-liner describing your professional identity
+  exit_story: ""                     # Why you're looking, what makes you unique
+  superpowers: []                    # 2-3 key differentiators
+  proof_points: []                   # Format: [{name: "Project X", url: "...", hero_metric: "..."}]
+
+compensation:
+  target_range: ""                   # e.g. "$150K-200K"
+  currency: "USD"
+  minimum: ""                        # Walk-away number
+
+location:
+  country: ""
+  city: ""
+  timezone: ""
+  visa_status: ""                    # e.g. "No sponsorship needed"
+  onsite_availability: ""            # e.g. "Remote only" or "1 week/month"
+  market: ""                         # Regional context for comp/labor law. Options: US-West, US-East, DACH, UK, Francophone, Japan, etc.
+
+cv:
+  default_template: "ats-optimized"  # Options: ats-optimized, classic-professional, academic-research, technical-engineering
+  template_overrides: {}             # Map archetype → template, e.g. {academic: "academic-research"}

@@ -1,0 +1,132 @@
+# career-scout — AI Job Search System
+
+## What is career-scout
+
+An AI-powered, CLI-agnostic two-stage job search system:
+
+- **Scout** — discovers jobs from portals, web searches, and manual URLs, writes to `data/pipeline.md`
+- **Evaluator** — strategically evaluates roles (A-G blocks), generates tailored CVs, prepares interview stories, tracks applications
+
+Designed for human-in-the-loop: AI evaluates, drafts, and coaches. The user reviews and submits.
+
+**Primary runtime:** Gemini CLI. Also compatible with Claude Code, Copilot, OpenCode, and any CLI following the open agent skill standard.
+
+---
+
+## Data Contract (CRITICAL)
+
+Two layers. Full mapping: `docs/DATA_CONTRACT.md`.
+
+**User Layer — NEVER auto-updated:**
+`cv.md`, `config/profile.yml`, `modes/_profile.md`, `article-digest.md`
+`data/*`, `reports/*`, `output/*`, `interview-prep/*`, `writing-samples/*`
+
+**System Layer — safe to update:**
+`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `modes/_shared.md`, all other `modes/*.md`
+`scripts/*`, `templates/*`, `fonts/*`, `docs/*`, `.agents/*`
+
+**THE RULE:** When the user asks to customize anything (archetypes, narrative, comp targets, location policy, writing style), ALWAYS write to `modes/_profile.md` or `config/profile.yml`. NEVER put user-specific content in `modes/_shared.md`.
+
+---
+
+## First Run — Onboarding
+
+At the start of each session, silently check:
+
+1. Does `cv.md` have content?
+2. Does `config/profile.yml` have content beyond template placeholders?
+3. Does `modes/_profile.md` have content beyond template placeholders?
+
+**If any check fails:** Enter onboarding mode. Run `modes/setup.md`. Do NOT proceed with evaluations until setup is complete.
+
+**If all pass:** Proceed normally.
+
+---
+
+## Main Files Reference
+
+| File | Purpose |
+|------|---------|
+| `cv.md` | Master CV — canonical source, never hardcode metrics |
+| `config/profile.yml` | Candidate identity, targets, compensation, market |
+| `modes/_profile.md` | Archetypes, behavioral profile, writing style, scoring calibration |
+| `article-digest.md` | Detailed project proof points (optional) |
+| `data/pipeline.md` | Scout → Evaluator contract (pending + evaluated jobs) |
+| `data/applications.md` | Full application tracker |
+| `data/scan-history.tsv` | Scout dedup history — read via `scripts/check-history.mjs` only |
+| `data/follow-ups.md` | Follow-up tracking |
+| `interview-prep/story-bank.md` | Accumulated STAR+R stories across evaluations |
+| `reports/` | Evaluation reports (`{###}-{company-slug}-{YYYY-MM-DD}.md`) |
+| `output/` | Generated CVs and cover letters |
+
+---
+
+## Mode Routing
+
+| If the user... | Mode | Files loaded |
+|----------------|------|-------------|
+| Pastes a job URL | evaluate | `_shared.md` + `evaluate.md` |
+| Pastes JD text | evaluate | `_shared.md` + `evaluate.md` |
+| Types "evaluate" | evaluate | `_shared.md` + `evaluate.md` |
+| Types "pipeline" | pipeline-triage | `_shared.md` + `pipeline-triage.md` |
+| Types "setup" | setup | `setup.md` |
+| Types "cv" | cv (Phase 2) | `_shared.md` + `cv.md` |
+| Types "scan" | scan (Phase 3) | `_shared.md` + `scan.md` |
+| Types "interview-prep" | interview-prep (Phase 4) | `interview-prep.md` |
+| Types "batch" | batch (Phase 5) | `_shared.md` + `batch.md` |
+| Types nothing / asks for help | Show this routing table | — |
+
+---
+
+## CLI Tool Mapping
+
+Mode files use generic intent-based instructions. Map them to your CLI's tools:
+
+| Intent | Gemini CLI | Claude Code | Fallback |
+|--------|------------|-------------|---------|
+| Fetch URL content | WebFetch | WebFetch | Ask user to paste |
+| Navigate + render page | Browser tool | Playwright | WebFetch |
+| Search the web | WebSearch | WebSearch | Ask user |
+| Read a file | Read file | Read | — |
+| Write a file | Write file | Write | — |
+| Run Node.js script | Shell/Bash | Bash | — |
+| Spawn a fresh agent | Gemini subagent | Agent tool | — |
+
+---
+
+## Evaluation Rules
+
+See `modes/_shared.md` for:
+- Unified scoring system (5+1 dimensions, fit categories, composite calculation)
+- Dynamic archetype detection algorithm
+- Golden Examples calibration
+- Global NEVER/ALWAYS rules
+- Writing style calibration
+- Professional writing & ATS rules
+
+---
+
+## Ethical Use — CRITICAL
+
+- **NEVER submit an application without the user reviewing it first.** Fill forms, draft answers, generate PDFs — but always STOP before clicking Submit/Send/Apply. The user makes the final call.
+- **Discourage low-fit applications.** If composite < 80 (below GOOD_FIT), explicitly recommend against applying. Only proceed if the user has a specific reason.
+- **Quality over quantity.** A well-targeted application to 5 companies beats a generic blast to 50.
+- **No fabrication.** Every claim in generated materials must trace back to `cv.md` or `article-digest.md`. The "interview backtrack test": could the candidate comfortably explain this bullet in an interview without backtracking?
+
+---
+
+## Report Numbering
+
+Sequential 3-digit zero-padded prefix. Scan `reports/`, find the highest number, add 1. Start at 001 if empty.
+
+Format: `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`
+
+Company slug: lowercase, spaces → hyphens.
+
+---
+
+## Stack
+
+Node.js (mjs modules), Playwright (PDF generation + scraping), YAML (config), HTML/CSS (CV templates), Markdown (data + modes)
+
+Scripts in `scripts/`, configuration in `config/`, output in `output/` (gitignored), reports in `reports/`.

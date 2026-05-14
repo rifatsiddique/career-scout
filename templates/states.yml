@@ -1,0 +1,37 @@
+# career-scout canonical application statuses
+#
+# Every entry in applications.md must use one of these statuses.
+# Aliases allow natural language variations (useful in notes/conversation).
+
+statuses:
+  - name: Evaluated
+    description: Report completed, pending decision to apply
+    aliases: ["evaluated", "scored", "reviewed"]
+
+  - name: Applied
+    description: Application submitted
+    aliases: ["applied", "sent", "submitted"]
+
+  - name: Responded
+    description: Company responded (recruiter screen, acknowledgment, etc.)
+    aliases: ["responded", "reply", "contacted"]
+
+  - name: Interview
+    description: In active interview process
+    aliases: ["interview", "interviewing", "phone screen", "onsite"]
+
+  - name: Offer
+    description: Offer received
+    aliases: ["offer", "offered"]
+
+  - name: Rejected
+    description: Rejected by company
+    aliases: ["rejected", "declined", "passed"]
+
+  - name: Discarded
+    description: Discarded by candidate (not interested, offer closed, etc.)
+    aliases: ["discarded", "withdrawn", "closed"]
+
+  - name: SKIP
+    description: Doesn't fit, don't apply
+    aliases: ["skip", "no", "pass"]

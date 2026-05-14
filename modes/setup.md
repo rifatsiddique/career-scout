@@ -1,0 +1,203 @@
+# Mode: setup — Guided Profile Creation
+
+Guides the user through configuring career-scout for the first time (or updating an existing profile). Populates `config/profile.yml` and `modes/_profile.md`.
+
+**User layer safety:** This mode writes to User-layer files. Before overwriting any existing content, it backs up the file to `{filename}.bak`. The backup is never auto-deleted.
+
+---
+
+## When to Run Setup
+
+- First-time use (profile.yml or _profile.md are empty templates)
+- When the user wants to update their profile, archetypes, or scoring calibration
+- When archetype detection is returning poor results
+
+---
+
+## Step 1: Check Prerequisites
+
+Check if `cv.md` has content (more than just headers):
+
+- **If cv.md is empty or missing:**
+  > "I need your CV to set up the system. You can:
+  > 1. Paste your CV text here and I'll format it
+  > 2. Describe your experience and I'll draft a CV
+  >
+  > Which do you prefer?"
+  
+  Create or populate `cv.md` from what the user provides. Format as clean markdown with sections: Professional Summary, Work Experience, Projects, Education, Skills.
+
+- **If cv.md has content:** Proceed.
+
+---
+
+## Step 2: Extract Profile Data from CV
+
+Read `cv.md` and extract:
+- Full name, email, phone (if present)
+- Location (city, country)
+- LinkedIn URL, portfolio/GitHub (if mentioned)
+- Current/most recent role and seniority level
+- Skills and experience domains
+- Career trajectory (what they've been doing, what direction they're going)
+- Notable achievements and metrics
+
+Also read any files in `writing-samples/` if they exist.
+
+---
+
+## Step 3: Domain Pack Selection
+
+Present the available domain packs and ask the user to select their primary domain:
+
+> "What's your primary professional domain? I have starter archetype kits for some domains that will save setup time:"
+
+Check `templates/domain-packs/` for available packs. Present them as options. Also offer "None of these — build from scratch."
+
+**If user selects a Domain Pack:**
+- Load the pack from `templates/domain-packs/{pack-name}.yml`
+- Extract the archetype list as a starting template
+- Display to the user: "Here are the archetypes from the {pack-name} starter kit. Let's customize them for you."
+
+**If no pack matches or user chooses scratch:**
+- Extract 3-5 archetype suggestions from the CV's domains and career trajectory
+- Present them as starting points
+
+---
+
+## Step 4: Confirm Basic Profile Values
+
+Present extracted profile.yml values for confirmation. Ask the user to correct or fill in any blanks:
+
+> "Based on your CV, here's what I've extracted. Please correct anything that's wrong or fill in blanks:"
+
+```
+Name: {extracted or "?"}
+Email: {extracted or "?"}
+Location: {extracted or "?"}
+Market: {inferred or "? — options: US-West, US-East, DACH, UK, Japan, other"}
+Target roles: {extracted or "?"}
+Target salary range: {extracted or "? (e.g. $150K-200K)"}
+Currency: {inferred from location or "USD"}
+Minimum salary: {extracted or "?"}
+Remote preference: {extracted or "?"}
+Visa status: {extracted or "?"}
+LinkedIn URL: {extracted or "?"}
+```
+
+Write confirmed values to `config/profile.yml`.
+
+---
+
+## Step 5: Build the Archetype Table
+
+Show the starter archetypes (from Domain Pack or CV extraction) and guide the user through refining them.
+
+Use expert-intent framing — don't just ask for keywords:
+
+> "For each archetype, I need to understand:
+> 1. **What signals tell you this role was written for you?** Not just keywords — think about patterns, combinations, context. For example: 'the JD mentions cross-functional stakeholders AND technical depth — that's my sweet spot'
+> 2. **What do they buy from you?** What's the specific value you deliver in this archetype?
+> 3. **Which experiences in your CV are the strongest proof points?**"
+
+Work through each archetype interactively. The goal is a table like:
+
+```markdown
+| Archetype | Domain signals | What they buy | Proof point sources |
+|-----------|---------------|---------------|---------------------|
+| {name} | {signals — phrases, patterns, context clues} | {value you deliver} | {cv.md section, article-digest.md} |
+```
+
+For each archetype: ask, confirm, refine. Don't rush this step — quality here drives every future evaluation.
+
+---
+
+## Step 6: Behavioral Profile (Optional)
+
+> "Knowing your behavioral profile helps me evaluate culture fit and write more authentic materials. This is optional but valuable. Can you tell me:
+> - How do you prefer to work? (e.g., deep solo work vs. high collaboration; fast-moving vs. deliberate)
+> - What keywords in a JD signal a great fit for you? (e.g., 'ownership', 'autonomy', 'cross-functional')
+> - What keywords signal potential friction? (e.g., 'matrix org', 'heavy process', 'lots of meetings')
+> - Any absolute deal-breakers? (e.g., no on-site, no Java, no companies under 20 people)"
+
+Store answers in `_profile.md` under `## Behavioral Profile`.
+
+---
+
+## Step 7: Writing Style (Optional)
+
+**If `writing-samples/` contains files:** Read them and extract writing style markers per `_shared.md` guidelines. Cache in `_profile.md` under `## Writing Style`.
+
+**If no samples exist:**
+> "Adding a writing sample (past cover letter, LinkedIn About section, any professional writing) lets me match your voice. You can skip this and add samples later — just tell me when you do."
+
+---
+
+## Step 8: Scoring Calibration via Golden Examples
+
+This step calibrates how the LLM scores your matches. It prevents both over-confidence and excessive conservatism.
+
+> "I'm going to show you 3 hypothetical JD requirements — one that's a perfect fit for you, one with a real gap, and one that's clearly not your area. For each, tell me how you'd score your match (0-100) and why. This helps me understand where you draw your scoring lines."
+
+**Generate 3 calibration requirements from the user's CV:**
+- **Example 1 (ceiling test):** A near-perfect match — core skill they use daily, right level, domain they love. Expect user to score 85-95.
+- **Example 2 (gap test):** Domain match but with a significant tool or stack gap they'd need to learn. Expect user to score 55-75.
+- **Example 3 (floor test):** Clear mismatch — wrong domain or technology stack they've never touched. Expect user to score 15-35.
+
+For each, ask:
+> "Requirement: '{requirement}'
+> How would you score your match? What's your reasoning?"
+
+Store as Golden Examples in `_profile.md` under `## Scoring Calibration`:
+
+```markdown
+## Scoring Calibration
+
+_Calibrated {date}. Re-run setup to recalibrate._
+
+**Example 1 (ceiling):**
+Requirement: "{requirement}"
+User Score: {N}
+Reasoning: "{user's reasoning}"
+
+**Example 2 (gap):**
+Requirement: "{requirement}"
+User Score: {N}
+Reasoning: "{user's reasoning}"
+
+**Example 3 (floor):**
+Requirement: "{requirement}"
+User Score: {N}
+Reasoning: "{user's reasoning}"
+```
+
+---
+
+## Step 9: Backup and Write
+
+**Before writing any file that has existing non-template content:**
+
+1. Check if `config/profile.yml` has content beyond template placeholders → if yes, copy to `config/profile.yml.bak`
+2. Check if `modes/_profile.md` has content beyond template placeholders → if yes, copy to `modes/_profile.md.bak`
+3. Inform the user: "Backed up existing files to .bak before writing new profile."
+
+**Then write:**
+- `config/profile.yml` — all confirmed values from Step 4
+- `modes/_profile.md` — archetype table (Step 5) + behavioral profile (Step 6) + writing style (Step 7) + scoring calibration (Step 8)
+
+---
+
+## Step 10: Confirm Ready
+
+> "Setup complete! Here's what's configured:
+> - **{N} archetypes** defined: {archetype names}
+> - **Market:** {market value}
+> - **Comp target:** {range}
+> - **Scoring calibration:** {N} Golden Examples
+> 
+> You can now:
+> - Paste a job URL or JD text to evaluate it
+> - Type 'pipeline' to process your pending URL queue
+> - Type 'setup' again to update your profile at any time
+>
+> Tip: Add writing samples to `writing-samples/` for better-matched cover letters and application answers."

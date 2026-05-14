@@ -1,0 +1,37 @@
+# career-scout CV template registry
+#
+# Each template is an HTML file in this directory.
+# All templates share the same placeholder system and generate-pdf.mjs pipeline.
+
+templates:
+  - id: "ats-optimized"
+    name: "ATS-Optimized"
+    file: "ats-optimized.html"
+    description: "Single-column, ATS-friendly layout. Passes automated parsing reliably."
+    best_for: "Most applications — safe default for any industry"
+    fonts: ["Space Grotesk", "DM Sans"]
+    status: "planned"                # planned | ready
+
+  - id: "classic-professional"
+    name: "Classic Professional"
+    file: "classic-professional.html"
+    description: "Conservative serif design, minimal color, traditional layout."
+    best_for: "Finance, consulting, enterprise, government roles"
+    fonts: ["Source Serif Pro", "Libre Baskerville"]
+    status: "planned"
+
+  - id: "academic-research"
+    name: "Academic / Research"
+    file: "academic-research.html"
+    description: "Publications-forward layout, research sections prominent, education near top."
+    best_for: "Research, academic, R&D, lab positions"
+    fonts: ["EB Garamond", "Source Sans Pro"]
+    status: "planned"
+
+  - id: "technical-engineering"
+    name: "Technical / Engineering"
+    file: "technical-engineering.html"
+    description: "Monospace accents, project-forward, competency grid prominent."
+    best_for: "IC engineering roles — software, ML, hardware, systems"
+    fonts: ["JetBrains Mono", "Inter"]
+    status: "planned"

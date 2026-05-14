@@ -1,0 +1,695 @@
+# Consolidation Plan: career-scout
+
+**Version:** 1.2
+**Last Updated:** 2026-05-14 19:30 -- Phase 1 implementation complete. All mode files, scripts, domain pack, and SKILL/AGENTS files written. Pending user Gemini testing.
+**Project name:** career-scout
+**Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
+
+---
+
+## 1. Vision
+
+A **CLI-agnostic, two-stage job search system** that separates **job discovery** (Scout) from **strategic evaluation and CV generation** (Evaluator). Human-in-the-loop — AI evaluates, drafts, and coaches; you review and submit.
+
+Built as agent skills that work with **Gemini CLI** (primary) and any other agent CLI (Claude Code, Copilot, OpenCode, etc.).
+
+**Audience:** Multi-user, multi-domain. Engineers (EE, CS, systems), scientists (biotech, research), PMs, and other technical professionals. The archetype/framing system is user-configurable, not hardcoded to any single field.
+
+**Philosophy:** Quality over quantity. Filter hard, apply thoughtfully, prepare deeply.
+
+---
+
+## 2. Two-Stage Architecture
+
+```
+┌─────────────────────────────────┐       ┌──────────────────────────────────────┐
+│           SCOUT                 │       │           EVALUATOR                  │
+│                                 │       │                                      │
+│  Job discovery & aggregation    │       │  Strategic evaluation + CV + prep    │
+│                                 │       │                                      │
+│  Sources:                       │       │  Modes:                              │
+│  • Portal APIs (GH/Ashby/Lever) │       │  • evaluate  (A-G blocks)            │
+│  • Playwright scraping          │       │  • cv        (multi-template PDF)    │
+│  • WebSearch queries            │       │  • interview (STAR+R + research)     │
+│  • Manual URL paste             │       │  • pipeline  (triage & track)        │
+│  • BrightData LinkedIn (opt.)   │       │  • batch     (parallel eval)         │
+│                                 │       │  • setup     (profile calibration)   │
+│  Output: pipeline.md            │       │  • auto      (URL → eval+CV+track)  │
+│  Dedup:  scan-history.tsv       │       │                                      │
+└────────────┬────────────────────┘       └──────────────┬───────────────────────┘
+             │                                           │
+             │         ┌─────────────────────┐           │
+             └────────►│   pipeline.md       │◄──────────┘
+                       │   (common contract) │
+                       └─────────────────────┘
+```
+
+### Why separate them?
+
+- **Different cadences.** Scout runs daily/weekly on schedule; Evaluator runs on-demand per job.
+- **Different tools.** Scout needs HTTP clients and Playwright; Evaluator needs LLM + PDF generation.
+- **Composable.** Any Scout source feeds the same pipeline. You can add a new job board without touching evaluation logic.
+- **Testable.** Each stage can be validated independently.
+
+---
+
+## 3. What to Reuse from Each Project
+
+### From career-ops (Foundation — ~70% of the new system)
+
+| Component | What to take | Why |
+|-----------|-------------|-----|
+| **Skill/mode architecture** | `AGENTS.md` + `SKILL.md` routing pattern | Proven CLI-agnostic design, works with Gemini CLI |
+| **A-G evaluation blocks** | Full framework from `modes/oferta.md` | Best strategic evaluation of all 4 projects |
+| **Ghost job detection (Block G)** | Posting legitimacy tier system | Unique — no other project has this |
+| **Portal scanner** | `scan.mjs` + Greenhouse/Ashby/Lever/BambooHR APIs | Zero-token job discovery, 45+ pre-configured companies |
+| **ATS PDF generation** | `generate-pdf.mjs` + `cv-template.html` + Playwright pipeline | Production-tested, Unicode normalization, ATS-safe |
+| **STAR+R story bank** | `interview-prep/story-bank.md` + accumulation pattern | Builds reusable interview prep over time |
+| **User/System layer split** | `DATA_CONTRACT.md` separation | Protects user data during system updates |
+| **Archetype detection** | Adaptive framing per role type (Platform/Agentic/PM/SA/FDE/Transformation) | Smart proof-point selection |
+| **Writing style calibration** | One-time extraction from samples, cached in `_profile.md` | Consistent voice across applications |
+| **Data formats** | `applications.md`, `pipeline.md`, `scan-history.tsv`, `portals.yml`, `profile.yml` | Proven at 740+ entries |
+| **Canonical states** | `templates/states.yml` with aliases | Clean status tracking |
+| **Batch processing** | Parallel evaluation with headless workers | Scale when needed |
+
+### From ai-job-search (Improve CV quality — ~15%)
+
+| Component | What to take | Why |
+|-----------|-------------|-----|
+| **Drafter-reviewer workflow** | Step 3-4 pattern: fresh-context reviewer agent critiques drafts | Prevents single-pass blindness; genuine quality improvement |
+| **Relevance-weighted CV cutting** | Score each line by (posting relevance + uniqueness + narrative load), cut lowest first | Smarter than static section priorities |
+| **Deep candidate profiling** | Behavioral profile (02) + writing style guide (03) concepts | Career-ops has `_profile.md` but lacks behavioral framework |
+| **Mandatory PDF verification** | Compile → inspect → fix → recompile loop | Career-ops mentions this but ai-job-search formalizes it better |
+| **Token-efficient patterns** | Never re-read files already in context; keep drafts in working memory | Reduces cost, speeds up workflow |
+| **5-dimension fit scoring** | Technical (30%), Experience (25%), Behavioral (15%), Career (30%) + Location (pass/fail) | Merge into career-ops Block B as structured scoring. **Weights adjusted in Phase 1:** Tech 25%, Exp 25%, Career 25%, Behavioral 15%, Role Quality 10% |
+| **Fabrication gates** | "Interview backtrack test" — could you explain this bullet without backtracking? | Strong anti-hallucination heuristic |
+
+### From job-search-toolkit (Improve engineering — ~10%)
+
+| Component | What to take | Why |
+|-----------|-------------|-----|
+| **Externalized prompt templates** | Jinja2/markdown prompt files instead of inline instructions | Enables multi-template support and easier iteration |
+| **Structured fit categories** | `TOO_JUNIOR`, `OVERQUALIFIED`, `HARD_MISMATCH`, `PARTIAL_MATCH`, `GOOD_FIT`, `PERFECT_MATCH` | More nuanced than 1-5 score alone; combine WITH score |
+| **4-phase coaching structure** | Extract requirements → Analyze gaps → Tailor sections → Verify | Useful mental model even in markdown-skill context |
+| **BrightData LinkedIn scraping** | Optional Scout source for broad LinkedIn search | Pay-as-you-go, ~$2/1000 jobs |
+| **Checkpoint/cache pattern** | Resume interrupted batch operations from last success | Robustness for long-running scans |
+
+### From LangHire (Future enhancements — ~5%)
+
+| Component | What to take | Why |
+|-----------|-------------|-----|
+| **YAML plugin architecture** | Declarative job source definitions | Easy to add new portals without code |
+| **Self-learning memory** | Per-ATS procedural knowledge with confidence decay | Future: system gets smarter over time |
+| **Multi-country field formats** | 18-country address/work-auth templates | When expanding beyond one market |
+
+---
+
+## 4. Multi-Template CV System
+
+Career-ops currently ships one HTML template (Space Grotesk + DM Sans → Playwright → PDF). The new system supports **up to 5 templates**, selectable per application.
+
+### Template 1: ATS-Optimized (from career-ops)
+
+- **Source:** `cv-template.html` from career-ops
+- **Stack:** HTML → Playwright → PDF
+- **Design:** Single column, Space Grotesk headings, DM Sans body, gradient header
+- **Best for:** Most applications — passes ATS parsing reliably
+- **Placeholders:** `{{NAME}}`, `{{SUMMARY_TEXT}}`, `{{COMPETENCIES}}`, `{{EXPERIENCE}}`, etc.
+
+### Template 2: Classic Professional (new)
+
+- **Stack:** HTML → Playwright → PDF
+- **Design:** Conservative serif (e.g., Source Serif Pro / Libre Baskerville), minimal color, traditional layout
+- **Best for:** Finance, consulting, enterprise, government roles
+- **Differentiation:** Understated, no gradient, more whitespace
+
+### Template 3: Academic/Research (inspired by ai-job-search)
+
+- **Stack:** HTML → Playwright → PDF (not LaTeX — avoids lualatex dependency)
+- **Design:** Publications-forward layout, research sections prominent, education near top
+- **Best for:** Research, academic, R&D, lab positions
+- **Differentiation:** Publications section with DOI links, thesis topics, conference presentations
+
+### Template 4: Technical/Engineering (new)
+
+- **Stack:** HTML → Playwright → PDF
+- **Design:** Monospace accents (e.g., JetBrains Mono for skill tags), project-forward layout, competency grid prominent
+- **Best for:** IC engineering roles (software, ML, hardware, systems)
+- **Differentiation:** Skills grid, project cards with metrics, GitHub/portfolio links styled
+
+### Template Selection
+
+```yaml
+# In profile.yml
+cv:
+  default_template: "ats-optimized"   # default for all evals
+  template_overrides:                  # per-archetype override
+    academic: "academic-research"
+    platform: "technical-engineering"
+```
+
+Or override per-evaluation: `evaluate <url> --template=classic-professional`
+
+### Implementation
+
+All templates share:
+- Same placeholder system (`{{NAME}}`, `{{EXPERIENCE}}`, etc.)
+- Same `generate-pdf.mjs` pipeline (Unicode normalization, font embedding, margin control)
+- Same keyword injection and relevance-weighted cutting logic
+- Templates stored in `templates/cv/` as separate `.html` files
+- Template metadata in `templates/cv/manifest.yml` (name, description, best-for, fonts needed)
+
+---
+
+## 5. Enhanced Evaluation: A-G Blocks + Structured Scoring
+
+Keep career-ops A-G block structure, but enhance Block B with structured scoring from ai-job-search and fit categories from job-search-toolkit.
+
+### Block A — Role Summary (unchanged from career-ops)
+Table: Archetype, Domain, Function, Seniority, Remote, Team Size, TL;DR
+
+### Block B — CV Match + Structured Fit Score (enhanced)
+
+**New addition:** Before the gap analysis, produce a structured score:
+
+```markdown
+### Fit Assessment
+
+| Dimension | Score | Weight | Notes |
+|-----------|-------|--------|-------|
+| Technical Skills | 78/100 | 25% | Strong Python/ML, gap: Kubernetes |
+| Experience & Level | 85/100 | 25% | Direct domain experience, right seniority |
+| Career Alignment | 90/100 | 25% | Strong growth trajectory |
+| Behavioral & Culture | 70/100 | 15% | Collaborative culture matches, pace concern |
+| Role Quality | 75/100 | 10% | Good comp, solid company, decent stack |
+| Location | PASS | — | Remote OK |
+
+**Weighted Score:** 81/100 → **4.1/5**
+**Fit Category:** GOOD_FIT
+```
+
+**Dimensions** (5 weighted + 1 gate, unified from career-ops + ai-job-search — see Phase 1 plan Section 3.1 for full scoring guide):
+- Technical Skills (25%), Experience & Level (25%), Career Alignment (25%), Behavioral & Culture (15%), Role Quality (10%)
+- Location: Pass/Fail gate — if FAIL, composite not calculated
+- Level Alignment: **soft gate** — 2+ level gap auto-assigns TOO_JUNIOR/OVERQUALIFIED category, but composite is still calculated
+
+**Fit categories** (from job-search-toolkit, calibrated to career-ops's selectivity):
+- `PERFECT_MATCH` (90-100) — Apply immediately, full CV tailoring + cover letter
+- `GOOD_FIT` (80-89) — Apply, address gaps in materials
+- `PARTIAL_MATCH` (65-79) — Consider carefully, discuss with user
+- `HARD_MISMATCH` (40-64) — Probably skip unless strategic
+- `POOR_FIT` (0-39) — Skip
+- `TOO_JUNIOR` / `OVERQUALIFIED` — Soft override: score calculated, category overridden. Strategy: skip OR negotiate level / lateral pivot
+
+**Scoring calibration:** Uses Golden Examples (few-shot) stored in `_profile.md`, not math offsets. See Phase 1 plan Section 3 for full details.
+
+Then continues with career-ops gap analysis (requirements → CV lines mapping, mitigation plans).
+
+### Block C — Level & Strategy (updated)
+Soft seniority gate: 2+ level gap auto-assigns TOO_JUNIOR/OVERQUALIFIED but still provides strategy (negotiate level / lateral pivot). No hard pass/fail.
+
+### Block D — Comp & Demand (updated)
+Market-aware: uses `profile.yml → location.market` key to adapt comp analysis to regional norms (DACH: 13th-month salary; US-West: equity splits; etc.).
+
+### Block E — Personalization Plan (unchanged)
+
+### Block F — Interview Prep + STAR+R (unchanged)
+Story bank accumulation continues as-is.
+
+### Block G — Posting Legitimacy (updated)
+Three-tier ghost job detection remains a unique differentiator. Reposting detection uses `scripts/check-history.mjs` (deterministic TSV parser) instead of passing raw scan-history.tsv to the LLM. Script distinguishes `is_evergreen` (same URL, 3+ months) from `is_repost` (same company+title, different URLs).
+
+---
+
+## 6. Drafter-Reviewer Workflow for CV Generation
+
+Adapt ai-job-search's two-agent pattern into career-ops's mode system.
+
+### When it activates
+
+The `cv` mode (or the CV generation step within `auto` mode) uses the drafter-reviewer pattern **when the evaluation score is >= 4.0/5** (high-value applications deserve the extra quality pass).
+
+For scores < 4.0 (exploratory applications), single-pass CV generation is sufficient.
+
+### Flow
+
+```
+Step 1: DRAFTER generates tailored CV
+        ├─ Reads: profile.yml, cv.md, _profile.md, article-digest.md
+        ├─ Applies: archetype framing, keyword injection, relevance-weighted cutting
+        ├─ Renders: selected HTML template with {{PLACEHOLDERS}}
+        └─ Keeps draft in working memory (token-efficient, no disk write yet)
+
+Step 2: REVIEWER critiques (fresh-context agent)
+        ├─ Receives: draft HTML inline in prompt + JD text + profile.yml
+        ├─ Performs: company research (WebSearch), keyword gap analysis
+        ├─ Validates: behavioral profile alignment, no fabrications
+        ├─ Returns:
+        │   Part A: JSON array of specific edits [{old_string, new_string, reason}]
+        │   Part B: Narrative suggestions (missed keywords, angles, tone)
+        └─ Does NOT have access to templates or mode instructions (independence)
+
+Step 3: DRAFTER revises
+        ├─ Applies Part A edits directly
+        ├─ Applies Part B suggestions with judgment
+        ├─ Verifies company-specific claims via WebSearch before including
+        └─ Applies "interview backtrack test" — could candidate explain every bullet?
+
+Step 4: Generate PDF + Verify
+        ├─ node generate-pdf.mjs <input.html> <output.pdf>
+        ├─ Read PDF to verify layout (page count, no orphans, fonts render)
+        ├─ If broken: fix HTML → regenerate → re-verify
+        └─ Clean up temp files
+```
+
+### Fabrication safeguards (from ai-job-search)
+
+- **Interview backtrack test:** Every bullet must be something the candidate can comfortably explain in an interview without saying "well, what I actually meant was..."
+- **Reformulation, not invention:** OK to reorder, emphasize, use domain synonyms. NOT OK to claim experience you don't have.
+- **Verify before including:** Company-specific claims (partnerships, products, tech stack) must be WebSearch-verified before inclusion.
+
+---
+
+## 7. Common Data Contract: `pipeline.md`
+
+The **single file** that Scout writes to and Evaluator reads from.
+
+### Format
+
+```markdown
+# Pipeline
+
+## Pending
+| URL | Company | Role | Source | Found | Notes |
+|-----|---------|------|--------|-------|-------|
+| https://boards.greenhouse.io/anthropic/jobs/123 | Anthropic | Senior AI Eng | greenhouse-api | 2026-05-14 | |
+| https://jobs.lever.co/openai/456 | OpenAI | ML Platform | lever-api | 2026-05-14 | |
+| https://linkedin.com/jobs/view/789 | Stripe | Staff Eng | brightdata | 2026-05-13 | |
+
+## Evaluated
+| # | URL | Company | Role | Score | Fit | Status | Report | PDF | Notes |
+|---|-----|---------|------|-------|-----|--------|--------|----|-------|
+| 1 | https://... | Acme | AI PM | 4.2/5 | GOOD_FIT | Applied | [1](reports/001-acme-2026-05-10.md) | Yes | Strong match |
+```
+
+### Rules
+
+- Scout **only appends** to the Pending section
+- Evaluator **moves rows** from Pending to Evaluated after processing
+- Deduplication: Scout checks URL against both sections + `scan-history.tsv`
+- Manual additions: User can paste URLs directly into Pending section
+
+---
+
+## 8. Candidate Profile (Enhanced)
+
+Merge career-ops `profile.yml` + `_profile.md` with ai-job-search behavioral profiling concepts.
+
+### config/profile.yml (structured data)
+
+```yaml
+candidate:
+  full_name: "Your Name"
+  email: "you@example.com"
+  phone: "+1-555-0123"           # optional
+  location: "City, State"
+  linkedin: "linkedin.com/in/you"
+  portfolio_url: "https://you.dev"
+  github: "github.com/you"
+
+target_roles:
+  primary: ["Senior AI Engineer", "Staff ML Engineer"]
+  archetypes:
+    - name: "AI/ML Engineer"
+      level: "Senior/Staff"
+      fit: "primary"
+    - name: "Technical PM"
+      level: "Senior"
+      fit: "secondary"
+
+narrative:
+  headline: "Your one-liner"
+  exit_story: "Why you're looking, what makes you unique"
+  superpowers: ["Ability 1", "Ability 2"]
+  proof_points:
+    - name: "Project X"
+      url: "https://..."
+      hero_metric: "Shipped to 10K users in 3 months"
+
+compensation:
+  target_range: "$150K-200K"
+  currency: "USD"
+  minimum: "$120K"
+
+location:
+  country: "United States"
+  city: "San Francisco"
+  timezone: "PST"
+  visa_status: "No sponsorship needed"
+  onsite_availability: "1 week/month"
+  market: "US-West"                  # Regional context for comp/labor law (DACH, US-West, UK, Japan, etc.)
+
+cv:
+  default_template: "ats-optimized"
+  template_overrides:
+    academic: "academic-research"
+    platform: "technical-engineering"
+```
+
+### modes/_profile.md (narrative + behavioral + style)
+
+Enhanced with behavioral profiling concepts from ai-job-search:
+
+```markdown
+## Your Target Roles
+| Archetype | Thematic axes | What they buy |
+|-----------|---------------|---------------|
+
+## Your Adaptive Framing
+| If role is... | Emphasize about you... | Proof point sources |
+|---------------|------------------------|---------------------|
+
+## Your Exit Narrative
+(Why you're looking, bridge story)
+
+## Your Behavioral Profile
+(Inspired by ai-job-search's 02-behavioral-profile.md)
+### Core Drives
+| Drive | Level | What this means for applications |
+|-------|-------|----------------------------------|
+### Keywords that signal strong fit
+### Keywords that signal friction
+### How to present in cover letters vs. interviews
+
+## Your Writing Style
+(Calibrated from writing-samples/, cached here)
+### Tone & Register
+### Critical Rules
+- NO em-dashes
+- NO cliches ("passionate about", "leverage", "synergies")
+- NO unverified company claims
+- Every claim needs a concrete backing
+### Forward-Looking Framing
+(Focus on what you'll solve for employer, not CV repetition)
+
+## Your Comp Targets
+## Your Negotiation Scripts
+## Your Location Policy
+```
+
+---
+
+## 9. Directory Structure
+
+```
+project-root/
+├── AGENTS.md                           # CLI-agnostic system instructions
+├── CLAUDE.md                           # Claude Code wrapper (imports AGENTS.md)
+├── GEMINI.md                           # Gemini CLI wrapper (imports AGENTS.md)
+│
+├── modes/                              # Agent skill modes
+│   ├── _shared.md                      # Global rules, scoring system, archetype detection
+│   ├── _profile.md                     # User's narrative + behavioral + style (USER layer)
+│   ├── evaluate.md                     # A-G evaluation blocks
+│   ├── cv.md                           # CV generation (multi-template + drafter-reviewer)
+│   ├── scan.md                         # Scout instructions
+│   ├── interview-prep.md               # STAR+R + company research
+│   ├── pipeline-triage.md              # Pipeline triage & management (renamed to avoid collision with data/pipeline.md)
+│   ├── auto-pipeline.md                # URL → eval + CV + track in one command
+│   ├── batch.md                        # Parallel evaluation
+│   ├── setup.md                        # Profile creation & calibration
+│   └── followup.md                     # Post-application follow-up
+│
+├── config/
+│   ├── profile.yml                     # Candidate identity & targets (USER layer)
+│   └── portals.yml                     # Tracked companies + title/location filters
+│
+├── templates/
+│   ├── cv/
+│   │   ├── manifest.yml                # Template registry (name, description, best-for)
+│   │   ├── ats-optimized.html          # Template 1 (from career-ops)
+│   │   ├── classic-professional.html   # Template 2 (new)
+│   │   ├── academic-research.html      # Template 3 (inspired by ai-job-search)
+│   │   └── technical-engineering.html  # Template 4 (new)
+│   ├── states.yml                      # Canonical status definitions
+│   ├── domain-packs/                   # Domain-specific archetype starter kits
+│   │   └── ai-ml.yml                  # AI/ML pack (6 archetypes from career-ops)
+│   └── prompts/                        # Externalized prompt templates (from job-search-toolkit)
+│       ├── evaluate-system.md          # Evaluation system prompt
+│       ├── cv-tailor-user.md           # CV tailoring user prompt template
+│       ├── reviewer-system.md          # Reviewer agent system prompt
+│       └── scoring-rubric.md           # Structured scoring criteria
+│
+├── data/                               # All persistent state (USER layer)
+│   ├── pipeline.md                     # The common Scout ↔ Evaluator contract
+│   ├── applications.md                 # Full application tracker
+│   ├── scan-history.tsv                # Scout deduplication log
+│   └── follow-ups.md                   # Follow-up tracking
+│
+├── cv.md                               # Your master CV (USER layer)
+├── article-digest.md                   # Your proof points / project deep-dives (USER layer)
+├── writing-samples/                    # Your writing for style calibration (USER layer)
+│
+├── interview-prep/
+│   ├── story-bank.md                   # Accumulated STAR+R stories (USER layer)
+│   └── {company}-{role}.md             # Per-company interview prep (generated)
+│
+├── reports/                            # Evaluation reports (generated)
+│   └── {###}-{company}-{date}.md
+│
+├── output/                             # Generated CVs and cover letters
+│   └── cv-{candidate}-{company}-{date}.pdf
+│
+├── fonts/                              # Self-hosted fonts for PDF generation
+│
+├── scripts/
+│   ├── generate-pdf.mjs                # HTML → PDF via Playwright (from career-ops)
+│   ├── scan.mjs                        # Portal scanner (from career-ops)
+│   ├── check-history.mjs               # TSV parser for scan-history.tsv (repost/evergreen detection)
+│   └── verify-pipeline.mjs             # Data integrity checks
+│
+├── .agents/                            # Skill registration
+│   └── skills/
+│       └── {skill-name}/
+│           └── SKILL.md
+│
+└── docs/
+    ├── SETUP.md                        # Getting started guide
+    └── DATA_CONTRACT.md                # User vs. System layer definition
+```
+
+---
+
+## 10. Mode Reference
+
+| Mode | Trigger | What it does |
+|------|---------|-------------|
+| `evaluate` | URL or JD text | Full A-G evaluation + structured scoring |
+| `cv` | After evaluation, or standalone with job context | Multi-template CV generation with drafter-reviewer |
+| `scan` | On-demand or scheduled | Run Scout: portal APIs + Playwright + WebSearch |
+| `interview-prep` | Company + role | STAR+R mapping + Glassdoor/Blind research + story bank |
+| `pipeline` | On-demand | Triage pending jobs, update statuses, health check (file: `pipeline-triage.md`) |
+| `auto` | URL or JD text | Full pipeline: evaluate → CV → track (one command) |
+| `batch` | Multiple URLs or pipeline.md | Parallel evaluation with headless workers |
+| `setup` | First run or profile update | Guided profile creation + calibration |
+| `followup` | After application | Generate follow-up messages with timing guidance |
+
+---
+
+## 11. Implementation Phases
+
+### Phase 1: Foundation (Week 1-2)
+
+**Goal:** Working evaluate + pipeline mode on Gemini CLI.
+**Detailed plan:** `plan_rs/phase1-foundation.md` (v1.3, approved)
+
+- [x] Set up project structure (directory layout above)
+- [x] Create `modes/_shared.md` (global rules, 5+1 scoring system, dynamic archetype detection, Domain Pack precedence)
+- [x] Create `modes/evaluate.md` (A-G blocks, English, domain-agnostic, soft level gate, market-aware Block D)
+- [x] Create `modes/pipeline-triage.md` (renamed from pipeline.md to avoid collision with data/pipeline.md)
+- [x] Create `modes/setup.md` (guided profile creation, Domain Pack selection, Golden Examples calibration, .bak safety)
+- [x] Create `AGENTS.md` (CLI-agnostic system instructions)
+- [x] Create `GEMINI.md` (Gemini CLI wrapper)
+- [x] Update `CLAUDE.md` (add AGENTS.md import)
+- [x] Update `.agents/skills/career-scout/SKILL.md` (Phase 1 mode routing)
+- [x] Create `scripts/check-history.mjs` (TSV parser for Block G repost/evergreen detection — all 4 signal cases verified)
+- [x] Create `templates/domain-packs/ai-ml.yml` (AI/ML archetype starter kit from career-ops, 6 archetypes)
+- [x] Update `config/profile.yml` (add `market` key)
+- [x] Create `data/follow-ups.md` (empty tracker)
+- [ ] Test: paste a job URL → get full A-G evaluation with structured score *(user Gemini testing pending)*
+- [ ] Test: pipeline triage + setup flow end-to-end *(user Gemini testing pending)*
+
+**Testing docs:** `plan_rs/phase1-test-plan.md` (automated) + `plan_rs/phase1-user-testing-guide.md` (Gemini manual)
+
+### Phase 2: CV Generation (Week 3-4)
+
+**Goal:** Multi-template CV generation with drafter-reviewer.
+
+- [ ] Port `generate-pdf.mjs` and `fonts/` from career-ops
+- [ ] Port `cv-template.html` as Template 1 (ATS-Optimized)
+- [ ] Create Template 2 (Classic Professional)
+- [ ] Create Template 3 (Academic/Research)
+- [ ] Create Template 4 (Technical/Engineering)
+- [ ] Create `templates/cv/manifest.yml` for template registry
+- [ ] Port CV mode from career-ops (`modes/cv.md`)
+- [ ] Add drafter-reviewer workflow (from ai-job-search pattern)
+- [ ] Add relevance-weighted cutting logic
+- [ ] Add behavioral profile validation in reviewer step
+- [ ] Implement template selection (default + per-archetype + per-evaluation override)
+- [ ] Test: evaluate a job → generate CV with each template → verify PDFs
+
+### Phase 3: Scout (Week 5-6)
+
+**Goal:** Multi-source job discovery writing to pipeline.md.
+
+- [ ] Port `scan.mjs` from career-ops (Greenhouse/Ashby/Lever/BambooHR APIs)
+- [ ] Port `portals.yml` configuration
+- [ ] Port deduplication logic (scan-history.tsv + pipeline.md + applications.md)
+- [ ] Port title/location filtering
+- [ ] Add Playwright scraping fallback (Level 1 from career-ops)
+- [ ] Add WebSearch broad discovery (Level 3 from career-ops)
+- [ ] Create `modes/scan.md` instructions
+- [ ] Optional: BrightData LinkedIn integration (from job-search-toolkit)
+- [ ] Test: run scan → verify new jobs appear in pipeline.md, no duplicates
+
+### Phase 4: Interview Prep + Story Bank (Week 7)
+
+**Goal:** STAR+R story bank that grows over evaluations.
+
+- [ ] Port `interview-prep.md` mode from career-ops
+- [ ] Port story bank format and accumulation pattern
+- [ ] Port company research workflow (Glassdoor, Blind, engineering blog searches)
+- [ ] Create `interview-prep/story-bank.md` template
+- [ ] Test: evaluate 3 jobs → verify story bank grows, stories map to JD requirements
+
+### Phase 5: Auto-Pipeline + Batch (Week 8)
+
+**Goal:** One-command end-to-end workflow + parallel processing.
+
+- [ ] Port `auto-pipeline.md` from career-ops
+- [ ] Port `batch.md` for parallel evaluation
+- [ ] Add `verify-pipeline.mjs` integrity checks
+- [ ] Integration test: paste URL → evaluation + CV + tracker update + interview prep in one flow
+- [ ] Test batch: feed 5 URLs → parallel evaluation with reports
+
+---
+
+## 12. Key Design Decisions
+
+### Decision 1: HTML templates over LaTeX
+**Rationale:** LaTeX requires lualatex/xelatex installation (heavy dependency), has brittle page-break behavior, and compiler differences across platforms (MiKTeX vs TeX Live). HTML → Playwright → PDF is consistent cross-platform, requires only Node.js + Chromium, and Playwright is already needed for Scout. All 4 templates use the same pipeline.
+
+**Trade-off:** LaTeX produces slightly better typography (kerning, ligatures). If the user needs a LaTeX template later, it can be added as Template 5 without changing the architecture.
+
+### Decision 2: Drafter-reviewer only for high-value applications (score >= 4.0)
+**Rationale:** The reviewer step spawns a separate agent with fresh context, which costs tokens and time. For exploratory applications (score < 4.0), single-pass generation is good enough.
+
+### Decision 3: Externalized prompt templates
+**Rationale:** Career-ops embeds all instructions inline in mode markdown files. This works but makes it hard to iterate on prompts independently or support multiple templates. Extracting key prompts (scoring rubric, CV tailoring instructions, reviewer prompt) into `templates/prompts/` enables easier tuning without touching mode logic.
+
+### Decision 4: Fit categories alongside numeric scores
+**Rationale:** A score of 45/100 from a `TOO_JUNIOR` posting is very different from 45/100 from a `HARD_MISMATCH`. The category explains *why* the score is low, which changes the response (downlevel strategy vs. skip). Categories come from job-search-toolkit; numeric scoring comes from career-ops. Both are valuable together.
+
+### Decision 5: Keep pipeline.md as markdown table (not JSON/YAML)
+**Rationale:** Human-readable, git-diffable, editable by hand, proven at 740+ entries in career-ops. The user can open it in any editor, add URLs manually, or review at a glance. Scripts can parse markdown tables with simple regex.
+
+---
+
+## 13. What We're NOT Taking (and Why)
+
+| Dropped | Source | Why |
+|---------|--------|-----|
+| Tauri desktop app | LangHire | User wants CLI + agent skills, not a desktop app |
+| Auto-submission (browser form filling) | LangHire | User chose human-in-the-loop |
+| Self-learning memory (SQLite) | LangHire | Future enhancement, not MVP. Core eval framework is more valuable first |
+| Danish job portal CLIs | ai-job-search | Market-specific tooling, not generalizable |
+| LaTeX CV generation | ai-job-search | HTML → PDF is simpler, more portable (see Decision 1). Can revisit as Template 5 |
+| Notion integration | job-search-toolkit | Nice-to-have, not must-have. pipeline.md + applications.md are the source of truth |
+| Pydantic/mypy strict typing | job-search-toolkit | Architecture is agent skills (markdown), not Python library |
+| Python services layer | job-search-toolkit | Over-engineered for a markdown-skills system |
+| Go TUI dashboard | career-ops | CLI pipeline view (`pipeline` mode) is sufficient for now |
+| Canva CV integration | career-ops | Template system covers the use case more simply |
+
+---
+
+## 14. Gemini CLI Compatibility Notes
+
+Career-ops is already CLI-agnostic (works with Claude Code, Gemini, Copilot, etc.). The new system inherits this design.
+
+**Gemini CLI specifics:**
+- Skill registration: `.agents/skills/{name}/SKILL.md` (same as career-ops)
+- Agent spawning for reviewer: Gemini CLI supports `gemini -p` for headless workers (batch mode)
+- WebSearch: Available natively in Gemini CLI
+- WebFetch: Available natively
+- File I/O: Standard Read/Write/Edit tools
+- Playwright: Requires Node.js + `npx playwright install chromium`
+
+**What needs adaptation:**
+- `AGENTS.md` references to Claude-specific tool names (Agent, Bash, Read, etc.) need to be made generic or have Gemini equivalents documented
+- Batch mode: `gemini -p` instead of `claude -p`
+- Tool calling syntax may differ — keep mode instructions tool-agnostic where possible
+
+---
+
+## 15. Finalized Decisions
+
+| Question | Decision | Notes |
+|----------|----------|-------|
+| **Project name** | `career-scout` | |
+| **Cover letters** | CV-focused; cover letter generated only when the posting asks for one or user explicitly requests | Borrow ai-job-search's cover letter workflow for when it's needed |
+| **Language** | English only | Keeps system simple; multi-language can be added later |
+| **Portals** | Start with career-ops's 45+ companies | Users customize `portals.yml` for their own industry |
+| **Salary benchmarking** | WebSearch-based (career-ops pattern) | Real-time Glassdoor/Levels.fyi/Blind lookup in Block D |
+| **Target audience** | Multi-user, multi-domain | EE, CS, biotech, PM, etc. — archetypes are user-defined, not hardcoded |
+
+---
+
+## 16. Domain-Agnostic Archetype System
+
+Career-ops ships 6 hardcoded AI/ML archetypes (Platform, Agentic, PM, SA, FDE, Transformation). Since career-scout serves multiple domains, archetypes must be **user-defined in `_profile.md`**.
+
+### How it works
+
+The user defines their own archetypes during `setup`:
+
+```markdown
+## Your Target Roles
+
+| Archetype | Domain signals (keywords in JD) | What they buy from you | Proof point sources |
+|-----------|--------------------------------|------------------------|---------------------|
+| Analog IC Designer | "analog", "mixed-signal", "CMOS", "PLL", "ADC/DAC" | Tape-out experience, silicon-proven designs | cv.md section 3, article-digest.md |
+| Systems Engineer | "systems engineering", "V-model", "requirements", "integration" | End-to-end system lifecycle, cross-domain | cv.md section 2 |
+| Controls Engineer | "control systems", "PID", "state-space", "Simulink" | Mathematical modeling, real-time implementation | cv.md section 4, article-digest.md |
+```
+
+Or for a biotech scientist:
+
+```markdown
+| Archetype | Domain signals | What they buy | Proof point sources |
+|-----------|---------------|---------------|---------------------|
+| Research Scientist | "assay", "NGS", "CRISPR", "cell culture" | Publication record, lab technique breadth | cv.md, publications |
+| Bioinformatics | "pipeline", "genomics", "R/Python", "sequencing" | Computational biology + wet lab understanding | cv.md, github |
+| Medical Science Liaison | "KOL", "clinical", "therapeutic area" | Deep domain + communication skills | cv.md, article-digest.md |
+```
+
+### What the system does with archetypes
+
+1. **Detection:** When evaluating a JD, the system matches keywords against the user's archetype table to identify the best-fit archetype
+2. **Adaptive framing:** Block B uses the "What they buy" column to prioritize which CV lines to highlight
+3. **CV tailoring:** The `cv` mode uses "Proof point sources" to select which experiences to emphasize
+4. **Template selection:** `profile.yml` can map archetypes to CV templates (e.g., `academic → academic-research`)
+
+### Domain Packs (Starter Kits)
+
+To avoid the **generalization penalty** of stripping career-ops's battle-tested AI/ML archetypes, they ship as a selectable **Domain Pack** — a YAML file in `templates/domain-packs/` that pre-populates `_profile.md` during setup.
+
+- **Phase 1:** AI/ML pack ships (6 archetypes ported from career-ops, adapted to English)
+- **Future:** Community-contributed packs for EE, Biotech, PM, SWE, etc.
+- User selects a pack during setup, customizes freely — the pack is a scaffold, not a constraint
+- If no pack matches, setup extracts archetypes from cv.md
+
+See `plan_rs/phase1-foundation.md` Section 3.5 for full details.
+
+### Seed archetypes
+
+During `setup`, the system reads the user's `cv.md` and suggests 3-5 archetypes based on their background. If a Domain Pack is selected, its archetypes are injected as editable starting material. The user refines from there.

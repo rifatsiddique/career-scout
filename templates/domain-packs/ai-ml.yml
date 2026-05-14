@@ -1,0 +1,151 @@
+# AI/ML Engineering Domain Pack
+# Source: career-ops (adapted to English, generalized from AI/ML-specific)
+# Use during setup: ask user if they work in AI/ML, then inject these archetypes into _profile.md
+# User customizes freely after injection — this is a scaffold, not a constraint.
+
+name: "AI/ML Engineering"
+description: "For engineers, researchers, and technical leads building AI/ML systems in production"
+source: "career-ops"
+version: "1.0"
+
+archetypes:
+
+  - name: "AI Platform / LLMOps"
+    domain_signals:
+      - "observability"
+      - "evals"
+      - "evaluation framework"
+      - "pipelines"
+      - "monitoring"
+      - "reliability"
+      - "LLMOps"
+      - "model serving"
+      - "inference"
+      - "platform"
+      - "guardrails"
+      - "tracing"
+    what_they_buy: >
+      You build the infrastructure that makes AI systems reliable in production.
+      Platforms teams buy: evaluation frameworks, observability tooling, model
+      reliability engineering, and the operational discipline to catch failures
+      before they reach users.
+    proof_point_sources:
+      - "cv.md — any evals, monitoring, or platform work"
+      - "article-digest.md — production AI system metrics"
+
+  - name: "Agentic / Automation"
+    domain_signals:
+      - "agent"
+      - "HITL"
+      - "human-in-the-loop"
+      - "orchestration"
+      - "workflow"
+      - "multi-agent"
+      - "autonomous"
+      - "tool use"
+      - "function calling"
+      - "agentic"
+      - "automation"
+      - "task automation"
+    what_they_buy: >
+      You design systems where AI takes actions, not just generates text.
+      Agentic teams buy: orchestration architecture, reliability under failure,
+      human oversight design (HITL), and the judgment to know when agents
+      should defer to humans.
+    proof_point_sources:
+      - "cv.md — any agent, workflow, or automation projects"
+      - "article-digest.md — agent reliability metrics"
+
+  - name: "Technical AI PM"
+    domain_signals:
+      - "PRD"
+      - "roadmap"
+      - "product discovery"
+      - "stakeholder"
+      - "product manager"
+      - "product requirements"
+      - "go-to-market"
+      - "user research"
+      - "prioritization"
+      - "OKR"
+      - "KPI"
+    what_they_buy: >
+      You bridge the gap between what AI can do and what the business needs.
+      Product orgs buy: the ability to write crisp PRDs for ambiguous AI
+      features, navigate technical trade-offs with engineers, and drive
+      adoption with non-technical stakeholders.
+    proof_point_sources:
+      - "cv.md — product launches, roadmap ownership, cross-functional work"
+      - "article-digest.md — adoption metrics, user outcomes"
+
+  - name: "ML Infrastructure / MLOps"
+    domain_signals:
+      - "MLOps"
+      - "feature store"
+      - "training pipeline"
+      - "model registry"
+      - "data pipeline"
+      - "Kubeflow"
+      - "MLflow"
+      - "distributed training"
+      - "GPU cluster"
+      - "data engineering"
+      - "feature engineering"
+      - "experiment tracking"
+    what_they_buy: >
+      You build and scale the machinery that trains and deploys models.
+      Infrastructure teams buy: faster training cycles, reproducible
+      experiments, automated retraining pipelines, and the operational
+      maturity to move models from notebook to production reliably.
+    proof_point_sources:
+      - "cv.md — pipeline builds, training cost reductions, scale metrics"
+      - "article-digest.md — infrastructure throughput and cost metrics"
+
+  - name: "Applied ML / Data Science"
+    domain_signals:
+      - "model development"
+      - "feature engineering"
+      - "A/B testing"
+      - "data science"
+      - "statistical modeling"
+      - "prediction"
+      - "recommendation"
+      - "anomaly detection"
+      - "NLP"
+      - "computer vision"
+      - "time series"
+      - "regression"
+      - "classification"
+    what_they_buy: >
+      You take business problems and turn them into working models with
+      measurable impact. Applied ML teams buy: fast prototyping with
+      real data, rigorous evaluation methodology, and the ability to
+      communicate uncertainty and trade-offs to non-technical stakeholders.
+    proof_point_sources:
+      - "cv.md — model impact metrics, A/B test results, business outcomes"
+      - "article-digest.md — model performance and business ROI"
+
+  - name: "AI Research Engineering"
+    domain_signals:
+      - "research"
+      - "publication"
+      - "novel"
+      - "state-of-the-art"
+      - "SOTA"
+      - "paper"
+      - "fine-tuning"
+      - "pretraining"
+      - "RLHF"
+      - "alignment"
+      - "safety"
+      - "benchmark"
+      - "ablation"
+    what_they_buy: >
+      You push the frontier and translate research breakthroughs into
+      production capabilities. Research teams buy: deep technical depth,
+      ability to implement and iterate on novel architectures, rigorous
+      experimental methodology, and the communication skills to
+      explain complex work to engineering and leadership.
+    proof_point_sources:
+      - "cv.md — publications, research projects, novel implementations"
+      - "article-digest.md — benchmark results, research impact"

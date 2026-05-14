@@ -1,0 +1,57 @@
+# Data Contract: User vs. System Layers
+
+career-scout separates files into two layers. This prevents system updates from
+overwriting your personal data.
+
+## User Layer (NEVER auto-updated)
+
+These files contain your personal data, preferences, and accumulated work.
+They are created during setup and evolve as you use the system.
+
+| File | Purpose |
+|------|---------|
+| `cv.md` | Your master CV |
+| `config/profile.yml` | Your identity, targets, compensation |
+| `config/portals.yml` | Your tracked companies and search queries |
+| `modes/_profile.md` | Your archetypes, behavioral profile, writing style |
+| `article-digest.md` | Your proof points and project deep-dives |
+| `writing-samples/*` | Your writing for style calibration |
+| `interview-prep/story-bank.md` | Your accumulated STAR+R stories |
+| `data/pipeline.md` | Your job pipeline (Scout writes, Evaluator updates) |
+| `data/applications.md` | Your application tracker |
+| `data/scan-history.tsv` | Your scan dedup history |
+| `reports/*` | Your evaluation reports (generated, but yours) |
+| `output/*` | Your generated CVs and cover letters |
+
+## System Layer (safe to auto-update)
+
+These files contain instructions, templates, and tooling.
+They can be updated without affecting your data.
+
+| File | Purpose |
+|------|---------|
+| `AGENTS.md` | CLI-agnostic system instructions |
+| `CLAUDE.md` / `GEMINI.md` | CLI-specific wrappers |
+| `modes/_shared.md` | Global rules, scoring system, archetype detection |
+| `modes/evaluate.md` | A-G evaluation block instructions |
+| `modes/cv.md` | CV generation mode instructions |
+| `modes/scan.md` | Scout mode instructions |
+| `modes/interview-prep.md` | Interview prep mode instructions |
+| `modes/auto-pipeline.md` | Auto-pipeline orchestration |
+| `modes/batch.md` | Batch evaluation instructions |
+| `modes/pipeline.md` | Pipeline management instructions |
+| `modes/setup.md` | Profile setup instructions |
+| `templates/cv/*.html` | CV HTML templates |
+| `templates/prompts/*` | Externalized prompt templates |
+| `templates/states.yml` | Canonical status definitions |
+| `templates/cv/manifest.yml` | Template registry |
+| `scripts/*` | Automation scripts (generate-pdf, scan, verify) |
+| `fonts/*` | Self-hosted fonts for PDF generation |
+| `docs/*` | Documentation |
+| `.agents/skills/*/SKILL.md` | Skill registration |
+
+## Rules
+
+1. System updates MUST NOT touch User layer files
+2. User layer files MUST NOT be committed to the shared repo (add to `.gitignore` if needed)
+3. When in doubt about a file's layer, treat it as User layer

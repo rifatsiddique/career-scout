@@ -1,0 +1,49 @@
+# career-scout portal scanner configuration
+#
+# Customize this file for your target industry and companies.
+# The Scout uses these entries to discover new job postings.
+#
+# Three types of entries:
+#   1. tracked_companies  - specific companies you want to monitor
+#   2. search_queries     - broad web searches for job boards
+#   3. title_filter       - keywords to include/exclude from results
+#   4. location_filter    - geographic filtering (optional)
+
+title_filter:
+  positive: []                       # JD title must contain at least one of these
+    # Examples:
+    # - "Engineer"
+    # - "Scientist"
+    # - "Manager"
+  negative: []                       # JD title must NOT contain any of these
+    # Examples:
+    # - "Intern"
+    # - "Entry-Level"
+    # - "Junior"
+  seniority_boost: []                # Prioritize these in results
+    # Examples:
+    # - "Senior"
+    # - "Staff"
+    # - "Lead"
+    # - "Principal"
+
+location_filter:                     # (optional) leave empty to skip location filtering
+  allow: []                          # Substring match, case-insensitive
+    # Examples:
+    # - "Remote"
+    # - "United States"
+  block: []
+    # Examples:
+    # - "India"
+
+tracked_companies: []
+  # Format:
+  # - name: "Company Name"
+  #   careers_url: "https://company.com/careers"
+  #   api_provider: null             # greenhouse, ashby, lever, bamboohr, or null
+  #   enabled: true
+
+search_queries: []
+  # Format:
+  # - query: "Senior Engineer site:jobs.ashbyhq.com"
+  #   enabled: true
