@@ -12,6 +12,26 @@ Guides the user through configuring career-scout for the first time (or updating
 - When the user wants to update their profile, archetypes, or scoring calibration
 - When archetype detection is returning poor results
 
+## Incremental Updates (Without Full Setup)
+
+The user can request surgical changes at any time without re-running setup. Handle these directly:
+
+- **"Update my comp target to X"** → edit `config/profile.yml → compensation`
+- **"Add a new archetype: [name]"** → append a row to the archetype table in `modes/_profile.md`
+- **"Change my market to UK"** → edit `config/profile.yml → location.market`
+- **"Add this to my CV: [content]"** → append to the relevant section in `cv.md`
+- **"Recalibrate my scores"** → run only Step 8 (Golden Examples) and update the `## Scoring Calibration` section in `_profile.md`
+
+## Starting Over (Full Reset)
+
+If the user wants to wipe their profile and start completely fresh:
+
+1. Confirm they understand this removes their archetype table, behavioral profile, scoring calibration, and all profile.yml values (NOT their CV, reports, or story bank)
+2. Delete `config/profile.yml` and `modes/_profile.md` (and any `.bak` files if they want a clean slate)
+3. Run setup from Step 1 — the system detects missing files and rebuilds from `cv.md`
+
+`cv.md`, `data/`, `reports/`, and `interview-prep/story-bank.md` are never touched by reset.
+
 ---
 
 ## Step 1: Check Prerequisites

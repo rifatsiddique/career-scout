@@ -217,6 +217,46 @@ cv:
 
 ---
 
+## Managing Your Profile Over Time
+
+### Updating preferences, archetypes, or comp targets
+
+**Small changes** — tell Gemini directly:
+```
+> update my comp target to $180K-220K
+> add a new archetype: Embedded Systems Engineer
+> change my location to London, market to UK
+```
+Gemini edits `config/profile.yml` or `modes/_profile.md` in place.
+
+**Full profile refresh** — re-run setup:
+```
+> setup
+```
+Setup backs up your existing files to `.bak` before writing new ones, so nothing is lost.
+
+### Updating your CV incrementally
+
+`cv.md` is a plain markdown file — edit it in any text editor (or in Gemini) at any time. Every evaluation reads it fresh, so additions are picked up immediately.
+
+For detailed proof points (project metrics, case study narratives) that are too long for the CV itself, use `article-digest.md` in the project root. The evaluate mode reads it automatically if it exists.
+
+### Starting from scratch
+
+If you want to wipe your profile completely and start over:
+
+1. Delete your profile files:
+   ```bash
+   # From C:/Work/Git-Python/career-scout/
+   rm config/profile.yml modes/_profile.md
+   rm -f config/profile.yml.bak modes/_profile.md.bak
+   ```
+2. Run `setup` — it detects missing files and starts fresh from your `cv.md`
+
+Your `cv.md`, `reports/`, `data/`, and `interview-prep/story-bank.md` are **not** affected — only the profile configuration is wiped.
+
+---
+
 ## Troubleshooting
 
 | Issue | Fix |
