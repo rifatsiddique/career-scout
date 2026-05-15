@@ -61,24 +61,15 @@ At the start of each session, silently check:
 
 ---
 
-## CRITICAL MANDATE — Job URL or JD Text Detection
+## Evaluation Rule — Always Read Mode Files First
 
-When the user's input contains a job posting URL or job description text, treat
-this as a strict **Directive**. You MUST execute these steps before any output:
+Before responding to any job URL or JD text, read `modes/_shared.md` and
+`modes/evaluate.md` from disk. Do not generate evaluation content from memory
+or training data. Every evaluation must follow the A-G block structure and use
+the exact dimension names and fit category labels defined in those files.
 
-1. Read `modes/_shared.md` — scoring system, dimensions, archetype detection
-2. Read `modes/evaluate.md` — A-G block instructions
-3. Confirm: "Loaded evaluation modules. Beginning A-G analysis..."
-4. Execute ALL seven blocks (A through G) per `modes/evaluate.md`
-5. Use ONLY the 5 dimensions and fit category labels from `modes/_shared.md`
-6. Complete post-evaluation steps (save report, update tracker, show summary)
-
-**You MUST NOT** produce a freeform evaluation, skip any block, or invent
-dimension names before completing steps 1-2.
-
-**Detection signals:** URL with jobs/careers/posting in path; multi-line text
-with "responsibilities", "requirements", "qualifications", "about the role";
-user says "evaluate" or "analyze this job".
+See `.agents/skills/career-scout/SKILL.md` for full mode routing and context
+loading rules per mode.
 
 ---
 
@@ -86,15 +77,15 @@ user says "evaluate" or "analyze this job".
 
 | If the user... | Action |
 |----------------|--------|
-| Pastes a job URL or JD text | CRITICAL MANDATE above — read _shared.md + evaluate.md first |
-| Types "evaluate" | Read `modes/_shared.md` + `modes/evaluate.md`, execute A-G |
+| Pastes a job URL or JD text | Read `modes/_shared.md` + `modes/evaluate.md`, execute A-G blocks |
+| Types "evaluate" | Read `modes/_shared.md` + `modes/evaluate.md`, execute A-G blocks |
 | Types "pipeline" | Read `modes/_shared.md` + `modes/pipeline-triage.md` |
 | Types "setup" | Read `modes/setup.md` |
 | Types "cv" | Read `modes/_shared.md` + `modes/cv.md` (Phase 2) |
 | Types "scan" | Read `modes/_shared.md` + `modes/scan.md` (Phase 3) |
 | Types "interview-prep" | Read `modes/interview-prep.md` (Phase 4) |
 | Types "batch" | Read `modes/_shared.md` + `modes/batch.md` (Phase 5) |
-| Types nothing / asks for help | Show this routing table | — |
+| Types nothing / asks for help | Show `.agents/skills/career-scout/SKILL.md` discovery menu |
 
 ---
 
