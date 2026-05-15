@@ -1,7 +1,7 @@
 # Phase 1: Foundation — Evaluate + Pipeline Modes
 
-**Version:** 1.3
-**Last Updated:** 2026-05-14 16:00 -- incorporated Gemini CLI final review (5/5 accepted: Golden Example boundaries, is_evergreen distinction, Domain Pack precedence, market behavioral switch, .bak safety). Architectural approval granted.
+**Version:** 1.4
+**Last Updated:** 2026-05-15 -- incorporated Gemini CLI implementation review (4 bugs fixed, 2 enhancements added). All bugs are LLM-physics issues in evaluate.md and setup.md.
 **Parent Plan:** CONSOLIDATION-PLAN.md, Section 11, Phase 1
 **Goal:** Paste a job URL or JD text into Gemini CLI → get a full A-G evaluation with structured scoring
 
@@ -700,3 +700,14 @@ Step 9 is always last.
 | 15 | Domain Pack precedence: _shared.md should prioritize pack's "What they buy" over generic LLM knowledge | **Accepted** | Step 1 _shared.md outline item #3: added Domain Pack precedence rule |
 | 16 | Market key should be a behavioral switch with per-market instructions (DACH: 13th-month salary, US-West: equity splits, etc.) | **Accepted** | Step 2 Block D: added market-specific comp analysis examples for 5 regions |
 | 17 | Setup mode should .bak User-layer files before overwriting (safety net for re-runs) | **Accepted** | Step 4 step 9: backup existing profile.yml and _profile.md to .bak before writing |
+
+**Reviewer:** Gemini CLI — implementation review (2026-05-15) — LLM-physics bugs in written mode files
+
+| # | Gemini Finding | Type | Decision | Fix Applied |
+|---|----------------|------|----------|-------------|
+| 18 | **Tool Interleaving Paradox:** evaluate.md runs check-history.mjs and ls reports/ mid-stream, after output has begun. LLM cannot pause streaming, execute a tool, and resume. | **Bug** | **Accepted** | evaluate.md Step 0 rewritten as a "Data Gathering Phase" — ALL tool calls (fetch JD, run check-history.mjs, scan reports/, read cv.md + _profile.md + profile.yml) must complete BEFORE any A-G block output begins |
+| 19 | **Score Before Reasoning Degradation:** plan instructed LLM to reason "internally" then output scores first. LLMs have no hidden internal pass — forcing scores before gap analysis makes scores arbitrary. | **Bug** | **Accepted** | Block B display order swapped: gap analysis table first (shows reasoning), scoring table second (grounded in gap analysis). Quick-scan score moved to report header. |
+| 20 | **Block B/C Sequencing Conflict:** TOO_JUNIOR/OVERQUALIFIED category assigned in Block B, but level depth analysis done in Block C. LLM cannot edit already-streamed Block B after Block C reveals a level gap. | **Bug** | **Accepted** | Level alignment check moved fully into Block B as part of Experience & Level dimension scoring. Block C becomes purely strategic advice, not determination. |
+| 21 | **Setup State Machine Trap:** setup.md Golden Examples step would cause LLM to hallucinate user responses and write fabricated scores to _profile.md in a single turn. | **Bug** | **Accepted** | setup.md Step 8 rewritten with explicit STOP/WAIT gates after generating each requirement. LLM must pause and receive user input before proceeding. |
+| 22 | **Loss of Block H:** career-ops auto-drafted application answers for scores >= 4.5. Deferring to Phase 5 is a feature regression for PERFECT_MATCH roles. | **Enhancement** | **Accepted** | Block H added back to evaluate.md conditionally: composite >= 90 (PERFECT_MATCH) triggers draft answers for 3-5 common application questions. |
+| 23 | **Market web search required:** English LLM may hallucinate DACH/UK/Japan labor law nuances if relying on training data. Career-ops used native language to anchor context; we use English only. | **Enhancement** | **Accepted** | Block D updated: when market is non-US (DACH, UK, Japan, etc.), instruct LLM to web search for current labor practices before comp analysis rather than relying on training data. Also added to _shared.md. |

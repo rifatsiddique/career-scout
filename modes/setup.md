@@ -155,20 +155,92 @@ Store answers in `_profile.md` under `## Behavioral Profile`.
 
 ## Step 8: Scoring Calibration via Golden Examples
 
-This step calibrates how the LLM scores your matches. It prevents both over-confidence and excessive conservatism.
+**CRITICAL — THIS IS A CONVERSATIONAL STATE MACHINE. Read carefully.**
 
-> "I'm going to show you 3 hypothetical JD requirements — one that's a perfect fit for you, one with a real gap, and one that's clearly not your area. For each, tell me how you'd score your match (0-100) and why. This helps me understand where you draw your scoring lines."
+This step requires 3 separate user interactions. You MUST pause and wait for
+real user input after presenting each requirement. Do NOT hallucinate user
+responses. Do NOT proceed to the next requirement or write anything to disk
+until the user has responded to the current one.
 
-**Generate 3 calibration requirements from the user's CV:**
-- **Example 1 (ceiling test):** A near-perfect match — core skill they use daily, right level, domain they love. Expect user to score 85-95.
-- **Example 2 (gap test):** Domain match but with a significant tool or stack gap they'd need to learn. Expect user to score 55-75.
-- **Example 3 (floor test):** Clear mismatch — wrong domain or technology stack they've never touched. Expect user to score 15-35.
+### 8a. Introduce the calibration
 
-For each, ask:
-> "Requirement: '{requirement}'
-> How would you score your match? What's your reasoning?"
+Say to the user:
+> "I'm going to show you 3 hypothetical JD requirements — one that's a perfect
+> fit for you, one with a real gap, and one that's clearly not your area.
+> For each, tell me how you'd score your match (0-100) and your reasoning.
+> This calibrates my scoring to your judgment."
 
-Store as Golden Examples in `_profile.md` under `## Scoring Calibration`:
+### 8b. Generate the 3 requirements from the user's CV
+
+Internally draft 3 requirements (do not show them yet):
+- **Example 1 (ceiling):** A near-perfect match — core skill they use daily, right level, domain they love.
+- **Example 2 (gap):** Domain match but with a significant tool or stack gap they'd need to learn.
+- **Example 3 (floor):** Clear mismatch — wrong domain or technology stack they've never touched.
+
+### 8c. Present Example 1 — STOP AND WAIT
+
+Present only Example 1:
+> "Requirement 1 of 3: '{requirement}'"
+> "How would you score your match (0-100)? What's your reasoning?"
+
+**STOP. Do not continue. Wait for the user's score and reasoning.**
+**Do not write anything to disk yet.**
+
+Record their response as: `Score_1` and `Reasoning_1`.
+
+### 8d. Present Example 2 — STOP AND WAIT
+
+Present only Example 2:
+> "Requirement 2 of 3: '{requirement}'"
+> "Score (0-100) and reasoning?"
+
+**STOP. Wait for the user's response.**
+
+Record: `Score_2` and `Reasoning_2`.
+
+### 8e. Present Example 3 — STOP AND WAIT
+
+Present only Example 3:
+> "Requirement 3 of 3: '{requirement}'"
+> "Score (0-100) and reasoning?"
+
+**STOP. Wait for the user's response.**
+
+Record: `Score_3` and `Reasoning_3`.
+
+### 8f. Confirm before writing
+
+Show the user the 3 collected examples and ask:
+> "Here's what I've recorded. Does this look right?
+> [show examples with their scores and reasoning]
+> Should I save these to your profile?"
+
+**STOP. Wait for confirmation before writing to disk.**
+
+Only write the Golden Examples to `_profile.md` after the user confirms.
+
+Store under `## Scoring Calibration`:
+
+```markdown
+## Scoring Calibration
+
+_Calibrated {date}. Re-run setup to recalibrate._
+
+**Example 1 (ceiling):**
+Requirement: "{requirement}"
+User Score: {Score_1}
+Reasoning: "{Reasoning_1}"
+
+**Example 2 (gap):**
+Requirement: "{requirement}"
+User Score: {Score_2}
+Reasoning: "{Reasoning_2}"
+
+**Example 3 (floor):**
+Requirement: "{requirement}"
+User Score: {Score_3}
+Reasoning: "{Reasoning_3}"
+```
 
 ```markdown
 ## Scoring Calibration

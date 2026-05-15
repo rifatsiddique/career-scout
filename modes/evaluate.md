@@ -1,163 +1,193 @@
 # Mode: evaluate — Full A-G Evaluation
 
-When the user pastes a job URL or JD text, deliver ALL seven blocks (A through G) plus post-evaluation steps.
+When the user pastes a job URL or JD text, complete the Data Gathering Phase
+first, then deliver ALL blocks (A through G + optional H) in a single pass.
 
 ---
 
-## Step 0 — Dependency Check
+## Step 0 — Data Gathering Phase (ALL tool calls happen here)
 
-Before evaluating, verify these files exist and have content:
+**Complete every step below BEFORE writing any block output.**
+LLM streaming cannot pause mid-output to execute tools. Gather all data first.
+
+### 0a. Dependency check
 
 | File | Action if missing |
 |------|-------------------|
 | `cv.md` | Stop. Tell user: "cv.md is empty — run setup first or paste your CV." |
 | `config/profile.yml` | Stop. Tell user: "profile.yml not configured — run setup first." |
-| `modes/_profile.md` | Warn and continue with generic evaluation (no archetype framing) |
-| `article-digest.md` | Skip silently — optional proof points file |
+| `modes/_profile.md` | Warn, continue with generic evaluation (no archetype framing) |
+| `article-digest.md` | Skip silently — optional |
 
----
+### 0b. Extract JD
 
-## Step 1 — Extract JD
+- **URL given:** Navigate to the URL and extract the full job description text.
+  If inaccessible (login wall, SPA): inform user, ask them to paste JD text.
+  LinkedIn often requires login — note this and fall back gracefully.
+- **Text pasted:** Use directly.
 
-**If URL given:**
-1. Navigate to the URL and extract the full job description text
-2. If the page is inaccessible (login wall, redirect to generic careers page): inform the user and ask them to paste the JD text directly
-3. Note: LinkedIn often requires login — fall back to "please paste the JD text"
+Record: source URL or "pasted text".
 
-**If text pasted:** Use directly.
+### 0c. Run reposting detection script
 
-**Record:** Note the source URL (or "pasted text") for the report.
+Execute: `node scripts/check-history.mjs "{url}" "{company}" "{role title}"`
 
----
+Capture the full JSON output. Store for use in Block G Signal 4.
+If the script is unavailable or returns an error: note "check-history unavailable" and skip Signal 4.
 
-## Step 2 — Detect Archetype
+### 0d. Determine next report number
 
-Run dynamic archetype detection per `_shared.md`:
+List all files in `reports/`. Extract the highest 3-digit numeric prefix.
+New report number = highest + 1, zero-padded to 3 digits. If `reports/` is empty: use 001.
+Store: `REPORT_NUM`.
 
-1. Read `modes/_profile.md` → extract archetype table
-2. Match "Domain signals" column keywords against JD text (case-insensitive)
-3. Select highest-match archetype (ties → first in table)
-4. If match count < 2: flag as "Unclassified", continue with generic evaluation
-5. If no archetypes defined: note "No archetypes configured — run setup for better framing"
+### 0e. Read user context files
 
-**Display:** `Archetype: {name} ({N} keyword matches)`
+Read these files now; do not re-read them mid-output:
+1. `config/profile.yml` — candidate identity, comp targets, market
+2. `modes/_profile.md` — archetypes, behavioral profile, scoring calibration
+3. `cv.md` — master CV
+4. `article-digest.md` — if it exists, read it for proof point details
+
+### 0f. Detect archetype
+
+From `modes/_profile.md` archetype table:
+1. For each archetype, count "Domain signals" keyword matches in the JD (case-insensitive)
+2. Select highest-match archetype (ties → first in table)
+3. If match count < 2: flag "Unclassified"
+4. If no archetypes defined: note "No archetypes configured — run setup for better framing"
+
+Store: detected archetype name and match count.
+
+**Now begin writing output. All tool calls are complete.**
 
 ---
 
 ## Block A — Role Summary
 
-Output a compact table:
+Output: `Archetype: {name} ({N} keyword matches)`
+
+Then a compact table:
 
 | Field | Value |
 |-------|-------|
-| Archetype | {detected archetype or "Unclassified"} |
+| Archetype | {detected or "Unclassified"} |
 | Domain | {e.g., hardware, biotech, software, finance} |
 | Function | {e.g., build / consult / manage / research} |
 | Seniority | {e.g., Senior, Staff, Principal, Director} |
 | Remote Policy | {Remote / Hybrid / Onsite} |
-| Team Size | {if stated in JD, else "not mentioned"} |
+| Team Size | {if stated, else "not mentioned"} |
 | TL;DR | {one-sentence role summary} |
 
 ---
 
-## Block B — Fit Assessment + CV Match
+## Block B — CV Match + Fit Score
 
-### Part 1: Structured Fit Score
+### Part 1: Gap Analysis (reasoning first)
 
-**Internal reasoning first (not displayed):** Analyze the JD against `cv.md` and `article-digest.md`. Identify gaps and strengths for each dimension before assigning scores.
-
-**Then output the scoring table:**
-
-```
-### Fit Assessment
-
-| Dimension | Score | Weight | Notes |
-|-----------|-------|--------|-------|
-| Technical Skills | X/100 | 25% | {brief justification} |
-| Experience & Level | X/100 | 25% | {brief justification} |
-| Career Alignment | X/100 | 25% | {brief justification} |
-| Behavioral & Culture | X/100 | 15% | {brief justification} |
-| Role Quality | X/100 | 10% | {brief justification} |
-| Location | PASS/FAIL | — | {location match or deal-breaker} |
-
-**Composite:** {calculated}/100 → **{display}/5**
-**Fit Category:** {CATEGORY}
-```
-
-**Location gate:** If Location is FAIL, output the reason, do not calculate composite, and recommend skipping unless the user overrides.
-
-**Level alignment soft gate:** If Experience & Level score reflects a 2+ level gap:
-- Above candidate's level → set fit category to `TOO_JUNIOR` regardless of composite score
-- Below candidate's level → set fit category to `OVERQUALIFIED` regardless of composite score
-- Still show composite score — it signals technical/domain fit even when level is wrong
-
-**Golden Examples:** If `_profile.md` has a `## Scoring Calibration` section, read it before scoring. Calibrate scores to match the user's demonstrated judgment.
-
-### Part 2: Requirement-by-Requirement Gap Analysis
-
-Map each stated JD requirement to specific lines from `cv.md`. Cite exact text.
+Map each JD requirement to specific lines from `cv.md`. Cite exact text.
+Use the archetype's "What they buy" column to prioritize which matches to lead with.
 
 | JD Requirement | CV Match | Gap Type | Mitigation |
 |----------------|----------|----------|------------|
-| {requirement} | {exact cv.md line} | None / Nice-to-have / Hard blocker | {strategy} |
-
-Use the detected archetype's "What they buy" column to prioritize which matches to highlight — lead with the proof points most relevant to this archetype.
+| {requirement} | {exact cv.md line or "No match"} | None / Nice-to-have / Hard blocker | {strategy} |
 
 For each gap:
-1. Is it a hard blocker or nice-to-have?
-2. Can adjacent experience cover it?
-3. Is there a portfolio project that addresses it?
-4. Mitigation plan: specific phrase for cover letter, quick portfolio project, or honest disclosure strategy
+1. Hard blocker or nice-to-have?
+2. Adjacent experience that covers it?
+3. Portfolio project that addresses it?
+4. Mitigation: phrase for cover letter, quick project, or honest disclosure
+
+### Part 2: Level Alignment Check (do this before scoring)
+
+Compare the JD's required seniority level against the candidate's current level
+(from `_profile.md` or `profile.yml`):
+
+- **Gap ≤ 1 level:** Normal. Score Experience & Level accordingly.
+- **Gap 2+ levels upward (candidate below role):** Candidate is significantly
+  under-leveled. Set fit category override to `TOO_JUNIOR` after calculating composite.
+- **Gap 2+ levels downward (candidate above role):** Candidate is significantly
+  over-leveled. Set fit category override to `OVERQUALIFIED` after calculating composite.
+
+Record: level gap direction and magnitude. Apply override to Fit Category below.
+
+### Part 3: Scoring Table (grounded in gap analysis above)
+
+Now that the gap analysis and level check are complete, assign dimension scores:
+
+**Golden Examples:** If `_profile.md` has a `## Scoring Calibration` section,
+read those examples before scoring. Calibrate scores to the user's demonstrated judgment.
+
+```
+| Dimension | Score | Weight | Notes |
+|-----------|-------|--------|-------|
+| Technical Skills | X/100 | 25% | {grounded in gap analysis} |
+| Experience & Level | X/100 | 25% | {includes level gap assessment} |
+| Career Alignment | X/100 | 25% | {grounded in gap analysis} |
+| Behavioral & Culture | X/100 | 15% | {grounded in gap analysis} |
+| Role Quality | X/100 | 10% | {comp, company, stack} |
+| Location | PASS/FAIL | — | {match or deal-breaker} |
+
+Composite: (tech×0.25) + (exp×0.25) + (career×0.25) + (behavioral×0.15) + (quality×0.10)
+= {calculated}/100 → {display}/5
+```
+
+**Location gate:** If FAIL, stop. State reason. Do not calculate composite.
+
+**Fit Category:**
+- If level override triggered: `TOO_JUNIOR` or `OVERQUALIFIED` (composite still shown)
+- Otherwise: map composite to category per `_shared.md` fit categories table
+
+**Output:**
+```
+**Composite:** {N}/100 → {N}/5
+**Fit Category:** {CATEGORY}
+```
 
 ---
 
 ## Block C — Level & Strategy
 
-State the detected seniority level vs. the candidate's current level (from `_profile.md` or `profile.yml`).
+*(Level determination already done in Block B. This block is strategic advice only.)*
 
 **If aligned (≤ 1 level gap):**
 - What to emphasize in materials and interviews
-- How to frame this role as the right next step
+- How to frame this as the right next step
 
-**If under-leveled (1 level — candidate below role):**
-- Specific phrases and proof points to demonstrate readiness
-- What metrics / scope of work to highlight
+**If TOO_JUNIOR (2+ levels up):**
+- Acknowledge the gap directly — don't minimize it
+- Provide strategy IF user wants to pursue: evidence to build, how to negotiate title
+- Recommended action: skip unless strategic reason
 
-**If under-leveled (2+ levels — TOO_JUNIOR):**
-- State clearly: this role requires significantly more seniority
-- Provide strategy IF user wants to pursue (how to negotiate title, what evidence to build)
-- Recommended action: skip unless specific strategic reason
-
-**If over-leveled (1 level — candidate above role):**
-- Frame as lateral move with growth rationale
-- What to de-emphasize to avoid "overqualified" concern
-
-**If over-leveled (2+ levels — OVERQUALIFIED):**
-- State clearly: this role is significantly below candidate's level
+**If OVERQUALIFIED (2+ levels down):**
 - Provide downlevel negotiation strategy if user wants to pursue
-- Recommended action: skip unless specific strategic reason (compensation, lifestyle, pivot)
+- How to de-emphasize seniority signals in materials
+- Recommended action: skip unless specific reason (comp, lifestyle, pivot)
 
 ---
 
 ## Block D — Comp & Demand
 
-Search for salary data using available web search tools. Target: Glassdoor, Levels.fyi, Blind, Payscale, LinkedIn Salary.
-
-Output:
+Search the web for salary data. Target: Glassdoor, Levels.fyi, Blind, Payscale, LinkedIn Salary.
 
 | Source | Role | Location | Range | Notes |
 |--------|------|----------|-------|-------|
 | {source} | {title} | {location} | {range} | {context} |
 
-**Compare against candidate's comp targets from `config/profile.yml`** (compensation.target_range and compensation.minimum).
+Compare against `config/profile.yml → compensation.target_range` and `compensation.minimum`.
 
-**Market-aware analysis** — check `config/profile.yml → location.market` and adapt:
-- `DACH`: note 13th-month salary, 3-month notice periods, works council implications
-- `US-West`: focus on base + equity splits, RSU vesting schedules, at-will employment
-- `US-East`: note finance/pharma bonus structures, non-compete enforceability
-- `UK`: check pension matching, notice periods
-- `Japan`: note seniority-based comp, bonus weight, limited negotiation culture
-- If market not set: use generic analysis, note that setting `location.market` in profile.yml improves accuracy
+**Market-aware analysis** — read `location.market` from `config/profile.yml`:
+
+- **Non-US markets (DACH, UK, Japan, Francophone, etc.):** Do NOT rely on training
+  data for regional labor law specifics. Search the web for current standard practices:
+  `"{market}" standard notice period {year}`, `"{market}" 13th month salary norm`.
+  Verify before stating. If no data found: say so.
+- `DACH`: confirm 13th-month salary, notice periods, works council implications
+- `US-West`: base + equity splits, RSU vesting, at-will employment context
+- `US-East`: bonus structures (finance/pharma), non-compete enforceability
+- `UK`: pension matching, notice periods
+- `Japan`: seniority-based comp, bonus weight, negotiation culture
+- Market not set: generic analysis; note that setting `location.market` improves accuracy
 
 **If no salary data found:** Say so explicitly — never invent numbers.
 
@@ -165,94 +195,82 @@ Output:
 
 ## Block E — Personalization Plan
 
-Top 5 CV changes for this specific role, using the archetype's "What they buy" and "Proof point sources" from `_profile.md`:
+Top 5 CV changes for this specific role, using the archetype's "What they buy"
+and "Proof point sources" from `_profile.md`:
 
 | # | Section | Current State | Proposed Change | Why |
 |---|---------|---------------|-----------------|-----|
 | 1 | {section} | {current} | {proposed} | {reason tied to JD} |
 
-If composite score ≥ 80 (GOOD_FIT+): also include 2-3 cover letter angles.
+If composite ≥ 80 (GOOD_FIT+): also include 2-3 cover letter angles.
 
 ---
 
 ## Block F — Interview Prep
 
-Generate 4-8 STAR+R stories mapped to JD requirements. Use the archetype's "Proof point sources" column from `_profile.md` to select which experiences to frame as stories.
+Generate 4-8 STAR+R stories mapped to JD requirements. Use archetype's "Proof
+point sources" from `_profile.md` to select experiences.
 
 | # | JD Requirement | Story Summary | S | T | A | R | Reflection |
 |---|---------------|---------------|---|---|---|---|------------|
-| 1 | {requirement} | {title} | {situation} | {task} | {action} | {result} | {what you learned / would do differently} |
+| 1 | {requirement} | {title} | {situation} | {task} | {action} | {result} | {lesson / what you'd do differently} |
 
-**Reflection** signals seniority — senior candidates extract lessons, junior candidates describe events.
+**Reflection** signals seniority — extract lessons, not just events.
 
-**Story Bank:** Read `interview-prep/story-bank.md` if it exists. Check for overlapping stories. Append new stories that don't already exist — build the bank over time.
+**Story Bank:** Read `interview-prep/story-bank.md`. Skip stories already there.
+Append new ones — builds the bank across evaluations.
 
 Also include:
-- 1 portfolio project / case study recommendation (which one to lead with and why)
-- 2-3 red-flag questions and prepared responses (e.g., "Why are you leaving?", "Why do you want this role?")
+- 1 portfolio project / case study recommendation (which to lead with and why)
+- 2-3 red-flag questions and prepared responses
 
 ---
 
 ## Block G — Posting Legitimacy
 
-Assess whether this is likely a real, active opening. Three tiers: **High Confidence** | **Proceed with Caution** | **Suspicious**.
+Assess whether this is a real, active opening.
+**Three tiers:** High Confidence | Proceed with Caution | Suspicious
 
 ### Signal 1: Posting Freshness
-
-From the page content captured in Step 1:
+*(From JD page content captured in Step 0b)*
 - Date posted or "X days ago"
 - Apply button state (active / closed / missing / redirects to generic page)
-- Age thresholds: under 30 days = positive; 30-60 days = neutral; 60+ days = concerning (adjusted for role type)
-- **Exception:** Government/academic (60-90 days normal), niche/executive/Staff+ roles (months are normal), evergreen roles (explicitly ongoing)
+- Thresholds: < 30 days = positive; 30-60 days = neutral; 60+ = concerning
+- Exceptions: government/academic (90 days normal), executive/Staff+ (months normal), evergreen roles
 
 ### Signal 2: Description Quality
-
-From the JD text:
-- Does it name specific technologies, frameworks, tools?
-- Does it mention team size, reporting structure, org context?
-- Are requirements realistic? (e.g., "5 years of experience with a 3-year-old technology")
-- Is there a clear scope for the first 6-12 months?
-- What ratio is role-specific vs. generic boilerplate?
-- Any internal contradictions? (entry-level title + staff requirements)
+*(From JD text)*
+- Names specific technologies, frameworks, tools?
+- Mentions team size, reporting structure, org context?
+- Requirements realistic? (e.g., "5 years exp with a 3-year-old technology")
+- Clear scope for first 6-12 months?
+- Ratio of role-specific vs. generic boilerplate?
+- Internal contradictions? (entry-level title + staff requirements)
 
 ### Signal 3: Company Hiring Signals
-
-Search the web for:
+*(From web search in Step 0 — if not already done, search now)*
 - `"{company name}" layoffs {current year}`
 - `"{company name}" hiring freeze {current year}`
-- If layoffs found: note scale, date, and whether this department is affected
+- If layoffs found: scale, date, affected departments
 
 ### Signal 4: Reposting Detection
+*(Use data already captured in Step 0c — do NOT run the script again)*
 
-Run: `node scripts/check-history.mjs "{url}" "{company}" "{role title}"`
-
-Read the JSON output:
-```json
-{
-  "appearances": N,
-  "first_seen": "YYYY-MM-DD",
-  "last_seen": "YYYY-MM-DD",
-  "is_repost": false,
-  "is_evergreen": false,
-  "verdict": "..."
-}
-```
-
-- `is_evergreen: true` (same URL, 3+ months apart): Likely a pipeline role — company always hiring. Usually legitimate. Lower urgency, not a ghost signal.
-- `is_repost: true` (same company+title, different URL): Role was re-listed. Could indicate failed search or ghost posting. Stronger caution signal.
-- If script returns 0 appearances or scan-history.tsv is empty: skip this signal, note "no history available"
-- If appearances ≥ 3 over 2+ months: auto-trigger **Proceed with Caution** minimum tier
+Use the stored check-history.mjs JSON output:
+- `is_evergreen: true`: pipeline/always-hiring role — legitimate, lower urgency
+- `is_repost: true`: re-listed — stronger caution signal
+- appearances ≥ 3 over 2+ months: auto-trigger Proceed with Caution minimum
+- No history / script unavailable: note "no history available" — skip signal
 
 ### Signal 5: Role Market Context
+*(Qualitative, no additional queries)*
+- Common role that fills in 4-6 weeks?
+- Role makes sense for this company's business?
+- Seniority level that legitimately takes longer to fill?
 
-Qualitative assessment (no additional queries):
-- Is this a common role that typically fills in 4-6 weeks?
-- Does the role make sense for this company's business?
-- Is the seniority level one that legitimately takes longer to fill?
+### Output
 
-### Output Format
-
-**Assessment tier:** High Confidence | Proceed with Caution | Suspicious
+**Tier:** High Confidence | Proceed with Caution | Suspicious
 
 | Signal | Finding | Weight |
 |--------|---------|--------|
@@ -262,7 +280,27 @@ Qualitative assessment (no additional queries):
 | Reposting Detection | {finding} | Positive / Neutral / Concerning |
 | Market Context | {finding} | Positive / Neutral / Concerning |
 
-**Context Notes:** Any caveats explaining signals (niche role, government timeline, evergreen role, etc.).
+**Context Notes:** Caveats explaining signals (niche role, government timeline, evergreen, etc.).
+
+---
+
+## Block H — Draft Application Answers *(conditional: composite ≥ 90 only)*
+
+Only execute this block if the final composite score is 90 or above (PERFECT_MATCH).
+
+Draft answers to the 3-5 most common application form questions for this role type.
+Base all answers on `cv.md` and `article-digest.md` — no fabrication.
+
+For each question:
+- **Q:** {question}
+- **Draft:** {answer, 2-4 sentences, in candidate's voice per `_profile.md` Writing Style}
+
+Typical questions to cover (select most relevant to this JD):
+1. "Why do you want to work at {company}?" — tie to company mission, products, team
+2. "Why are you leaving your current role?" — use exit narrative from `_profile.md`
+3. "Describe your most relevant experience for this role" — top archetype proof point
+4. "What's your biggest professional achievement?" — highest-impact metric from cv.md
+5. "What questions do you have for us?" — 2 thoughtful questions about the role/team
 
 ---
 
@@ -270,13 +308,10 @@ Qualitative assessment (no additional queries):
 
 ### 1. Save Report
 
-Save the complete evaluation to `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
+Save to `reports/{REPORT_NUM}-{company-slug}-{YYYY-MM-DD}.md`
+(use `REPORT_NUM` determined in Step 0d — do not re-scan `reports/`).
 
-**Report number:** List all files in `reports/`, extract the highest 3-digit prefix, add 1. If `reports/` is empty, start at 001.
-
-**Company slug:** Lowercase company name, spaces → hyphens (e.g., "Acme Corp" → "acme-corp").
-
-**Report format:**
+Company slug: lowercase, spaces → hyphens.
 
 ```markdown
 # Evaluation: {Company} — {Role}
@@ -286,7 +321,7 @@ Save the complete evaluation to `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 **Archetype:** {detected archetype}
 **Score:** {composite}/100 → {display}/5
 **Fit Category:** {CATEGORY}
-**Legitimacy:** {High Confidence | Proceed with Caution | Suspicious}
+**Legitimacy:** {tier}
 **PDF:** Pending
 
 ---
@@ -294,8 +329,8 @@ Save the complete evaluation to `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 ## A) Role Summary
 {Block A content}
 
-## B) Fit Assessment + CV Match
-{Block B content — scoring table + gap analysis}
+## B) CV Match + Fit Score
+{Block B content — gap analysis, then scoring table}
 
 ## C) Level & Strategy
 {Block C content}
@@ -312,6 +347,9 @@ Save the complete evaluation to `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 ## G) Posting Legitimacy
 {Block G content}
 
+## H) Draft Application Answers
+{Block H content — only if composite ≥ 90}
+
 ---
 
 ## Keywords Extracted
@@ -320,17 +358,15 @@ Save the complete evaluation to `reports/{###}-{company-slug}-{YYYY-MM-DD}.md`.
 
 ### 2. Register in Tracker
 
-Append a new row to `data/applications.md`:
+Check `data/applications.md` for existing company + role entry.
+- If exists: update the row (status, score, report link).
+- If not: append a new row.
 
 ```
-| {#} | {YYYY-MM-DD} | {Company} | {Role} | {composite}/100 ({display}/5) | {CATEGORY} | {Fit} | Evaluated | ❌ | [{###}](reports/{###}-{slug}-{date}.md) | |
+| {#} | {YYYY-MM-DD} | {Company} | {Role} | {composite}/100 ({display}/5) | {CATEGORY} | Evaluated | ❌ | [{REPORT_NUM}](reports/{REPORT_NUM}-{slug}-{date}.md) | |
 ```
-
-**RULE: NEVER create a duplicate entry.** Check if company + role already exists. If yes, update the existing row instead.
 
 ### 3. Present Summary
-
-Output a concise summary to the user:
 
 ```
 ## Evaluation Complete
@@ -350,5 +386,5 @@ Output a concise summary to the user:
 3. {gap + mitigation}
 
 **Recommended Action:** {Apply immediately / Apply with gap strategy / Consider carefully / Skip}
-**Report:** reports/{###}-{slug}-{date}.md
+**Report:** reports/{REPORT_NUM}-{slug}-{date}.md
 ```

@@ -123,6 +123,24 @@ Run this algorithm at the start of every evaluation:
 7. Be direct and actionable — no fluff, no filler
 8. Read scoring calibration Golden Examples before assigning dimension scores
 
+### Market-Specific Research Rule
+
+When `config/profile.yml → location.market` is set to a non-US value (DACH,
+UK, Japan, Francophone, etc.), **do not rely on training data** for regional
+labor law, comp norms, or contractual standards. Training data is static and
+may be outdated or wrong for specific markets.
+
+**RULE:** For non-US markets, search the web to verify current standard
+practices before stating them. Example queries:
+- `Germany standard notice period employment 2026`
+- `DACH 13th month salary norm`
+- `UK pension auto-enrolment minimum 2026`
+
+If search returns no data: say "could not verify current {market} norm — check
+with a local recruiter." Never present training-data guesses as facts.
+
+---
+
 ### Tool Usage (Intent-Based)
 
 Mode files use intent-based instructions. Each CLI maps generic intents to its available tools:
