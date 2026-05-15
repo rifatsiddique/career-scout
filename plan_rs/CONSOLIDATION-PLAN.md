@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.2
-**Last Updated:** 2026-05-14 19:30 -- Phase 1 implementation complete. All mode files, scripts, domain pack, and SKILL/AGENTS files written. Pending user Gemini testing.
+**Version:** 1.3
+**Last Updated:** 2026-05-15 -- Phase 1 complete and Gemini-tested. Phase 2 planning started.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -516,8 +516,8 @@ project-root/
 - [x] Create `templates/domain-packs/ai-ml.yml` (AI/ML archetype starter kit from career-ops, 6 archetypes)
 - [x] Update `config/profile.yml` (add `market` key)
 - [x] Create `data/follow-ups.md` (empty tracker)
-- [ ] Test: paste a job URL → get full A-G evaluation with structured score *(user Gemini testing pending)*
-- [ ] Test: pipeline triage + setup flow end-to-end *(user Gemini testing pending)*
+- [x] Test: paste a job URL → get full A-G evaluation with structured score *(Gemini tested 2026-05-15 — passed)*
+- [x] Test: pipeline triage + setup flow end-to-end *(Gemini tested 2026-05-15 — passed)*
 
 **Testing docs:** `plan_rs/phase1-test-plan.md` (automated) + `plan_rs/phase1-user-testing-guide.md` (Gemini manual)
 
