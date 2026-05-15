@@ -132,7 +132,15 @@ Composite: (tech×0.25) + (exp×0.25) + (career×0.25) + (behavioral×0.15) + (q
 = {calculated}/100 → {display}/5
 ```
 
-**Location gate:** If FAIL, stop. State reason. Do not calculate composite.
+**Location gate:** Read `config/profile.yml → location.onsite_availability`.
+
+| Candidate preference | JD requirement | Result |
+|---------------------|----------------|--------|
+| "Remote only" | On-site or Hybrid | **FAIL** — hard stop, no composite |
+| "Open to anything" | Any | PASS |
+| Not set / blank | Any | PASS — note "remote preference not stated, assuming flexible" |
+
+If FAIL: state the contradiction explicitly. Do not calculate composite. Recommend skipping unless user explicitly overrides.
 
 **Fit Category:**
 - If level override triggered: `TOO_JUNIOR` or `OVERQUALIFIED` (composite still shown)
@@ -168,7 +176,13 @@ Composite: (tech×0.25) + (exp×0.25) + (career×0.25) + (behavioral×0.15) + (q
 
 ## Block D — Comp & Demand
 
-Search the web for salary data. Target: Glassdoor, Levels.fyi, Blind, Payscale, LinkedIn Salary.
+**Step 1: Extract salary from JD text first.**
+If the JD contains an explicit salary range (many jurisdictions require pay transparency),
+use it directly. Do NOT run a web search if the answer is already in the JD — it wastes
+tokens and time.
+
+**Step 2: Web search ONLY if JD provides no salary data.**
+If no range is stated in the JD, search for salary data: Glassdoor, Levels.fyi, Blind, Payscale, LinkedIn Salary.
 
 | Source | Role | Location | Range | Notes |
 |--------|------|----------|-------|-------|
@@ -230,6 +244,13 @@ Also include:
 
 Assess whether this is a real, active opening.
 **Three tiers:** High Confidence | Proceed with Caution | Suspicious
+
+**NEVER rules for Block G:**
+- **NEVER use LinkedIn's applicant counter as a legitimacy signal.** The number
+  shown (e.g., "1 applicant" or "Over 200 applicants") only counts users who
+  clicked Apply while logged into LinkedIn — it does not count direct website
+  applications, recruiter submissions, or referrals. It is systematically
+  misleading and should be ignored entirely.
 
 ### Signal 1: Posting Freshness
 *(From JD page content captured in Step 0b)*

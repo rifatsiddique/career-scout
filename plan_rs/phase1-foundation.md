@@ -1,7 +1,7 @@
 # Phase 1: Foundation — Evaluate + Pipeline Modes
 
-**Version:** 1.4
-**Last Updated:** 2026-05-15 -- incorporated Gemini CLI implementation review (4 bugs fixed, 2 enhancements added). All bugs are LLM-physics issues in evaluate.md and setup.md.
+**Version:** 1.5
+**Last Updated:** 2026-05-15 -- Gemini simulation test (Power Electronics / Advanced Energy case). Architecture validated. 3 additional prompting bugs found and fixed.
 **Parent Plan:** CONSOLIDATION-PLAN.md, Section 11, Phase 1
 **Goal:** Paste a job URL or JD text into Gemini CLI → get a full A-G evaluation with structured scoring
 
@@ -711,3 +711,19 @@ Step 9 is always last.
 | 21 | **Setup State Machine Trap:** setup.md Golden Examples step would cause LLM to hallucinate user responses and write fabricated scores to _profile.md in a single turn. | **Bug** | **Accepted** | setup.md Step 8 rewritten with explicit STOP/WAIT gates after generating each requirement. LLM must pause and receive user input before proceeding. |
 | 22 | **Loss of Block H:** career-ops auto-drafted application answers for scores >= 4.5. Deferring to Phase 5 is a feature regression for PERFECT_MATCH roles. | **Enhancement** | **Accepted** | Block H added back to evaluate.md conditionally: composite >= 90 (PERFECT_MATCH) triggers draft answers for 3-5 common application questions. |
 | 23 | **Market web search required:** English LLM may hallucinate DACH/UK/Japan labor law nuances if relying on training data. Career-ops used native language to anchor context; we use English only. | **Enhancement** | **Accepted** | Block D updated: when market is non-US (DACH, UK, Japan, etc.), instruct LLM to web search for current labor practices before comp analysis rather than relying on training data. Also added to _shared.md. |
+
+**Reviewer:** Gemini CLI — simulation test (2026-05-15) — end-to-end Power Electronics / Advanced Energy case
+
+**What the simulation confirmed works correctly:**
+- Dynamic archetype detection: pulled "Power Conversion Designer" from a hardware/EE JD with no AI/ML keywords
+- Market context switch: US-East triggered MA pay transparency + non-compete note (real, accurate, useful)
+- Scoring rubric: 88/100 GOOD_FIT felt accurate for the mock profile
+- Level soft-gate: 1-level jump (Engineer II → Senior) → promotion strategy, not TOO_JUNIOR block
+
+**Bugs found and fixed:**
+
+| # | Finding | Type | Fix Applied |
+|---|---------|------|-------------|
+| 24 | **LinkedIn applicant counter trap:** Simulation used "1 applicant" as a Concerning signal. LinkedIn's counter only counts LinkedIn-Apply clicks — not direct applications, referrals, or recruiter submissions. Systematically misleading. | **Bug** | Block G: added NEVER rule — "NEVER use LinkedIn applicant counter as a legitimacy signal." Explained why it's unreliable. |
+| 25 | **Location gate silently bypassed:** Mock profile.yml had no `onsite_availability` field set. LLM ignored the gate entirely rather than defaulting. | **Bug** | Block B location gate: explicit decision table — Remote only + On-site JD = FAIL; Open to anything = PASS; Not set = PASS with note "remote preference not stated, assuming flexible." |
+| 26 | **WebSearch waste in Block D:** JD contained explicit salary range ($110k-$150k). Instructions said "search for salary data" — an overly literal LLM would search Glassdoor when the answer was already in hand. | **Bug** | Block D rewritten: extract salary from JD text first. Web search only if JD provides no range. |
