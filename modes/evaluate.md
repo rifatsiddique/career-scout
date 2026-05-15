@@ -264,7 +264,9 @@ and "Proof point sources" from `_profile.md`:
 |---|---------|---------------|-----------------|-----|
 | 1 | {section} | {current} | {proposed} | {reason tied to JD} |
 
-If composite ≥ 80 (GOOD_FIT+): also include 2-3 cover letter angles.
+If composite ≥ 80 (GOOD_FIT+): also include 2-3 cover letter angles, and note:
+> "Ready to generate a tailored CV? Run `cv` mode with this report loaded."
+> "Want a quick draft HTML to edit manually? Run `cv --fast`."
 
 ---
 
@@ -418,6 +420,9 @@ Company slug: lowercase, spaces → hyphens.
 
 ## H) Draft Application Answers
 {Block H content — only if composite ≥ 90}
+
+## I) CV Tailoring Critique
+*(Added by Phase 2 CV generation — reviewer feedback and drafter decisions)*
 
 ---
 

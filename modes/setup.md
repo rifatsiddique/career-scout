@@ -153,6 +153,26 @@ Store answers in `_profile.md` under `## Behavioral Profile`.
 
 ---
 
+## Step 7b: CV Generation Rules (Optional)
+
+Ask the user for standing CV preferences. These are stored as absolute constraints
+that override default CV tailoring behavior.
+
+> "Any standing rules for how your CVs should be generated? For example:
+> - Always include: 'my patent count', 'publications section', 'specific award'
+> - Never remove: 'publications', 'thesis section', 'certifications'
+> - Language: 'minimize rewording — preserve my exact phrasing for achievements'
+> - Format: 'max 5 bullets per role', 'summary under 3 lines', 'every bullet needs a metric'
+> - Priority: 'lead with hardware experience regardless of role', 'cut Projects section first if tight'
+>
+> Skip this if you don't have preferences yet — you can add rules anytime by saying
+> 'add to my CV rules: ...' "
+
+If user provides rules: store them in `modes/_profile.md → ## CV Generation Rules` under the appropriate subsections.
+If user skips: leave the template placeholders in place.
+
+---
+
 ## Step 8: Scoring Calibration via Golden Examples
 
 **CRITICAL — THIS IS A CONVERSATIONAL STATE MACHINE. Read carefully.**

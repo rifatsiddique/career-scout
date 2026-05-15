@@ -110,3 +110,23 @@ Describe approach, methods, tools. Use 1-2 brief past examples only to back up f
 ## Your Location Policy
 
 [Remote/hybrid/onsite preferences, relocation stance, travel tolerance]
+
+---
+
+## CV Generation Rules
+
+_Your standing instructions for CV tailoring. These override default behavior and are ABSOLUTE constraints.
+Edit anytime — tell the AI "add to my CV rules: ..." or edit this section directly.
+You can optionally scope rules to specific archetypes with a header like: `### Content Rules (Archetype: Technical AI PM)`_
+
+### Content Rules
+- (none yet — add rules like "always include my patent count" or "never remove publications section")
+
+### Language Rules
+- (none yet — add rules like "minimize rewording — reorder and emphasize, don't rewrite my phrasing")
+
+### Section Priorities
+- (none yet — add rules like "lead with power electronics experience regardless of role" or "cut Projects section first if space tight")
+
+### Formatting
+- (none yet — add rules like "max 5 bullets per role" or "summary under 3 lines" or "every bullet must have a metric")

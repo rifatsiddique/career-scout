@@ -49,6 +49,13 @@
   2. `Last Updated:` — set to the current date AND time (e.g., `2026-05-14 14:30 -- brief description of change`).
 - The version and timestamp must always reflect the most recent edit.
 
+## Gemini Review Protocol
+
+- When Gemini provides a review of plans or code, **do not accept findings at face value**.
+- Investigate each finding independently — read the relevant code/plan sections, reason about whether the concern is valid, and check whether the proposed fix actually improves things.
+- **Push back** if you disagree with a finding, but only after doing the investigation. Explain your reasoning to the user so they can make the call.
+- Gemini catches real bugs (especially LLM-physics issues), but it also occasionally suggests over-engineering, unnecessary abstractions, or fixes for non-problems. Your job is to separate signal from noise.
+
 ## Multi-CLI Compatibility
 
 - This project is **CLI-agnostic**. Mode instructions and agent files must work on Gemini CLI, Claude Code, Copilot, and other agent CLIs.

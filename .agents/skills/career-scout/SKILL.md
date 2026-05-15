@@ -46,9 +46,10 @@ career-scout — Command Center
   /career-scout evaluate           → Evaluation mode (same as pasting URL/JD directly)
   /career-scout pipeline           → Process pending URLs from data/pipeline.md
   /career-scout setup              → Guided profile creation / update archetypes / recalibrate
+  /career-scout cv                 → Generate tailored PDF CV from latest evaluation
+  /career-scout cv --fast          → Draft HTML only, no reviewer or PDF (for manual editing)
 
   Coming soon:
-  /career-scout cv                 → Generate tailored PDF CV (Phase 2)
   /career-scout scan               → Discover jobs from portals (Phase 3)
   /career-scout interview-prep     → STAR+R prep for a specific company (Phase 4)
   /career-scout auto               → Full pipeline: evaluate + CV + track (Phase 5)
@@ -105,7 +106,7 @@ executing any mode. If either is missing or empty, prompt the user to run setup.
 | Phase | Status | Modes available |
 |-------|--------|----------------|
 | 1: Foundation | **Active** | evaluate, pipeline, setup |
-| 2: CV Generation | Planned | cv |
+| 2: CV Generation | **Active** | cv, cv --fast |
 | 3: Scout | Planned | scan |
 | 4: Interview Prep | Planned | interview-prep |
 | 5: Auto-Pipeline + Batch | Planned | auto, batch, followup |

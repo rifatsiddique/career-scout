@@ -21,7 +21,7 @@ Human-in-the-loop: AI evaluates and drafts. You review and submit.
 | Phase | Status | Capabilities |
 |-------|--------|-------------|
 | Phase 1: Foundation | ✅ Complete | evaluate, pipeline triage, setup |
-| Phase 2: CV Generation | Planned | Multi-template PDF CVs + drafter-reviewer |
+| Phase 2: CV Generation | ✅ Complete | Multi-template PDF CVs + drafter-reviewer |
 | Phase 3: Scout | Planned | Portal API scanning (Greenhouse, Ashby, Lever) |
 | Phase 4: Interview Prep | Planned | Company research + story bank |
 | Phase 5: Auto-Pipeline | Planned | One-command end-to-end + batch |
@@ -93,6 +93,26 @@ Add URLs to `data/pipeline.md` → Pending table, then:
 ```
 > pipeline
 ```
+
+### 6. Generate a tailored CV
+
+After evaluating a job (score ≥ 65):
+```
+> cv
+```
+
+Or for a quick HTML draft you'll edit manually:
+```
+> cv --fast
+```
+
+The cv mode:
+1. Reads your latest evaluation report for scoring, gap analysis, and level strategy
+2. Tailors your master `cv.md` to the specific JD using Block C positioning + Block E changes
+3. For GOOD_FIT+ (≥80): spawns a reviewer agent that critiques the draft independently
+4. Presents a discard summary and any flagged rewording — you approve before PDF generation
+5. Generates a PDF via Playwright to `output/cv-{name}-{company}-{date}.pdf`
+6. Supports iterative changes after initial generation
 
 ---
 
@@ -205,7 +225,8 @@ compensation:
   minimum: ""        # walk-away number
 
 cv:
-  default_template: "ats-optimized"   # Phase 2
+  default_template: "ats-optimized"   # ats-optimized | classic-professional
+  template_overrides: {}               # archetype → template mapping, e.g. "Technical AI PM": "classic-professional"
 ```
 
 ### modes/_profile.md — key sections
@@ -230,7 +251,7 @@ cv:
 ```
 Gemini edits `config/profile.yml` or `modes/_profile.md` in place.
 
-### CV Generation Rules (Phase 2+)
+### CV Generation Rules
 
 Your standing instructions for how CVs should be tailored live in `modes/_profile.md`
 under `## CV Generation Rules`. These override default CV generation behavior.
@@ -252,6 +273,19 @@ flags it if the drafter violated the rule.
 
 **Set rules during setup** — the setup wizard asks for CV preferences after writing
 style. Or skip it and add rules later as you learn what you want.
+
+**Template CSS variables** — all templates expose CSS variables at the top of the file
+for hands-on tweaking:
+```css
+:root {
+  --base-font-size: 11px;   /* body text size */
+  --margins: 0.5in;          /* page padding — narrow by default */
+  --bullet-spacing: 0.15em;  /* gap between bullets */
+}
+```
+Edit these in `templates/cv/ats-optimized.html` or `templates/cv/classic-professional.html`
+to permanently adjust the template's defaults. The AI uses these variables for overflow
+control (reduces them in order if CV overflows 2 pages).
 
 **Full profile refresh** — re-run setup:
 ```

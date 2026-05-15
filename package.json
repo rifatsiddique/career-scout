@@ -1,0 +1,19 @@
+{
+  "name": "career-scout",
+  "version": "1.0.0",
+  "description": "AI-powered job search system. Two stages: **Scout** (job discovery) and **Evaluator** (strategic evaluation + CV generation + interview prep).",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
+}

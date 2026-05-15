@@ -10,15 +10,17 @@ templates:
     description: "Single-column, ATS-friendly layout. Passes automated parsing reliably."
     best_for: "Most applications — safe default for any industry"
     fonts: ["Space Grotesk", "DM Sans"]
-    status: "planned"                # planned | ready
+    font_files: ["space-grotesk-latin.woff2", "space-grotesk-latin-ext.woff2", "dm-sans-latin.woff2", "dm-sans-latin-ext.woff2"]
+    status: "ready"                  # planned | ready
 
   - id: "classic-professional"
     name: "Classic Professional"
     file: "classic-professional.html"
-    description: "Conservative serif design, minimal color, traditional layout."
+    description: "Conservative serif design, minimal color, traditional layout. Uses system fonts (Georgia/Arial) by default; upgrade to Source Serif Pro + Inter woff2 files for custom fonts."
     best_for: "Finance, consulting, enterprise, government roles"
-    fonts: ["Source Serif Pro", "Libre Baskerville"]
-    status: "planned"
+    fonts: ["Georgia (system)", "Arial (system)"]
+    font_files: []                   # system fonts — no woff2 needed; optional upgrade: add source-serif-pro + inter woff2 files
+    status: "ready"
 
   - id: "academic-research"
     name: "Academic / Research"

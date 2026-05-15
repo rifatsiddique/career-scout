@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.3
-**Last Updated:** 2026-05-15 -- Phase 1 complete and Gemini-tested. Phase 2 planning started.
+**Version:** 1.4
+**Last Updated:** 2026-05-15 -- Phase 2 complete and Gemini end-to-end tested (Generac simulation: TOO_JUNIOR framing, backtrack catch, Section I persistence, PDF generated).
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -521,22 +521,25 @@ project-root/
 
 **Testing docs:** `plan_rs/phase1-test-plan.md` (automated) + `plan_rs/phase1-user-testing-guide.md` (Gemini manual)
 
-### Phase 2: CV Generation (Week 3-4)
+### Phase 2: CV Generation ✅ Complete (2026-05-15)
 
 **Goal:** Multi-template CV generation with drafter-reviewer.
 
-- [ ] Port `generate-pdf.mjs` and `fonts/` from career-ops
-- [ ] Port `cv-template.html` as Template 1 (ATS-Optimized)
-- [ ] Create Template 2 (Classic Professional)
-- [ ] Create Template 3 (Academic/Research)
-- [ ] Create Template 4 (Technical/Engineering)
-- [ ] Create `templates/cv/manifest.yml` for template registry
-- [ ] Port CV mode from career-ops (`modes/cv.md`)
-- [ ] Add drafter-reviewer workflow (from ai-job-search pattern)
-- [ ] Add relevance-weighted cutting logic
-- [ ] Add behavioral profile validation in reviewer step
-- [ ] Implement template selection (default + per-archetype + per-evaluation override)
-- [ ] Test: evaluate a job → generate CV with each template → verify PDFs
+- [x] Port `generate-pdf.mjs` and `fonts/` from career-ops — adapted paths, 0-margin, exit code 2 for overflow
+- [x] Port `cv-template.html` as Template 1 (ATS-Optimized) — CSS variables, career-scout vocab
+- [x] Create Template 2 (Classic Professional) — system serif fonts, same CSS variables
+- [ ] Create Template 3 (Academic/Research) — deferred to Phase 2b
+- [ ] Create Template 4 (Technical/Engineering) — deferred to Phase 2b
+- [x] Create `templates/cv/manifest.yml` for template registry — Templates 1-2 marked ready
+- [x] Write `modes/cv.md` — full v2.2 workflow: --fast flag, Block C constraint, PII-guarded reviewer, merged Review & Confirm, max 2 Playwright runs, re-read-before-edit guard
+- [x] Add drafter-reviewer workflow — text-only reviewer prompt, PII stripped, fresh-context subagent
+- [x] Add relevance-weighted cutting logic — 3-layer: deterministic → relevance-weighted → CSS fallback
+- [x] Add CV Generation Rules — absolute precedence in `_profile.md`, setup wizard step added
+- [x] Implement template selection (default + per-archetype + per-evaluation override)
+- [x] Add `--fast` flag — skips reviewer, backtrack test, PDF; dumps HTML for manual editing
+- [x] Test: Generac simulation — TOO_JUNIOR promotion framing, backtrack catch ("Led high volume manufacturing" reverted), Section I appended to report, PDF generated (1 page, 68.2 KB)
+
+**Spec:** `plan_rs/phase2-cv-generation.md` (v2.2 — 4 Gemini review rounds, 4 Claude architect fixes)
 
 ### Phase 3: Scout (Week 5-6)
 

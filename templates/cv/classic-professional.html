@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="template-id" content="classic-professional">
+<title>{{NAME}} — CV</title>
+<style id="user-tweaks">
+  /* ============================================================
+     CSS VARIABLES — override these for overflow control
+     --margins:        visual page padding (default: 0.5in)
+     --base-font-size: body text size (default: 11px)
+     --bullet-spacing: gap between bullets (default: 0.15em)
+
+     To adjust manually: edit --margins, then --base-font-size,
+     then --bullet-spacing as last resort.
+  ============================================================ */
+  :root {
+    --base-font-size: 11px;
+    --margins: 0.5in;
+    --bullet-spacing: 0.15em;
+  }
+
+  /*
+   * Classic Professional uses Georgia (system serif) as default.
+   * To upgrade to Source Serif Pro: add woff2 files to fonts/ and
+   * uncomment the @font-face blocks below.
+   *
+   * @font-face {
+   *   font-family: 'Source Serif Pro';
+   *   src: url('./fonts/source-serif-pro-latin.woff2') format('woff2');
+   *   font-weight: 400 700;
+   * }
+   * @font-face {
+   *   font-family: 'Inter';
+   *   src: url('./fonts/inter-latin.woff2') format('woff2');
+   *   font-weight: 300 700;
+   * }
+   */
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: var(--base-font-size);
+    line-height: 1.5;
+    color: #1c1c1c;
+    background: #ffffff;
+  }
+
+  /* Margins controlled by CSS variable, not Playwright PDF options */
+  .page {
+    width: 100%;
+    padding: var(--margins);
+  }
+
+  /* === HEADER === */
+  .header {
+    margin-bottom: 24px;
+    border-bottom: 2px solid #1c1c1c;
+    padding-bottom: 14px;
+  }
+
+  .header h1 {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1c1c1c;
+    letter-spacing: 0.01em;
+    margin-bottom: 6px;
+    line-height: 1.15;
+  }
+
+  .header-title {
+    font-size: 13px;
+    font-weight: 400;
+    color: #444;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  .contact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    font-size: 10px;
+    color: #555;
+  }
+
+  .contact-row a {
+    color: #555;
+    text-decoration: none;
+  }
+
+  .contact-row .separator {
+    color: #bbb;
+  }
+
+  /* === SECTIONS === */
+  .section {
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1c1c1c;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid #bbb;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+  }
+
+  /* === PROFESSIONAL SUMMARY === */
+  .summary-text {
+    font-size: var(--base-font-size);
+    line-height: 1.75;
+    color: #2a2a2a;
+  }
+
+  a {
+    white-space: nowrap;
+  }
+
+  /* === CORE COMPETENCIES === */
+  .competencies-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    font-size: 10.5px;
+    color: #333;
+  }
+
+  .competency-item::before {
+    content: '• ';
+    color: #888;
+  }
+
+  /* === WORK EXPERIENCE === */
+  .job {
+    margin-bottom: 16px;
+  }
+
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 2px;
+  }
+
+  .job-company {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1c1c1c;
+  }
+
+  .job-period {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+  }
+
+  .job-role {
+    font-size: var(--base-font-size);
+    font-weight: 600;
+    color: #444;
+    font-style: italic;
+    margin-bottom: 6px;
+  }
+
+  .job-location {
+    font-size: 10px;
+    color: #888;
+  }
+
+  .job ul {
+    padding-left: 16px;
+    margin-top: 6px;
+  }
+
+  .job li {
+    font-size: 10.5px;
+    line-height: 1.65;
+    color: #2a2a2a;
+    margin-bottom: var(--bullet-spacing);
+  }
+
+  /* === PROJECTS === */
+  .project {
+    margin-bottom: 12px;
+  }
+
+  .project-title {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #1c1c1c;
+  }
+
+  .project-desc {
+    font-size: 10.5px;
+    color: #444;
+    margin-top: 3px;
+    line-height: 1.6;
+  }
+
+  .project-tech {
+    font-size: 9.5px;
+    color: #888;
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  /* === EDUCATION === */
+  .edu-item {
+    margin-bottom: 10px;
+  }
+
+  .edu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .edu-title {
+    font-weight: 700;
+    font-size: var(--base-font-size);
+    color: #1c1c1c;
+    font-family: 'Source Serif Pro', Georgia, serif;
+  }
+
+  .edu-org {
+    color: #444;
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  .edu-year {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+  }
+
+  .edu-desc {
+    font-size: 10px;
+    color: #666;
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  /* === CERTIFICATIONS === */
+  .cert-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .cert-title {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: #2a2a2a;
+  }
+
+  .cert-org {
+    color: #666;
+    font-style: italic;
+  }
+
+  .cert-year {
+    font-size: 10px;
+    color: #888;
+    white-space: nowrap;
+  }
+
+  /* === SKILLS === */
+  .skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+  }
+
+  .skill-item {
+    font-size: 10.5px;
+    color: #444;
+  }
+
+  .skill-category {
+    font-weight: 700;
+    color: #1c1c1c;
+    font-size: 10.5px;
+  }
+
+  /* === PRINT === */
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+
+  /* === PAGE BREAK CONTROL === */
+  .avoid-break,
+  .job,
+  .project,
+  .edu-item,
+  .cert-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header avoid-break">
+    <h1>{{NAME}}</h1>
+    <div class="header-title">{{CURRENT_TITLE}}</div>
+    <div class="contact-row">
+      <span>{{PHONE}}</span>
+      <span class="separator">|</span>
+      <span>{{EMAIL}}</span>
+      <span class="separator">|</span>
+      <a href="{{LINKEDIN_URL}}">{{LINKEDIN_DISPLAY}}</a>
+      <span class="separator">|</span>
+      <a href="{{PORTFOLIO_URL}}">{{PORTFOLIO_DISPLAY}}</a>
+      <span class="separator">|</span>
+      <span>{{LOCATION}}</span>
+    </div>
+  </div>
+
+  <!-- PROFESSIONAL SUMMARY -->
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_SUMMARY}}</div>
+    <div class="summary-text">{{SUMMARY_TEXT}}</div>
+  </div>
+
+  <!-- CORE COMPETENCIES -->
+  <div class="section">
+    <div class="section-title">{{SECTION_COMPETENCIES}}</div>
+    <div class="competencies-list">
+      {{COMPETENCIES}}
+    </div>
+  </div>
+
+  <!-- WORK EXPERIENCE -->
+  <div class="section">
+    <div class="section-title">{{SECTION_EXPERIENCE}}</div>
+    {{EXPERIENCE}}
+  </div>
+
+  <!-- PROJECTS -->
+  {{#if PROJECTS}}
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_PROJECTS}}</div>
+    {{PROJECTS}}
+  </div>
+  {{/if}}
+
+  <!-- EDUCATION -->
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_EDUCATION}}</div>
+    {{EDUCATION}}
+  </div>
+
+  <!-- CERTIFICATIONS -->
+  {{#if CERTIFICATIONS}}
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_CERTIFICATIONS}}</div>
+    {{CERTIFICATIONS}}
+  </div>
+  {{/if}}
+
+  <!-- SKILLS -->
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_SKILLS}}</div>
+    {{SKILLS}}
+  </div>
+
+</div>
+</body>
+</html>

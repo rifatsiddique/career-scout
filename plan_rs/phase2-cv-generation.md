@@ -1,7 +1,7 @@
 # Phase 2: CV Generation — Multi-Template + Drafter-Reviewer
 
-**Version:** 2.0
-**Last Updated:** 2026-05-15 -- Gemini review incorporated (4 LLM-physics bugs fixed, template count reduced to 2, deterministic cutting added). User additions: discard summary, iterative modification, narrow margins default.
+**Version:** 2.2
+**Last Updated:** 2026-05-15 -- v2.2: Gemini round 3 — Playwright loop collapse, reviewer text-only input + PII guard, merged Review & Confirm step, --fast flag, market-aware formatting.
 **Parent Plan:** CONSOLIDATION-PLAN.md, Section 11, Phase 2
 **Depends on:** Phase 1 (evaluate mode — produces the scoring and gap analysis that drive CV tailoring)
 
@@ -171,6 +171,10 @@ Edit anytime — tell Gemini "add to my CV rules: ..." or edit this section dire
 
 ### When it activates
 
+- **`cv --fast` (or `cv --draft-only`):** Skip reviewer, backtrack test, and PDF generation.
+  Drafter fills the template, writes `output/draft-{company-slug}.html`, and exits.
+  For power users who want the tedious placeholder mapping done by AI but will hand-edit
+  the HTML in their IDE before generating the PDF themselves.
 - **Composite score ≥ 80 (GOOD_FIT+):** Full drafter-reviewer workflow
 - **Composite score 65–79 (PARTIAL_MATCH):** Single-pass generation (no reviewer). Worth generating a CV but not worth the extra agent cost.
 - **Composite score < 65:** No CV generated. Block E recommendations only.
@@ -189,40 +193,72 @@ Actions:
 1. Select template (per selection logic above)
 2. Read the template HTML file
 3. Read `_profile.md → CV Generation Rules` — absolute precedence over defaults
-4. Extract 15–20 ATS keywords from the JD
-5. For each `{{PLACEHOLDER}}`:
-   - `{{SUMMARY}}`: Rewrite professional summary using archetype framing, inject top 5 keywords
+4. **Read Block C (Level & Strategy) from the evaluation report.** The positioning
+   strategy is a hard constraint that overrides keyword relevance scoring:
+   - **Aligned (≤ 1 level gap):** Normal keyword-driven tailoring. Emphasize what Block C recommends.
+   - **OVERQUALIFIED (downlevel strategy):** De-emphasize seniority signals. Management achievements,
+     team-size metrics, and org-level scope must be suppressed even if they match JD keywords.
+     Focus on IC contributions, hands-on technical work.
+   - **TOO_JUNIOR (promotion framing):** Emphasize stretch evidence, adjacent experience,
+     and growth trajectory. Don't hide the level gap — frame it as readiness.
+5. **Check `profile.yml → location.market`** for locale-aware formatting:
+   - `DACH`: DD.MM.YYYY dates, metric units, German spelling for bilingual CVs
+   - `US-West` / `US-East`: MM/YYYY dates, US English spelling
+   - `UK`: DD/MM/YYYY dates, British English spelling
+   - `Japan`: YYYY/MM dates, consider bilingual formatting
+   - Not set: default to US English conventions
+6. Extract 15–20 ATS keywords from the JD
+7. For each `{{PLACEHOLDER}}`:
+   - `{{SUMMARY}}`: Rewrite professional summary using archetype framing + Block C positioning, inject top 5 keywords
    - `{{COMPETENCIES}}`: Build grid from JD requirements mapped to candidate skills
-   - `{{EXPERIENCE}}`: Reorder bullets by JD relevance. Inject keywords into first bullet of each role.
+   - `{{EXPERIENCE}}`: Reorder bullets by JD relevance, **filtered through Block C positioning strategy**.
+     A keyword-matching bullet that contradicts the positioning strategy is cut, not promoted.
    - `{{PROJECTS}}`: Select top 3–4 projects by JD relevance
    - `{{SKILLS}}`: Reorder by JD match, add any JD-mentioned tools the candidate has
-6. Apply deterministic cutting first, then relevance-weighted cutting if still overflowing (see Section 6). "Never cut" items excluded from cutting pool.
-7. Apply interview backtrack test to every generated bullet (respect Language Rules — if user says "use my exact phrasing", backtrack test thresholds adjust)
-8. **Write draft to disk** at `output/draft-{company-slug}.html` — LLMs do not have "working memory" that can hold 400+ lines of HTML reliably (Gemini review Bug #1)
+8. Apply deterministic cutting first, then relevance-weighted cutting if still overflowing (see Section 6). "Never cut" items excluded from cutting pool.
+9. Apply interview backtrack test to every generated bullet (respect Language Rules — if user says "use my exact phrasing", backtrack test thresholds adjust)
+10. **Write draft to disk** at `output/draft-{company-slug}.html` — LLMs do not have "working memory" that can hold 400+ lines of HTML reliably (Gemini review Bug #1)
+11. **If `--fast` flag:** Tell user "Draft written to `output/draft-{company-slug}.html`" and stop. No reviewer, no backtrack, no PDF.
 
 ### Step 2: REVIEWER critiques (fresh-context subagent)
 
 Spawn a subagent (Gemini: `invoke_agent`; Claude: `Agent` tool) with NO access
 to the drafter's conversation.
 
+**Pass text content, not HTML.** The reviewer critiques content (tone, keywords,
+fabrication), not layout. The drafter extracts the plain text from each filled
+placeholder and passes it inline in the reviewer prompt. This eliminates:
+- A tool-call roundtrip (subagent reading a file)
+- Hundreds of wasted tokens on HTML tags, CSS, and layout divs
+- Risk of the subagent getting confused by HTML formatting
+
+**PII guard:** Before passing CV text to the reviewer, strip contact info
+(phone number, email address, physical address). The reviewer doesn't need
+these to critique tone and keywords, and they prevent accidental PII leakage
+if the reviewer's web searches include fragments of the prompt.
+
 **Reviewer prompt — tell the subagent:**
-> "Act as a CV Reviewer. Read the JD text below. Then read the files
-> `output/draft-{company-slug}.html`, `config/profile.yml`, and
-> `modes/_profile.md`. Provide your critique."
+> "Act as a CV Reviewer. Below is the CV text content, JD text, and candidate
+> profile. Provide your critique."
+>
+> [CV text content — plain text, no HTML]
+> [JD text]
+>
+> "Also read `config/profile.yml` and `modes/_profile.md` for candidate data
+> and CV Generation Rules."
 
-The reviewer reads the draft from disk — do NOT pass 400+ lines of HTML inline
-in the prompt (Gemini review Bug #1).
-
-**Given to reviewer (via file reads):**
-- `output/draft-{company-slug}.html` — the complete draft
-- JD text (inline in the prompt — this is short enough)
-- `config/profile.yml` — candidate data
-- `modes/_profile.md` — behavioral profile, writing style, **CV Generation Rules**
+**Given to reviewer:**
+- CV text content (inline in prompt — plain text extracted from filled placeholders)
+- JD text (inline in prompt)
+- `config/profile.yml` — candidate data (via file read)
+- `modes/_profile.md` — behavioral profile, writing style, **CV Generation Rules** (via file read)
 
 **NOT given to reviewer:**
+- Raw HTML (reviewer judges content, not layout)
 - Template HTML (reviewer judges content, not layout)
 - Evaluation report (reviewer forms its own opinion independently)
 - `article-digest.md` (reviewer can't verify proof points — drafter's job)
+- Candidate contact info (phone, email, address — PII guard)
 
 **Reviewer instructions:**
 1. Verify every claim maps to real candidate data (no fabrication)
@@ -230,7 +266,9 @@ in the prompt (Gemini review Bug #1).
 3. Assess tone against writing style in `_profile.md`
 4. **Verify CV Generation Rules compliance** — check that all "always include" items are present, all "never cut" sections survived, formatting rules respected. Flag violations.
 5. Apply the interview backtrack test independently
-6. Search the web to verify any company-specific claims (partnerships, products, tech)
+6. Search the web to verify any company-specific claims (partnerships, products, tech) —
+   **search for the company/technology, not the candidate.** Do not include candidate
+   name, employer, or personal details in search queries.
 
 **Reviewer output format — markdown descriptions, NOT JSON patches (Gemini review Bug #2):**
 
@@ -259,43 +297,31 @@ The drafter applies these using its standard intelligence and the file edit tool
 
 1. Read the reviewer's Part A edits — apply each using the file edit tool on `output/draft-{company-slug}.html`
 2. Evaluate Part B suggestions — apply with judgment, skip if they violate the backtrack test
-3. WebSearch-verify any new company-specific claims before including
-4. Re-check: does the revised draft still fit in 2 pages? If not, apply overflow fallback chain (Section 6).
+3. **Log the reviewer's critique to the evaluation report:** Append a `## I) CV Tailoring Critique`
+   section to `reports/{REPORT_NUM}-{slug}-{date}.md` containing:
+   - All Part B suggestions (applied and not applied)
+   - For each suggestion the drafter chose NOT to apply: state the reason (e.g., "skipped — violates backtrack test", "skipped — contradicts CV Generation Rules")
+   - This makes the critique permanent and co-located with the evaluation, not transient console output
+4. WebSearch-verify any new company-specific claims before including
+5. Re-check: does the revised draft still fit in 2 pages? If not, apply overflow fallback chain (Section 6).
 
-### Step 4: Interview backtrack review — batch interaction (Gemini review Bug #3)
+### Step 4: Review & Confirm (single interaction point)
 
-Collect all "Flag" items from the backtrack test. Present them ALL to the user
-in a single batch interaction — do NOT ask about each flag sequentially.
+Present everything the user needs to decide on in ONE prompt — do not split
+into multiple sequential pauses (Gemini round 3: merging backtrack + discard
+summary eliminates the "double pause" friction).
 
-> "I've generated your CV. Before creating the PDF, please review these
-> reframed claims:
->
-> 1. ❓ 'Led PCB thermal analysis' — original: 'Supported PCB thermal review'
-> 2. ❓ 'Designed 48V bus architecture' — original: 'Contributed to bus design'
->
-> For each, choose: **Keep** (use the reframed version), **Soften** (I'll
-> make it closer to original), or **Drop** (revert to original).
->
-> You can respond with e.g. '1: keep, 2: soften'"
-
-**STOP. Wait for user response before proceeding to PDF generation.**
-
-If no flags: skip this step entirely — proceed directly to Step 5.
-
-### Step 5: Discard Summary
-
-Before generating the PDF, present a summary of what was included and, more
-importantly, what was left out and why:
+Print the following to the console as a single block, then STOP and wait:
 
 ```
-## CV Tailoring Summary
+## CV Review & Confirm
 
-### Included (key additions for this role):
+### What was included (key additions for this role):
 - Added "48V bus architecture" to Summary — direct JD keyword match
 - Promoted IEEE Future Energy Challenge to top of Projects — JD values academic collaboration
 - Reordered Experience to lead with VoltTech power electronics work
 
-### Discarded (and why):
+### What was discarded (and why):
 - CurrentInnovations "Python scripting for test automation" — not relevant to this hardware design role
 - Education coursework details (10+ year old degree) — space constraint, low relevance
 - Certification: LabVIEW Associate — not mentioned in JD, cut for space
@@ -304,30 +330,52 @@ importantly, what was left out and why:
 - Patent count (9 US patents) — per your "always include" rule
 - IEEE publication list — per your "never cut publications" rule
 
-Do you want to modify anything before I generate the PDF?
+### Flagged rewording (needs your decision):
+1. ❓ 'Led PCB thermal analysis' — original: 'Supported PCB thermal review'
+2. ❓ 'Designed 48V bus architecture' — original: 'Contributed to bus design'
+
+For flagged items: **Keep**, **Soften**, **Drop**, or provide exact text
+(e.g. '2: "Contributed to 48V bus architecture design"').
+
+**Draft HTML:** `output/draft-{company-slug}.html` — you can review or edit
+this file directly before I generate the PDF.
+
+Reply with your decisions, request changes, or say "go" to generate the PDF.
 ```
 
-**STOP. Wait for user response.** If user says "looks good" or similar → proceed
-to Step 6. If user requests changes → enter Iterative Modification (Step 7).
+**STOP. Wait for user response.** This is a conversational interaction — the
+user replies naturally (e.g., "1: keep, 2: drop, also add back the Python
+bullet") and the agent parses the response with its intelligence.
 
-### Step 6: Generate PDF + Verify
+**If the user provides exact replacement text for any item, use it verbatim** — do
+not "improve" or rephrase it. The user knows what they want to say.
+
+If no flagged items: omit the "Flagged rewording" section. The prompt still
+includes the discard summary and draft path.
+
+If user says "go" or similar → proceed to Step 5.
+If user requests changes → enter Iterative Modification (Step 6).
+
+### Step 5: Generate PDF + Verify
 
 1. Run: `node scripts/generate-pdf.mjs output/draft-{company-slug}.html output/cv-{candidate}-{company}-{date}.pdf`
 2. Read the output to verify:
    - Page count (should be 1–2)
    - No orphaned sections (check `generate-pdf.mjs` output for page count)
-3. **If overflows 2 pages** — follow the deterministic fallback chain (Gemini review Bug #4):
+3. **If overflows 2 pages** — apply ALL CSS fallbacks at once and regenerate ONE time
+   (do not loop Playwright — each invocation spins up headless Chromium, 3-8s per run):
    a. Cut the lowest-relevance unprotected bullet
-   b. If still overflowing: change `--margins` to `0.4in` in the CSS variables
-   c. If still overflowing: change `--base-font-size` to `10pt`
-   d. Regenerate and re-check after each step
+   b. Apply all CSS overrides in a single edit: `--margins: 0.4in`, `--base-font-size: 10pt`, `--bullet-spacing: 0.1em`
+   c. Regenerate PDF once
+   d. If still overflows: accept 3 pages — tell user why
+   **Maximum 2 Playwright invocations total** (initial + one retry).
 4. Update `data/applications.md` — set PDF column to ✅
 5. Tell user: "CV generated: `output/cv-{candidate}-{company}-{date}.pdf`"
 6. Clean up: keep `output/draft-{company-slug}.html` for potential iterative edits
 
-### Step 7: Iterative Modification (user-driven changes)
+### Step 6: Iterative Modification (user-driven changes)
 
-After the initial generation (Steps 1–6), the user can request further changes
+After the initial generation (Steps 1–5), the user can request further changes
 in a conversational loop:
 
 > "Add back the Python scripting bullet"
@@ -343,12 +391,19 @@ bullet about X", add it. The user's real-time instruction overrides the standing
 **Flow:**
 1. Apply the user's requested edit to `output/draft-{company-slug}.html`
 2. If template change requested: re-fill the new template with existing content
-3. Regenerate PDF
+3. Regenerate PDF (single Playwright invocation)
 4. Show updated discard summary if content was added/removed
 5. Ask: "Anything else to change?"
 6. Repeat until user is satisfied
 
 **No reviewer for iterative edits** — the user IS the reviewer at this point.
+
+### `--fast` / `--draft-only` mode
+
+Bypasses Steps 2–5 entirely. The drafter fills the template (Step 1), writes
+the HTML to disk, reports the file path, and exits. No reviewer, no backtrack
+test, no PDF generation. For power users who will hand-edit the HTML and run
+`node scripts/generate-pdf.mjs` themselves.
 
 ---
 
@@ -568,6 +623,16 @@ Lessons from Phase 1 applied here:
    give it explicit instructions for each placeholder. `{{SUMMARY}}` = "rewrite
    professional summary using archetype framing + top 5 JD keywords." etc.
 
+5. **Keyword relevance ≠ strategic relevance.** A bullet can match JD keywords yet
+   contradict the positioning strategy from Block C. Example: management achievements
+   match "cross-functional leadership" keywords but must be suppressed during a downlevel
+   strategy. The positioning strategy is a hard constraint that overrides keyword scoring.
+
+6. **Heavy tools are not loop conditions.** Playwright spins up headless Chromium
+   (3-8s per invocation). Using it in a retry loop (generate → check → tweak → generate)
+   burns 30+ seconds. Apply all fixes in one pass and regenerate once. Maximum 2
+   invocations: initial + one retry.
+
 ---
 
 ## 12. Gemini Review Log
@@ -593,3 +658,30 @@ Lessons from Phase 1 applied here:
 | 10 | **Narrow margins by default** | CSS variable `--margins: 0.5in` (was 0.6in in career-ops). Maximizes content space. |
 | 11 | **Discard summary** | Step 5: after generation, show what was included, what was discarded with reasons, and what was protected by CV Rules. User reviews before PDF. |
 | 12 | **Iterative modification** | Step 7: after initial generation, user can request changes in a conversational loop. CV Rules can be overridden during user-directed modifications — user's real-time instruction takes precedence. |
+
+**Gemini round 2 review (2026-05-15):**
+
+| # | Finding | Type | Decision | Fix |
+|---|---------|------|----------|-----|
+| 13 | **Block C positioning strategy not enforced by drafter.** Keywords matching management achievements could surface during downlevel strategy, contradicting Block C. | **Logic bug** | **Accepted** | Step 1 action 4: Block C positioning is a hard constraint. Keyword-matching bullets that contradict the positioning strategy are cut, not promoted. |
+| 14 | **Reviewer Part B critique is transient.** Console output lost after session. Separate file is messy. | **Design gap** | **Accepted (Gemini's fix)** | Append `## I) CV Tailoring Critique` to the existing evaluation report. All intelligence in one permanent file. |
+| 15 | **"Soften" is a black box.** User can't provide exact replacement text during backtrack interaction. | **UX gap** | **Accepted** | Backtrack prompt updated: user can provide exact text. Drafter uses it verbatim. |
+| 16 | **Draft path not communicated.** User doesn't know they can edit `output/draft-*.html` directly. | **UX gap** | **Accepted** | Step 5 discard summary explicitly states the draft file path. |
+| 17 | **Archetype-scoped CV Rules.** Per-archetype rule filtering (e.g., PM rules vs. Engineering rules). | **Feature request** | **Rejected** | Over-engineering. Global rules cover 80% case. Iterative modification handles the rest. Users can naturally scope with markdown headers if they want — no new logic needed. |
+| 18 | **"Draft Intercept" mandatory pause.** Third formal interaction point for manual HTML editing. | **Feature request** | **Rejected** | Draft already on disk. Two interaction points (Step 4, Step 5) already exist. Step 7 handles post-generation edits. Adding a third pause is friction without value. |
+| 19 | **Report format rigidity.** LLM improvised format in simulation. | **Concern** | **Already covered** | evaluate.md report template is a rigid markdown code block. Runtime compliance issue, not a plan gap. |
+
+**Gemini round 3 review (2026-05-15):**
+
+| # | Finding | Type | Decision | Fix |
+|---|---------|------|----------|-----|
+| 20 | **Playwright Loop of Death.** CSS fallback chain triggers 3-4 Playwright invocations (3-8s each = 30s staring at spinner). | **System-physics bug** | **Partially accepted** | Collapsed to single retry: apply all CSS fallbacks at once, regenerate once. Max 2 Playwright invocations. Rejected auto-resize observer (unpredictable font sizing). |
+| 21 | **Subagent HTML token waste.** Reviewer reads 400+ lines of HTML when it only needs ~150 lines of text content. Extra tool-call roundtrip. | **Optimization** | **Accepted** | Drafter passes plain text content inline in reviewer prompt (same pattern as JD text). Saves tokens and eliminates file-read turn. |
+| 22 | **Subagent PII leak.** Reviewer does web searches with CV text in context — could leak candidate name/employer to search engines. | **Security concern** | **Partially accepted** | Strip contact info (phone, email, address) from reviewer input. Reviewer web searches must target company/technology, not candidate. |
+| 23 | **Double pause friction.** Backtrack test (Step 4) and discard summary (Step 5) are two pauses in 10 seconds. | **UX issue** | **Accepted** | Merged into single "Review & Confirm" step. One conversational prompt, one response. |
+| 24 | **`--fast` flag.** Power users want to skip reviewer/backtrack/PDF and just get the HTML draft. | **Feature request** | **Accepted** | Added `cv --fast` mode. Drafter fills template, writes HTML, exits. Simple conditional branch. |
+| 25 | **Market-specific date/spelling formatting.** DACH uses DD.MM.YYYY, US uses MM/YYYY, etc. | **Functional gap** | **Accepted** | Step 1 action 5: check profile.yml market key, apply locale-aware formatting to dates and spelling. |
+| 26 | **ask_user tool for batch interaction.** Structured choice tool can't handle mixed responses. | **Concern** | **Already covered** | Plan uses CLI-agnostic conversational language, not structured tools. No change needed. |
+| 27 | **Grouped edits for file I/O.** Applying Part A edits one-by-one is slow. | **Optimization** | **Rejected (plan level)** | Implementation detail for modes/cv.md, not a plan-level decision. Plan is CLI-agnostic. |
+| 28 | **Part B persistence confirmation.** Ensure critique is appended to report, not just console. | **Concern** | **Already done (v2.1)** | Step 3 item 3 already appends `## I) CV Tailoring Critique` to evaluation report. |
+| 29 | **Shadow CV / `--source` flag.** Support multiple master CV files per archetype. | **Feature request** | **Rejected (Phase 2)** | Scope creep. One `cv.md` is enough. Users can rename files or edit cv.md. Consider for Phase 2b+. |
