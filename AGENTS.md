@@ -61,19 +61,39 @@ At the start of each session, silently check:
 
 ---
 
+## CRITICAL MANDATE — Job URL or JD Text Detection
+
+When the user's input contains a job posting URL or job description text, treat
+this as a strict **Directive**. You MUST execute these steps before any output:
+
+1. Read `modes/_shared.md` — scoring system, dimensions, archetype detection
+2. Read `modes/evaluate.md` — A-G block instructions
+3. Confirm: "Loaded evaluation modules. Beginning A-G analysis..."
+4. Execute ALL seven blocks (A through G) per `modes/evaluate.md`
+5. Use ONLY the 5 dimensions and fit category labels from `modes/_shared.md`
+6. Complete post-evaluation steps (save report, update tracker, show summary)
+
+**You MUST NOT** produce a freeform evaluation, skip any block, or invent
+dimension names before completing steps 1-2.
+
+**Detection signals:** URL with jobs/careers/posting in path; multi-line text
+with "responsibilities", "requirements", "qualifications", "about the role";
+user says "evaluate" or "analyze this job".
+
+---
+
 ## Mode Routing
 
-| If the user... | Mode | Files loaded |
-|----------------|------|-------------|
-| Pastes a job URL | evaluate | `_shared.md` + `evaluate.md` |
-| Pastes JD text | evaluate | `_shared.md` + `evaluate.md` |
-| Types "evaluate" | evaluate | `_shared.md` + `evaluate.md` |
-| Types "pipeline" | pipeline-triage | `_shared.md` + `pipeline-triage.md` |
-| Types "setup" | setup | `setup.md` |
-| Types "cv" | cv (Phase 2) | `_shared.md` + `cv.md` |
-| Types "scan" | scan (Phase 3) | `_shared.md` + `scan.md` |
-| Types "interview-prep" | interview-prep (Phase 4) | `interview-prep.md` |
-| Types "batch" | batch (Phase 5) | `_shared.md` + `batch.md` |
+| If the user... | Action |
+|----------------|--------|
+| Pastes a job URL or JD text | CRITICAL MANDATE above — read _shared.md + evaluate.md first |
+| Types "evaluate" | Read `modes/_shared.md` + `modes/evaluate.md`, execute A-G |
+| Types "pipeline" | Read `modes/_shared.md` + `modes/pipeline-triage.md` |
+| Types "setup" | Read `modes/setup.md` |
+| Types "cv" | Read `modes/_shared.md` + `modes/cv.md` (Phase 2) |
+| Types "scan" | Read `modes/_shared.md` + `modes/scan.md` (Phase 3) |
+| Types "interview-prep" | Read `modes/interview-prep.md` (Phase 4) |
+| Types "batch" | Read `modes/_shared.md` + `modes/batch.md` (Phase 5) |
 | Types nothing / asks for help | Show this routing table | — |
 
 ---
