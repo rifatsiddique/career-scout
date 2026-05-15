@@ -214,6 +214,7 @@ cv:
 - `## Behavioral Profile` — fit/friction keywords, working style
 - `## Writing Style` — tone, structure, vocabulary (auto-extracted from writing-samples/)
 - `## Scoring Calibration` — 3 Golden Examples that calibrate LLM scoring to your judgment
+- `## CV Generation Rules` — your standing instructions for CV tailoring (Phase 2+)
 
 ---
 
@@ -228,6 +229,29 @@ cv:
 > change my location to London, market to UK
 ```
 Gemini edits `config/profile.yml` or `modes/_profile.md` in place.
+
+### CV Generation Rules (Phase 2+)
+
+Your standing instructions for how CVs should be tailored live in `modes/_profile.md`
+under `## CV Generation Rules`. These override default CV generation behavior.
+
+**Add rules anytime:**
+```
+> add to my CV rules: always include my patent count
+> add to my CV rules: never remove publications section
+> add to my CV rules: max 5 bullets per role
+> add to my CV rules: minimize rewording — use my exact phrasing for achievements
+> add to my CV rules: lead with power electronics experience regardless of role
+```
+
+**Or edit the section directly** in `modes/_profile.md` — it's just markdown.
+
+Both the drafter and the reviewer respect these rules. If you say "never cut
+publications", the cutting logic skips that section entirely, and the reviewer
+flags it if the drafter violated the rule.
+
+**Set rules during setup** — the setup wizard asks for CV preferences after writing
+style. Or skip it and add rules later as you learn what you want.
 
 **Full profile refresh** — re-run setup:
 ```

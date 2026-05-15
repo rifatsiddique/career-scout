@@ -1,7 +1,7 @@
 # Phase 2: CV Generation — Multi-Template + Drafter-Reviewer
 
-**Version:** 1.0
-**Last Updated:** 2026-05-15 -- initial draft for Gemini review
+**Version:** 1.1
+**Last Updated:** 2026-05-15 -- added CV Generation Rules section (_profile.md user preferences)
 **Parent Plan:** CONSOLIDATION-PLAN.md, Section 11, Phase 2
 **Depends on:** Phase 1 (evaluate mode — produces the scoring and gap analysis that drive CV tailoring)
 
@@ -95,7 +95,69 @@ enhancements over career-ops:
 
 ---
 
-## 4. The Drafter-Reviewer Workflow
+## 4. CV Generation Rules (User Preferences in `_profile.md`)
+
+Every user has different preferences for how their CV should be tailored.
+These standing instructions are stored in `modes/_profile.md` under a new
+`## CV Generation Rules` section — User layer, never auto-updated.
+
+### What goes in this section
+
+| Category | Examples |
+|----------|---------|
+| **Content rules** | "Always include my patent count (9 US patents) — never cut this", "Always mention IEEE award", "Publications: keep all 10" |
+| **Language rules** | "Minimize rewording — reorder and emphasize, don't rewrite my phrasing", "Use my exact wording for achievements" |
+| **Section priorities** | "Lead with hardware experience regardless of role", "Projects section is optional — cut first if space tight" |
+| **Formatting rules** | "No more than 5 bullets per role", "Every bullet must have a metric", "Summary: 3 lines max" |
+| **Never rules** | "Never use the word 'leverage'", "Never list GPA", "Never include references section" |
+
+### How it's populated
+
+- **During setup (Phase 1, modes/setup.md):** Add an optional step after Writing Style:
+  "Any standing rules for how your CVs should be generated? For example: always include
+  certain achievements, never remove certain sections, limit bullet count per role, etc."
+- **Incrementally:** User can say "add to my CV rules: always lead with power electronics"
+  at any time → agent appends to the section in `_profile.md`
+- **Can be empty:** If the user has no preferences, the section is blank and the drafter
+  uses its default behavior.
+
+### How it's used in the workflow
+
+1. **Drafter (Step 1):** Before filling any template placeholder, read `_profile.md →
+   CV Generation Rules`. These rules are hard constraints — they override the drafter's
+   default decisions. Example: if rules say "never cut publications", the relevance-weighted
+   cutting logic skips that section entirely.
+2. **Reviewer (Step 2):** The reviewer also receives CV Generation Rules in its prompt.
+   Part of its job is to verify the draft respects all user rules. If the drafter violated
+   a rule (e.g., cut a "never cut" section), the reviewer flags it in Part A edits.
+3. **Cutting logic (Section 5):** Before applying cuts, check CV Generation Rules for
+   protected content. Items marked "always include" or "never cut" are excluded from
+   the cutting pool.
+
+### Template for `_profile.md`
+
+```markdown
+## CV Generation Rules
+
+_Your standing instructions for CV tailoring. These override default behavior.
+Edit anytime — tell Gemini "add to my CV rules: ..." or edit this section directly._
+
+### Content Rules
+- (none yet — add rules like "always include X" or "never remove Y")
+
+### Language Rules
+- (none yet — add rules like "minimize rewording" or "use my exact phrasing for...")
+
+### Section Priorities
+- (none yet — add rules like "lead with X experience" or "cut Y section first")
+
+### Formatting
+- (none yet — add rules like "max 5 bullets per role" or "summary under 3 lines")
+```
+
+---
+
+## 5. The Drafter-Reviewer Workflow
 
 ### When it activates
 
@@ -111,16 +173,17 @@ The drafter (main agent) has full context: evaluation report, `cv.md`, `_profile
 Actions:
 1. Select template (per selection logic above)
 2. Read the template HTML file
-3. Extract 15–20 ATS keywords from the JD
-4. For each `{{PLACEHOLDER}}`:
+3. Read `_profile.md → CV Generation Rules` — these are hard constraints on all subsequent steps
+4. Extract 15–20 ATS keywords from the JD
+5. For each `{{PLACEHOLDER}}`:
    - `{{SUMMARY}}`: Rewrite professional summary using archetype framing, inject top 5 keywords
    - `{{COMPETENCIES}}`: Build grid from JD requirements mapped to candidate skills
    - `{{EXPERIENCE}}`: Reorder bullets by JD relevance. Inject keywords into first bullet of each role.
    - `{{PROJECTS}}`: Select top 3–4 projects by JD relevance
    - `{{SKILLS}}`: Reorder by JD match, add any JD-mentioned tools the candidate has
-5. Apply relevance-weighted cutting if content exceeds 2 pages
-6. Apply interview backtrack test to every generated bullet
-7. Hold the filled HTML in working memory (no disk write yet)
+6. Apply relevance-weighted cutting if content exceeds 2 pages (respect CV Generation Rules — "never cut" items are excluded from the cutting pool)
+7. Apply interview backtrack test to every generated bullet (respect Language Rules — if user says "use my exact phrasing", backtrack test thresholds adjust)
+8. Hold the filled HTML in working memory (no disk write yet)
 
 ### Step 2: REVIEWER critiques (fresh-context agent)
 
@@ -131,7 +194,7 @@ only these inputs, inline in its prompt:
 - The complete draft HTML text
 - The JD text (full)
 - `config/profile.yml` candidate data
-- `modes/_profile.md` behavioral profile and writing style
+- `modes/_profile.md` behavioral profile, writing style, and **CV Generation Rules**
 
 **NOT given to reviewer:**
 - Template HTML (reviewer judges content, not layout)
@@ -142,8 +205,9 @@ only these inputs, inline in its prompt:
 1. Verify every claim maps to real candidate data (no fabrication)
 2. Check keyword coverage — are there JD requirements with no corresponding CV bullet?
 3. Assess tone against writing style in `_profile.md`
-4. Apply the interview backtrack test independently
-5. Search the web to verify any company-specific claims (partnerships, products, tech)
+4. **Verify CV Generation Rules compliance** — check that all "always include" items are present, all "never cut" sections survived, formatting rules are respected. Flag violations in Part A edits.
+5. Apply the interview backtrack test independently
+6. Search the web to verify any company-specific claims (partnerships, products, tech)
 
 **Reviewer output format (two parts in one response):**
 
@@ -184,7 +248,7 @@ Drafter applies these mechanically.
 
 ---
 
-## 5. Relevance-Weighted Cutting
+## 6. Relevance-Weighted Cutting
 
 When the filled CV exceeds 2 pages, score each content line on 3 axes:
 
@@ -207,7 +271,7 @@ bullet that does not. Relevance beats recency.
 
 ---
 
-## 6. Interview Backtrack Test
+## 7. Interview Backtrack Test
 
 Applied to every bullet in the generated CV. Three zones:
 
@@ -223,7 +287,7 @@ keep, soften, or drop. "Never" items are silently removed and logged.
 
 ---
 
-## 7. Files to Create / Modify
+## 8. Files to Create / Modify
 
 ### New files
 
@@ -245,10 +309,13 @@ keep, soften, or drop. "Never" items are silently removed and logged.
 | `.agents/skills/career-scout/SKILL.md` | Add `cv` mode routing — `_shared.md` + `cv.md` |
 | `GEMINI.md` | Add cv mode trigger to routing table |
 | `modes/evaluate.md` Block E | Add: "To generate a tailored CV, run `cv` mode" suggestion for GOOD_FIT+ scores |
+| `modes/_profile.md` | Add `## CV Generation Rules` section template (empty, user fills in) |
+| `modes/setup.md` | Add optional step after Writing Style: ask user for CV generation preferences |
+| `README.md` | Add CV Generation section: how to set rules, how to update them, how to run cv mode |
 
 ---
 
-## 8. Implementation Steps + Verification
+## 9. Implementation Steps + Verification
 
 ### Step 1: Port `generate-pdf.mjs` and fonts
 
@@ -329,7 +396,7 @@ Generate a CV for the same JD with all 4 templates. Compare:
 
 ---
 
-## 9. Risk Register
+## 10. Risk Register
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
@@ -342,7 +409,7 @@ Generate a CV for the same JD with all 4 templates. Compare:
 
 ---
 
-## 10. LLM-Physics Considerations
+## 11. LLM-Physics Considerations
 
 Lessons from Phase 1 applied here:
 
@@ -364,7 +431,7 @@ Lessons from Phase 1 applied here:
 
 ---
 
-## 11. Questions for Gemini Review
+## 12. Questions for Gemini Review
 
 1. **Subagent support:** Can Gemini CLI spawn a subagent for the reviewer step?
    If not, what's the best fallback — a second `gemini -p` call, or a structured
