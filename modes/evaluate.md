@@ -125,7 +125,7 @@ read those examples before scoring. Calibrate scores to the user's demonstrated 
 | Experience & Level | X/100 | 25% | {includes level gap assessment} |
 | Career Alignment | X/100 | 25% | {grounded in gap analysis} |
 | Behavioral & Culture | X/100 | 15% | {grounded in gap analysis} |
-| Role Quality | X/100 | 10% | {comp, company, stack} |
+| Role Quality | X/100 | 10% | {comp vs. market rate delta, company reputation, tech stack — see Block D Step D5 for score cap rules} |
 | Location | PASS/FAIL | — | {match or deal-breaker} |
 
 Composite: (tech×0.25) + (exp×0.25) + (career×0.25) + (behavioral×0.15) + (quality×0.10)
@@ -174,36 +174,84 @@ If FAIL: state the contradiction explicitly. Do not calculate composite. Recomme
 
 ---
 
-## Block D — Comp & Demand
+## Block D — Comp & Demand (Dual-Analysis)
 
-**Step 1: Extract salary from JD text first.**
-If the JD contains an explicit salary range (many jurisdictions require pay transparency),
-use it directly. Do NOT run a web search if the answer is already in the JD — it wastes
-tokens and time.
+This block has six steps. **Do not skip Step D2 because the JD states a salary.**
+The candidate needs to know whether the company pays at, above, or below market —
+independently of whether the stated number meets their personal floor. These are two
+different questions that must both be answered.
 
-**Step 2: Web search ONLY if JD provides no salary data.**
-If no range is stated in the JD, search for salary data: Glassdoor, Levels.fyi, Blind, Payscale, LinkedIn Salary.
+### Step D1: Extract JD stated salary
 
-| Source | Role | Location | Range | Notes |
-|--------|------|----------|-------|-------|
-| {source} | {title} | {location} | {range} | {context} |
+If the JD contains an explicit salary range, record it:
+> **JD Stated:** ${low}–${high} ({currency})
 
-Compare against `config/profile.yml → compensation.target_range` and `compensation.minimum`.
+If no range stated: note "Not disclosed."
 
-**Market-aware analysis** — read `location.market` from `config/profile.yml`:
+### Step D2: Market rate search (MANDATORY — always run, regardless of Step D1)
 
-- **Non-US markets (DACH, UK, Japan, Francophone, etc.):** Do NOT rely on training
-  data for regional labor law specifics. Search the web for current standard practices:
-  `"{market}" standard notice period {year}`, `"{market}" 13th month salary norm`.
-  Verify before stating. If no data found: say so.
-- `DACH`: confirm 13th-month salary, notice periods, works council implications
-- `US-West`: base + equity splits, RSU vesting, at-will employment context
-- `US-East`: bonus structures (finance/pharma), non-compete enforceability
-- `UK`: pension matching, notice periods
-- `Japan`: seniority-based comp, bonus weight, negotiation culture
+Search for the going market rate for this **specific role title + seniority level + location**.
+Query both:
+- Glassdoor: `{role title} salary {city/region} {current year}`
+- Levels.fyi: (strong for tech/engineering roles — use if applicable)
+
+Also check Payscale, LinkedIn Salary, Blind for corroboration.
+
+Record:
+> **Market Rate (researched):** ${low}–${high} — Sources: {sources cited}
+> *(If no data found: state "Insufficient data for this role/location." Never invent numbers.)*
+
+### Step D3: The delta
+
+Compare JD stated salary (or "Not disclosed") vs. the researched market rate.
+
+| Delta from market median | Verdict |
+|--------------------------|---------|
+| >10% above market | Premium payer |
+| Within ±10% | At market |
+| 10–25% below market | Modest discount |
+| >25% below market | Severe underpay |
+| JD salary not disclosed | Cannot compare — note market rate as reference only |
+
+State explicitly:
+> **Delta:** JD stated salary is approximately {X}% {above / below / at} the market median.
+> **Verdict:** {label from table above}
+
+### Step D4: Candidate fit
+
+Compare market rate and JD salary against `config/profile.yml`:
+- `compensation.target_range` — is this role in range?
+- `compensation.minimum` — is the candidate's floor met?
+
+State clearly whether comp meets targets. **A "yes" here does NOT offset a "severe underpay"
+market verdict — both signals are reported and scored independently.**
+
+### Step D5: Role Quality score input
+
+The market delta from Step D3 is a primary input for the Role Quality dimension (Block B Part 3).
+Apply these caps when scoring Role Quality:
+
+| Market delta | Role Quality score cap |
+|-------------|----------------------|
+| >25% below market median | ≤ 45/100 (hard cap — severe underpay regardless of other factors) |
+| 10–25% below market | ≤ 65/100 |
+| Within ±10% of market | No cap — score on company reputation, stack, growth path |
+| Above market | Positive input — can reach 90+ |
+
+*If Step D2 returned insufficient data: score Role Quality on company reputation,
+tech stack, and growth path only. Note the missing comp signal explicitly.*
+
+### Step D6: Market-aware regional context
+
+Read `config/profile.yml → location.market` and adapt:
+
+- **Non-US markets (DACH, UK, Japan, etc.):** Web search to verify current labor practices —
+  do NOT rely on training data. Search: `"{market}" standard notice period {year}`, etc.
+- `US-West`: base + equity splits, RSU vesting schedules, at-will employment
+- `US-East`: finance/pharma bonus structures, non-compete enforceability, MA pay transparency
+- `UK`: pension matching, notice periods, IR35 for contracts
+- `Japan`: seniority-based comp, limited negotiation culture, bonus weight
 - Market not set: generic analysis; note that setting `location.market` improves accuracy
-
-**If no salary data found:** Say so explicitly — never invent numbers.
 
 ---
 

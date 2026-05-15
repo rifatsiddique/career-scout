@@ -1,7 +1,7 @@
 # Phase 1: Foundation — Evaluate + Pipeline Modes
 
-**Version:** 1.5
-**Last Updated:** 2026-05-15 -- Gemini simulation test (Power Electronics / Advanced Energy case). Architecture validated. 3 additional prompting bugs found and fixed.
+**Version:** 1.6
+**Last Updated:** 2026-05-15 -- User change: Block D dual-analysis requirement (mandatory market rate search + delta vs JD salary + Role Quality penalty rule).
 **Parent Plan:** CONSOLIDATION-PLAN.md, Section 11, Phase 1
 **Goal:** Paste a job URL or JD text into Gemini CLI → get a full A-G evaluation with structured scoring
 
@@ -143,7 +143,7 @@ Based on the conflict analysis above, here is the definitive scoring system for 
 | 2 | **Experience & Level** | 25% | 0-100 | 90+: direct domain + right seniority; 70-89: related experience, transferable; 50-69: adjacent, need to make case; <50: unrelated or wrong level |
 | 3 | **Career Alignment** | 25% | 0-100 | 90+: strongly aligned with trajectory; 70-89: good fit, partially aligned; 50-69: decent but doesn't build toward goals; <50: dead end |
 | 4 | **Behavioral & Culture** | 15% | 0-100 | 90+: culture matches behavioral profile; 70-89: mostly compatible; 50-69: friction areas; <50: significant mismatch |
-| 5 | **Role Quality** | 10% | 0-100 | 90+: strong comp, great company, modern stack; 70-89: good overall; 50-69: average; <50: below market or red flags |
+| 5 | **Role Quality** | 10% | 0-100 | Primary inputs: (a) market rate delta — is the company paying at, above, or below market? (b) company reputation and stability (c) tech stack modernity and growth path. **Market rate is always researched via WebSearch, regardless of whether the JD states a salary.** Scoring: 90+: at or above market + great company + modern stack; 70-89: at market or minor discount (<10%), solid company; 50-69: 10-25% below market OR average company/stack; <50: >25% below market OR significant red flags. A JD salary that meets the candidate's personal floor but is materially below market MUST score low here — the candidate's floor and the market rate are independent signals. |
 | 6 | **Location** | — | Pass/Fail | PASS: within constraints; FAIL: deal-breaker (hard stop, no composite score calculated) |
 
 **Location gate:** Location is evaluated BEFORE the weighted dimensions. If FAIL, the composite score is not calculated. The report shows the fail reason and recommends skipping unless the user explicitly overrides.
@@ -332,17 +332,20 @@ Domain Packs solve the **generalization penalty** — making the system domain-a
 - If over-leveled (1 level): positioning to frame as lateral growth
 - If over-leveled (2+ levels): auto-assign OVERQUALIFIED category. Provide downlevel negotiation strategy (career-ops pattern) if user wants to pursue
 
-**Block D — Comp & Demand**
-- Web search for salary data (Glassdoor, Levels.fyi, Blind, Payscale)
-- Table: estimated range, company comp reputation, market demand
-- Compare against candidate's comp targets from profile.yml
-- **Market key as behavioral switch** (Gemini final review): When `profile.yml → location.market` is set, adapt comp analysis to regional norms:
-  - `DACH`: check for 13th-month salary, 3-month notice periods, works council implications
-  - `US-West`: focus on base+equity splits, at-will employment, RSU vesting schedules
-  - `US-East`: note finance/pharma bonus structures, non-compete enforceability
-  - `UK`: check pension matching, notice periods, IR35 for contracts
-  - `Japan`: note seniority-based comp, limited negotiation culture, bonus weight
-  - If market not set: use generic comp analysis, note that setting `market` improves accuracy
+**Block D — Comp & Demand (Dual-Analysis, user requirement)**
+- **Step 1: Extract JD stated salary** — if present, record it. Do not skip Step 2 because of this.
+- **Step 2: Market rate search (MANDATORY, always)** — WebSearch Glassdoor AND Levels.fyi for the going market rate for this specific role, seniority level, and location. This is required even when the JD states a salary. The candidate needs to know whether the company is paying at, above, or below market — independently of whether the number meets their personal floor.
+- **Step 3: The delta** — explicitly compare JD stated salary vs. market rate found. State: is the company underpaying the market, at market, or a premium payer? Quantify the gap where possible (e.g., "15% below market median").
+- **Step 4: Role Quality impact** — feed the market delta directly into the Role Quality dimension score (scored in Block B Part 3). A salary that meets the candidate's personal minimum but is materially below market MUST penalize Role Quality:
+  - >25% below market median → Role Quality score ≤ 45/100 (hard cap)
+  - 10–25% below market → Role Quality score ≤ 65/100
+  - Within 10% of market (above or below) → neutral, score on other Role Quality factors
+  - Above market → positive input, score can reach 90+
+- **Market key behavioral switch** (Gemini final review): When `profile.yml → location.market` is set, adapt comp analysis to regional norms:
+  - `DACH`, `UK`, `Japan`, and other non-US markets: web search to verify current labor practices — do NOT rely on training data (see _shared.md Market-Specific Research Rule)
+  - `US-West`: base + equity splits, RSU vesting, at-will employment context
+  - `US-East`: finance/pharma bonus structures, non-compete enforceability
+  - If market not set: use generic analysis, note that setting `market` improves accuracy
 - If no data found: say so explicitly — never invent numbers
 
 **Block E — Personalization Plan**
