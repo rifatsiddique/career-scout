@@ -1,7 +1,7 @@
 # Phase 2: CV Generation — Multi-Template + Drafter-Reviewer
 
-**Version:** 1.1
-**Last Updated:** 2026-05-15 -- added CV Generation Rules section (_profile.md user preferences)
+**Version:** 2.0
+**Last Updated:** 2026-05-15 -- Gemini review incorporated (4 LLM-physics bugs fixed, template count reduced to 2, deterministic cutting added). User additions: discard summary, iterative modification, narrow margins default.
 **Parent Plan:** CONSOLIDATION-PLAN.md, Section 11, Phase 2
 **Depends on:** Phase 1 (evaluate mode — produces the scoring and gap analysis that drive CV tailoring)
 
@@ -12,13 +12,16 @@
 Phase 1 established the evaluation pipeline: the user pastes a JD, gets a 7-block
 analysis with scoring, gap analysis, and personalization recommendations (Block E).
 
-Phase 2 turns Block E's recommendations into an actual tailored CV PDF. Two major
+Phase 2 turns Block E's recommendations into an actual tailored CV PDF. Three major
 enhancements over career-ops:
 
-1. **Multi-template support** — 4 HTML templates selectable by archetype or user override
-   (career-ops had one template)
+1. **Multi-template support** — 2 HTML templates for Phase 2 (ATS-Optimized + Classic Professional),
+   with 2 more (Academic, Technical) added in a follow-up. Career-ops had one template.
 2. **Drafter-reviewer workflow** — for GOOD_FIT+ (≥80), a fresh-context reviewer agent
    critiques the draft before PDF generation (from ai-job-search, career-ops didn't have this)
+3. **Iterative refinement** — after initial generation, user can review a discard summary
+   and request changes in a conversational loop. CV Rules can be overridden during
+   user-directed modifications.
 
 ---
 
@@ -31,14 +34,14 @@ enhancements over career-ops:
 | `generate-pdf.mjs` | 183 lines — HTML→Playwright→PDF | **None.** Script is template-agnostic (takes `<input.html> <output.pdf>`). ATS normalization, font rewriting, and page counting are all reusable as-is. |
 | `fonts/` (Space Grotesk + DM Sans) | 4 woff2 files | **None** for Template 1. Other templates need their own fonts. |
 | `cv-template.html` | 419 lines — ATS single-column | Becomes Template 1. Remove any career-ops-specific examples in comments. Add `{{TEMPLATE_ID}}` metadata tag. |
-| `templates/cv/manifest.yml` | Already scaffolded | Populate with 4 templates + metadata |
+| `templates/cv/manifest.yml` | Already scaffolded | Populate with 2 active templates + 2 planned |
 | Placeholder system | `{{NAME}}`, `{{EXPERIENCE}}`, etc. | **Reuse as-is.** All templates share the same placeholder vocabulary. |
 
 ### From ai-job-search (adapt patterns, not code)
 
 | Component | What to take | How to adapt |
 |-----------|-------------|--------------|
-| Drafter-reviewer 2-agent workflow | Reviewer is fresh-context, receives draft + JD + profile only | Implement via subagent spawn (CLI-agnostic). Reviewer returns JSON edits + narrative suggestions. |
+| Drafter-reviewer 2-agent workflow | Reviewer is fresh-context, receives draft + JD + profile only | Implement via subagent spawn (Gemini: invoke_agent). Reviewer returns markdown edit descriptions (not JSON patches — see LLM-physics notes). |
 | Interview backtrack test | 3-zone rule (OK / Flag / Never) | Port the rule verbatim into `modes/cv.md`. Apply to every generated bullet. |
 | Relevance-weighted cutting | Score each line: relevance + uniqueness + narrative load | Port the scoring heuristic and cut priority order into `modes/cv.md`. |
 
@@ -51,7 +54,16 @@ enhancements over career-ops:
 - Same `{{PLACEHOLDER}}` vocabulary — `{{NAME}}`, `{{SUMMARY}}`, `{{COMPETENCIES}}`, `{{EXPERIENCE}}`, `{{PROJECTS}}`, `{{EDUCATION}}`, `{{SKILLS}}`, `{{CERTIFICATIONS}}`
 - Same `generate-pdf.mjs` pipeline (ATS normalization, font loading, PDF generation)
 - Same CSS rules: `break-inside: avoid`, `orphans: 2`, `widows: 2`, print color-adjust
-- Target: 2 pages max. If overflow, apply relevance-weighted cutting.
+- **Target: 2 pages.** Use narrow margins by default to maximize content space.
+- **CSS variables for deterministic overflow fallbacks** (Gemini review):
+  ```css
+  :root {
+    --base-font-size: 11pt;
+    --margins: 0.5in;           /* narrow by default */
+    --bullet-spacing: 0.15em;
+  }
+  ```
+  If PDF overflows 2 pages, the LLM follows a deterministic fallback chain (see Section 6).
 
 ### Template 1: ATS-Optimized (port from career-ops)
 
@@ -69,21 +81,19 @@ enhancements over career-ops:
 - **File:** `templates/cv/classic-professional.html`
 - **Differentiation:** No gradient, no color accents. Understated professionalism. Slightly larger margins.
 
-### Template 3: Academic/Research (new)
+### Template 3: Academic/Research (DEFERRED — Phase 2b)
 
-- **Design:** Publications-forward layout. Education near top. Research experience before industry. Conference presentations and DOI links styled.
-- **Best for:** Research, academic, R&D lab, PhD-heavy roles
-- **Fonts:** EB Garamond (heading + body) — academic tone
-- **File:** `templates/cv/academic-research.html`
-- **Differentiation:** Publications section with journal, year, DOI. "Selected Talks" section. Thesis title visible. Skills as a compact tag grid rather than a full section.
+Deferred per Gemini recommendation: prove the pipeline with 2 templates first.
 
-### Template 4: Technical/Engineering (new)
+- Publications-forward layout, EB Garamond, education near top, DOI links
+- File: `templates/cv/academic-research.html`
 
-- **Design:** Project-forward layout. Competency grid prominent. Monospace accents for technical terms. Skills organized by category.
-- **Best for:** IC engineering, embedded, hardware, systems, DevOps, SRE
-- **Fonts:** JetBrains Mono (code/skills) + Inter (body) — technical aesthetic
-- **File:** `templates/cv/technical-engineering.html`
-- **Differentiation:** Prominent skills grid with categories (Languages, Tools, Domains). Project cards with metrics. GitHub/portfolio links styled. No color — clean engineering aesthetic.
+### Template 4: Technical/Engineering (DEFERRED — Phase 2b)
+
+Deferred per Gemini recommendation.
+
+- Project-forward layout, JetBrains Mono + Inter, skills grid, project cards
+- File: `templates/cv/technical-engineering.html`
 
 ### Template Selection Logic
 
@@ -170,10 +180,15 @@ Edit anytime — tell Gemini "add to my CV rules: ..." or edit this section dire
 The drafter (main agent) has full context: evaluation report, `cv.md`, `_profile.md`,
 `article-digest.md`, JD text, detected archetype.
 
+**CV Generation Rules precedence (Gemini review):** Read `_profile.md → CV Generation
+Rules` FIRST. These rules are ABSOLUTE — they override default template behavior. If a
+"never cut" rule conflicts with the 2-page limit, the "never cut" rule wins. The user
+chose to protect that content explicitly.
+
 Actions:
 1. Select template (per selection logic above)
 2. Read the template HTML file
-3. Read `_profile.md → CV Generation Rules` — these are hard constraints on all subsequent steps
+3. Read `_profile.md → CV Generation Rules` — absolute precedence over defaults
 4. Extract 15–20 ATS keywords from the JD
 5. For each `{{PLACEHOLDER}}`:
    - `{{SUMMARY}}`: Rewrite professional summary using archetype framing, inject top 5 keywords
@@ -181,43 +196,58 @@ Actions:
    - `{{EXPERIENCE}}`: Reorder bullets by JD relevance. Inject keywords into first bullet of each role.
    - `{{PROJECTS}}`: Select top 3–4 projects by JD relevance
    - `{{SKILLS}}`: Reorder by JD match, add any JD-mentioned tools the candidate has
-6. Apply relevance-weighted cutting if content exceeds 2 pages (respect CV Generation Rules — "never cut" items are excluded from the cutting pool)
+6. Apply deterministic cutting first, then relevance-weighted cutting if still overflowing (see Section 6). "Never cut" items excluded from cutting pool.
 7. Apply interview backtrack test to every generated bullet (respect Language Rules — if user says "use my exact phrasing", backtrack test thresholds adjust)
-8. Hold the filled HTML in working memory (no disk write yet)
+8. **Write draft to disk** at `output/draft-{company-slug}.html` — LLMs do not have "working memory" that can hold 400+ lines of HTML reliably (Gemini review Bug #1)
 
-### Step 2: REVIEWER critiques (fresh-context agent)
+### Step 2: REVIEWER critiques (fresh-context subagent)
 
-Spawn a subagent with NO access to the drafter's conversation. The reviewer receives
-only these inputs, inline in its prompt:
+Spawn a subagent (Gemini: `invoke_agent`; Claude: `Agent` tool) with NO access
+to the drafter's conversation.
 
-**Given to reviewer:**
-- The complete draft HTML text
-- The JD text (full)
-- `config/profile.yml` candidate data
-- `modes/_profile.md` behavioral profile, writing style, and **CV Generation Rules**
+**Reviewer prompt — tell the subagent:**
+> "Act as a CV Reviewer. Read the JD text below. Then read the files
+> `output/draft-{company-slug}.html`, `config/profile.yml`, and
+> `modes/_profile.md`. Provide your critique."
+
+The reviewer reads the draft from disk — do NOT pass 400+ lines of HTML inline
+in the prompt (Gemini review Bug #1).
+
+**Given to reviewer (via file reads):**
+- `output/draft-{company-slug}.html` — the complete draft
+- JD text (inline in the prompt — this is short enough)
+- `config/profile.yml` — candidate data
+- `modes/_profile.md` — behavioral profile, writing style, **CV Generation Rules**
 
 **NOT given to reviewer:**
 - Template HTML (reviewer judges content, not layout)
-- Evaluation report (reviewer forms its own opinion)
+- Evaluation report (reviewer forms its own opinion independently)
 - `article-digest.md` (reviewer can't verify proof points — drafter's job)
 
 **Reviewer instructions:**
 1. Verify every claim maps to real candidate data (no fabrication)
 2. Check keyword coverage — are there JD requirements with no corresponding CV bullet?
 3. Assess tone against writing style in `_profile.md`
-4. **Verify CV Generation Rules compliance** — check that all "always include" items are present, all "never cut" sections survived, formatting rules are respected. Flag violations in Part A edits.
+4. **Verify CV Generation Rules compliance** — check that all "always include" items are present, all "never cut" sections survived, formatting rules respected. Flag violations.
 5. Apply the interview backtrack test independently
 6. Search the web to verify any company-specific claims (partnerships, products, tech)
 
-**Reviewer output format (two parts in one response):**
+**Reviewer output format — markdown descriptions, NOT JSON patches (Gemini review Bug #2):**
 
-**Part A — Structured edits:**
-```json
-[
-  {"old_string": "exact text from draft", "new_string": "replacement", "reason": "why"}
-]
+LLMs are bad at exact multiline string matches. Asking for JSON `{"old_string": "...",
+"new_string": "..."}` fails ~50% of the time due to spacing/indentation/HTML tag mismatches.
+
+Instead, the reviewer outputs:
+
+**Part A — Required edits (markdown list):**
 ```
-Drafter applies these mechanically.
+1. Under VoltTech Experience, third bullet: change "improved efficiency" to
+   "improved conversion efficiency from 92% to 95%" — adds the specific metric
+   from cv.md and matches JD's emphasis on efficiency targets.
+2. In Summary: add "9 US patents" — required by CV Generation Rules ("always
+   include patent count").
+```
+The drafter applies these using its standard intelligence and the file edit tool.
 
 **Part B — Narrative suggestions** (four mandatory categories, even if "no issues"):
 1. Missed keywords — JD terms not reflected in CV
@@ -227,30 +257,123 @@ Drafter applies these mechanically.
 
 ### Step 3: DRAFTER revises
 
-1. Apply Part A edits directly (find-and-replace in HTML)
+1. Read the reviewer's Part A edits — apply each using the file edit tool on `output/draft-{company-slug}.html`
 2. Evaluate Part B suggestions — apply with judgment, skip if they violate the backtrack test
 3. WebSearch-verify any new company-specific claims before including
-4. Re-check: does the revised CV still fit in 2 pages? Re-cut if needed.
+4. Re-check: does the revised draft still fit in 2 pages? If not, apply overflow fallback chain (Section 6).
 
-### Step 4: Generate PDF + Verify
+### Step 4: Interview backtrack review — batch interaction (Gemini review Bug #3)
 
-1. Write the finalized HTML to a temp file: `output/temp-{company}-{date}.html`
-2. Run: `node scripts/generate-pdf.mjs output/temp-{company}-{date}.html output/cv-{candidate}-{company}-{date}.pdf`
-3. Read the PDF to verify layout:
+Collect all "Flag" items from the backtrack test. Present them ALL to the user
+in a single batch interaction — do NOT ask about each flag sequentially.
+
+> "I've generated your CV. Before creating the PDF, please review these
+> reframed claims:
+>
+> 1. ❓ 'Led PCB thermal analysis' — original: 'Supported PCB thermal review'
+> 2. ❓ 'Designed 48V bus architecture' — original: 'Contributed to bus design'
+>
+> For each, choose: **Keep** (use the reframed version), **Soften** (I'll
+> make it closer to original), or **Drop** (revert to original).
+>
+> You can respond with e.g. '1: keep, 2: soften'"
+
+**STOP. Wait for user response before proceeding to PDF generation.**
+
+If no flags: skip this step entirely — proceed directly to Step 5.
+
+### Step 5: Discard Summary
+
+Before generating the PDF, present a summary of what was included and, more
+importantly, what was left out and why:
+
+```
+## CV Tailoring Summary
+
+### Included (key additions for this role):
+- Added "48V bus architecture" to Summary — direct JD keyword match
+- Promoted IEEE Future Energy Challenge to top of Projects — JD values academic collaboration
+- Reordered Experience to lead with VoltTech power electronics work
+
+### Discarded (and why):
+- CurrentInnovations "Python scripting for test automation" — not relevant to this hardware design role
+- Education coursework details (10+ year old degree) — space constraint, low relevance
+- Certification: LabVIEW Associate — not mentioned in JD, cut for space
+
+### Protected by CV Rules (never cut):
+- Patent count (9 US patents) — per your "always include" rule
+- IEEE publication list — per your "never cut publications" rule
+
+Do you want to modify anything before I generate the PDF?
+```
+
+**STOP. Wait for user response.** If user says "looks good" or similar → proceed
+to Step 6. If user requests changes → enter Iterative Modification (Step 7).
+
+### Step 6: Generate PDF + Verify
+
+1. Run: `node scripts/generate-pdf.mjs output/draft-{company-slug}.html output/cv-{candidate}-{company}-{date}.pdf`
+2. Read the output to verify:
    - Page count (should be 1–2)
-   - No orphaned sections
-   - Fonts rendered correctly
-   - No blank pages
-4. If broken: fix HTML issues, regenerate, re-verify
-5. Delete temp HTML file
-6. Update `data/applications.md` — set PDF column to ✅
-7. Tell user: "CV generated: `output/cv-{candidate}-{company}-{date}.pdf`"
+   - No orphaned sections (check `generate-pdf.mjs` output for page count)
+3. **If overflows 2 pages** — follow the deterministic fallback chain (Gemini review Bug #4):
+   a. Cut the lowest-relevance unprotected bullet
+   b. If still overflowing: change `--margins` to `0.4in` in the CSS variables
+   c. If still overflowing: change `--base-font-size` to `10pt`
+   d. Regenerate and re-check after each step
+4. Update `data/applications.md` — set PDF column to ✅
+5. Tell user: "CV generated: `output/cv-{candidate}-{company}-{date}.pdf`"
+6. Clean up: keep `output/draft-{company-slug}.html` for potential iterative edits
+
+### Step 7: Iterative Modification (user-driven changes)
+
+After the initial generation (Steps 1–6), the user can request further changes
+in a conversational loop:
+
+> "Add back the Python scripting bullet"
+> "Make the summary longer — I want to mention my thesis topic"
+> "Switch to the classic-professional template"
+> "Remove the competencies grid, I don't like it"
+
+**During iterative modification, CV Generation Rules can be overridden** — the
+user is explicitly directing changes, which takes precedence over standing rules.
+For example, if rules say "max 5 bullets per role" but the user says "add a 6th
+bullet about X", add it. The user's real-time instruction overrides the standing rule.
+
+**Flow:**
+1. Apply the user's requested edit to `output/draft-{company-slug}.html`
+2. If template change requested: re-fill the new template with existing content
+3. Regenerate PDF
+4. Show updated discard summary if content was added/removed
+5. Ask: "Anything else to change?"
+6. Repeat until user is satisfied
+
+**No reviewer for iterative edits** — the user IS the reviewer at this point.
 
 ---
 
-## 6. Relevance-Weighted Cutting
+## 6. Cutting and Overflow Strategy
 
-When the filled CV exceeds 2 pages, score each content line on 3 axes:
+### Layer 1: Deterministic cuts (always apply first — Gemini review)
+
+Before any LLM-driven scoring, apply these hard rules automatically. This saves
+tokens and produces consistent results:
+
+| Rule | Rationale |
+|------|-----------|
+| Max 5 bullets for most recent role | Prevents bloat in the role with most content |
+| Max 3 bullets for roles older than the most recent | Older roles need less detail |
+| Hide roles older than 10 years entirely | Unless protected by CV Generation Rules |
+| Remove GPA for degrees older than 5 years | Low value signal after early career |
+| Collapse coursework into a single line | Rarely relevant for experienced candidates |
+
+**Exception:** Any item protected by `_profile.md → CV Generation Rules` is exempt
+from deterministic cuts. "Never cut" wins.
+
+### Layer 2: Relevance-weighted cutting (LLM-driven, if still overflowing)
+
+After deterministic cuts, if content still exceeds 2 pages, score each remaining
+line on 3 axes:
 
 | Axis | Weight | What it measures |
 |------|--------|-----------------|
@@ -258,16 +381,27 @@ When the filled CV exceeds 2 pages, score each content line on 3 axes:
 | **Uniqueness** | Medium | Is this claim made elsewhere in the CV? Redundant lines cut first. |
 | **Narrative load** | Low | Does the cover letter or Block F story depend on this line? |
 
+Cut the lowest-total-score line first. Repeat until content fits.
+
 **Cut priority (least painful → last resort):**
 1. Redundant entries across sections (same achievement mentioned twice)
 2. Profile-statement filler ("passionate about", "results-oriented")
 3. Low-relevance experience bullets from any section
 4. Low-relevance certifications, languages, minor publications
-5. Oldest education details (GPA, coursework for 10+ year old degrees)
-6. Structural cuts (collapse sections, remove section headers)
+5. Structural cuts (collapse sections, remove section headers)
 
 **Key rule:** An older-role bullet that hits JD keywords survives over a recent-role
 bullet that does not. Relevance beats recency.
+
+### Layer 3: CSS fallback chain (if still overflowing after content cuts)
+
+If content cuts alone don't achieve 2 pages (e.g., too many protected items):
+
+1. Reduce `--margins` from `0.5in` to `0.4in`
+2. Reduce `--base-font-size` from `11pt` to `10pt`
+3. Reduce `--bullet-spacing` from `0.15em` to `0.1em`
+4. If still overflows: accept 3 pages — tell user why ("your CV Generation Rules
+   protect more content than fits in 2 pages at readable font sizes")
 
 ---
 
@@ -293,13 +427,12 @@ keep, soften, or drop. "Never" items are silently removed and logged.
 
 | File | Lines (est.) | Description |
 |------|-------------|-------------|
-| `modes/cv.md` | ~250 | CV generation mode — template selection, drafter, reviewer spawn, revision, PDF generation, backtrack test, cutting logic |
+| `modes/cv.md` | ~300 | CV generation mode — template selection, drafter, reviewer spawn, revision, discard summary, iterative modification, PDF generation, backtrack test, cutting logic |
 | `scripts/generate-pdf.mjs` | ~183 | Port from career-ops — no changes needed |
-| `templates/cv/ats-optimized.html` | ~420 | Template 1 — port from career-ops |
-| `templates/cv/classic-professional.html` | ~350 | Template 2 — new, conservative serif |
-| `templates/cv/academic-research.html` | ~380 | Template 3 — new, publications-forward |
-| `templates/cv/technical-engineering.html` | ~360 | Template 4 — new, project-forward |
-| Font files for Templates 2-4 | varies | Source Serif Pro, EB Garamond, JetBrains Mono, Inter woff2 files |
+| `templates/cv/ats-optimized.html` | ~420 | Template 1 — port from career-ops. Add CSS variables for overflow fallbacks. |
+| `templates/cv/classic-professional.html` | ~350 | Template 2 — new, conservative serif. CSS variables included. |
+| Font files for Template 2 | varies | Source Serif Pro + Inter woff2 files |
+| *(Templates 3-4 deferred to Phase 2b)* | | |
 
 ### Existing files to update
 
@@ -339,17 +472,18 @@ Remove career-ops-specific comments. Ensure all placeholders use the standard vo
 **Verify:** Fill placeholders with mock data by hand, run `generate-pdf.mjs`,
 inspect the output PDF visually.
 
-### Step 3: Create Templates 2-4
+### Step 3: Create Template 2 (Classic Professional)
 
-Design each template HTML. For each:
-1. Write HTML/CSS with the same placeholder vocabulary
-2. Source and add the required woff2 font files to `fonts/`
+Design the conservative serif template:
+1. Write HTML/CSS with the same placeholder vocabulary and CSS variables
+2. Source and add Source Serif Pro + Inter woff2 font files to `fonts/`
 3. Test with mock data via `generate-pdf.mjs`
-4. Verify ATS compatibility: single text flow in DOM order, no tables for layout,
-   no images replacing text
+4. Verify ATS compatibility: single text flow in DOM order, no tables for layout
 
-**Verify per template:** Generate a PDF, copy-paste all text from the PDF into
-a text editor. If the text is garbled or out of order, the template fails ATS parsing.
+**Verify:** Generate a PDF, copy-paste all text into a text editor. If garbled or
+out of order, the template fails ATS parsing.
+
+*(Templates 3-4 deferred to Phase 2b — prove the pipeline with 2 templates first.)*
 
 ### Step 4: Update `templates/cv/manifest.yml`
 
@@ -382,17 +516,22 @@ is conditional on score ≥ 80. Confirm backtrack test is applied.
 
 1. Evaluate a real job posting (Phase 1 flow)
 2. Run `cv` mode for that evaluation
-3. Verify: template selected correctly, HTML filled, drafter-reviewer ran (if GOOD_FIT+),
-   PDF generated in `output/`, applications.md updated with ✅
-4. Open the PDF — check layout, fonts, content accuracy, 2-page max
-5. Copy-paste PDF text into editor — verify ATS readability
+3. Verify: template selected correctly, draft HTML written to `output/draft-*.html`
+4. Verify: reviewer subagent spawned (if GOOD_FIT+), returned markdown edits
+5. Verify: discard summary shown with included/discarded/protected items
+6. Verify: PDF generated in `output/`, applications.md updated with ✅
+7. Open the PDF — check layout, fonts, content accuracy, 2-page target
+8. Copy-paste PDF text into editor — verify ATS readability
+9. Test iterative modification: request a change, verify PDF regenerated
 
 ### Step 8: Template comparison test
 
-Generate a CV for the same JD with all 4 templates. Compare:
-- ATS text extraction works for all 4
+Generate a CV for the same JD with both templates (ats-optimized and classic-professional).
+Compare:
+- ATS text extraction works for both
 - Visual design matches the template's intended audience
-- Same content, different presentation — no content leakage between templates
+- Same content, different presentation
+- CSS variables (margins, font size) are consistent
 
 ---
 
@@ -431,22 +570,26 @@ Lessons from Phase 1 applied here:
 
 ---
 
-## 12. Questions for Gemini Review
+## 12. Gemini Review Log
 
-1. **Subagent support:** Can Gemini CLI spawn a subagent for the reviewer step?
-   If not, what's the best fallback — a second `gemini -p` call, or a structured
-   self-review in the same context?
+**Reviewer:** Gemini CLI — Phase 2 review (2026-05-15)
 
-2. **Font licensing:** Source Serif Pro, EB Garamond, JetBrains Mono, and Inter are
-   all open-source (OFL). Confirm this is compatible with including woff2 files in
-   a git repo.
+| # | Finding | Type | Decision | Fix |
+|---|---------|------|----------|-----|
+| 1 | **Subagent support confirmed:** Gemini CLI supports `invoke_agent`. Drafter-reviewer architecture fully validated. | **Answer** | Confirmed | No change needed |
+| 2 | **Font licensing confirmed:** OFL fonts safe to include in git repo. | **Answer** | Confirmed | No change needed |
+| 3 | **Start with 2 templates:** 4 simultaneous templates + drafter-reviewer debugging = too much surface area. | **Recommendation** | **Accepted** | Templates 3-4 deferred to Phase 2b. Section 3 updated. |
+| 4 | **Add deterministic cutting layer:** LLM-only cutting is token-expensive and inconsistent. Hard rules first. | **Recommendation** | **Accepted** | Section 6 rewritten with 3 layers: deterministic → relevance-weighted → CSS fallback |
+| 5 | **Bug: "Working Memory" trap:** Draft HTML can't be held in LLM memory and passed inline to subagent. | **LLM-physics bug** | **Accepted** | Draft written to disk (`output/draft-{slug}.html`). Reviewer reads from disk via file tool. |
+| 6 | **Bug: JSON find-and-replace fantasy:** LLMs can't produce exact multiline string matches for JSON patches. | **LLM-physics bug** | **Accepted** | Reviewer outputs markdown edit descriptions. Drafter applies with intelligence + edit tool. |
+| 7 | **Bug: Sequential backtrack flag loop:** Asking 4 sequential yes/no questions is a state machine nightmare. | **LLM-physics bug** | **Accepted** | All flags presented in one batch interaction. User responds once. |
+| 8 | **Bug: "Fix HTML issues" too vague:** LLM can't reliably "make it shorter" on raw HTML. | **LLM-physics bug** | **Accepted** | CSS variables added to templates. 3-step deterministic fallback chain (margins → font size → spacing). |
+| 9 | **CV Rules need absolute precedence preamble:** LLM's 2-page rule may override user's "never cut" rules. | **Refinement** | **Accepted** | Step 1: CV Generation Rules explicitly stated as ABSOLUTE, override page limit if needed. |
 
-3. **Template complexity:** Is 4 templates the right number for Phase 2? Or should
-   we ship 2 (ATS + one alternative) and add the others in a follow-up?
+**User additions (2026-05-15):**
 
-4. **Cutting heuristic:** The relevance-weighted cutting is LLM-driven (scoring each
-   line's relevance). Should any of this be deterministic (e.g., always cut lines
-   older than 10 years first)?
-
-5. **Anything missing from the drafter-reviewer flow?** Does the interaction pattern
-   between drafter and reviewer look correct for Gemini CLI's tool model?
+| # | Feature | Description |
+|---|---------|-------------|
+| 10 | **Narrow margins by default** | CSS variable `--margins: 0.5in` (was 0.6in in career-ops). Maximizes content space. |
+| 11 | **Discard summary** | Step 5: after generation, show what was included, what was discarded with reasons, and what was protected by CV Rules. User reviews before PDF. |
+| 12 | **Iterative modification** | Step 7: after initial generation, user can request changes in a conversational loop. CV Rules can be overridden during user-directed modifications — user's real-time instruction takes precedence. |
