@@ -541,19 +541,33 @@ project-root/
 
 **Spec:** `plan_rs/phase2-cv-generation.md` (v2.2 — 4 Gemini review rounds, 4 Claude architect fixes)
 
-### Phase 3: Scout (Week 5-6)
+### Phase 3: Scout ✅ Complete (2026-05-18)
 
-**Goal:** Multi-source job discovery writing to pipeline.md.
+**Goal:** API-based job discovery + inbox drain, writing to pipeline.md.
+**Spec:** `plan_rs/phase3-scout.md` (v1.0 — 5 Gemini review rounds + 1 self-review)
 
-- [ ] Port `scan.mjs` from career-ops (Greenhouse/Ashby/Lever/BambooHR APIs)
-- [ ] Port `portals.yml` configuration
-- [ ] Port deduplication logic (scan-history.tsv + pipeline.md + applications.md)
-- [ ] Port title/location filtering
-- [ ] Add Playwright scraping fallback (Level 1 from career-ops)
-- [ ] Add WebSearch broad discovery (Level 3 from career-ops)
-- [ ] Create `modes/scan.md` instructions
-- [ ] Optional: BrightData LinkedIn integration (from job-search-toolkit)
-- [ ] Test: run scan → verify new jobs appear in pipeline.md, no duplicates
+- [x] Port `scripts/scan.mjs` — JSON stdout, --fast, --sources, --import, lookback window, CWD-independent paths
+- [x] Create `config/portals.example.yml` — 50+ companies, new fields: priority, stale_threshold_days, lookback_days
+- [x] Port dedup logic — 3-source + lookback window on scan-history only
+- [x] Port title/location filtering — positive/negative/boost keywords
+- [x] Create `modes/scan.md` — full workflow: stale check, inbox drain, --new-chapter, contextual guidance
+- [x] Create `data/inbox.txt` — smart-parsed inbox (URL-only or pipe-delimited metadata)
+- [x] Create `data/archived.md` — human-readable archive for stale/dead links
+- [x] Create `data/.scout-state.json` — scan state tracker
+- [x] Port `scripts/liveness-core.mjs` + `scripts/check-liveness.mjs` — shipped for Phase 3b
+- [x] Add Step 9 to `modes/setup.md` — guided portals.yml configuration
+- [x] Update routing: AGENTS.md, GEMINI.md, SKILL.md (scan + scout aliases, Phase 3 Active)
+- [x] Update DATA_CONTRACT.md, package.json (js-yaml)
+- [x] Test: scan --dry-run → valid JSON *(verified 2026-05-18)*
+- [x] Test: --fast + no priority companies → clear warning *(verified 2026-05-18)*
+
+### Phase 3b: Advanced Discovery (deferred)
+
+- [ ] Level 1: Playwright scraping of careers pages (non-API portals)
+- [ ] Level 3: WebSearch broad discovery using search_queries from portals.yml
+- [ ] Liveness verification for Level 3 (liveness-core.mjs already shipped)
+- [ ] LinkedIn integration via browser extension writing to inbox.txt
+- [ ] BrightData LinkedIn API (optional)
 
 ### Phase 4: Interview Prep + Story Bank (Week 7)
 

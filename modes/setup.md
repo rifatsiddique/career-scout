@@ -299,6 +299,32 @@ Reasoning: "{user's reasoning}"
 
 ---
 
+## Step 9: Portal Scanner Configuration (Recommended)
+
+Check if `config/portals.yml` still contains only the empty template (no `tracked_companies` entries).
+
+If empty:
+
+> "I can set up the job scanner with 50+ pre-configured companies (Greenhouse, Ashby, Lever portals).
+>  Want me to customize the search keywords for your target roles and populate portals.yml?"
+
+If yes:
+1. Copy `config/portals.example.yml` → `config/portals.yml` (overwriting the empty template)
+2. Update `title_filter.positive` with keywords derived from `target_roles.primary` in profile.yml
+   (e.g., "AI Engineer" → add "AI", "Engineer"; "Technical PM" → add "Product Manager", "Technical PM")
+3. Update `location_filter` to match the user's location/remote preferences from profile.yml
+4. Confirm: "Scanner configured with {N} companies. Run 'scan' to discover jobs."
+
+If no: skip. User can copy the example file manually later.
+
+> **Tip:** Keep `title_filter` broad — the Evaluator does fine-grained scoring, not the Scanner.
+>  A broad filter catches both "AI Engineer" AND "Technical PM" roles at the same companies.
+>  You can always tighten filters later if you're getting too many irrelevant results.
+
+If portals.yml is already configured: skip this step silently.
+
+---
+
 ## Step 10: Confirm Ready
 
 > "Setup complete! Here's what's configured:
@@ -306,9 +332,11 @@ Reasoning: "{user's reasoning}"
 > - **Market:** {market value}
 > - **Comp target:** {range}
 > - **Scoring calibration:** {N} Golden Examples
+> - **Portal scanner:** {configured with N companies / not configured}
 > 
 > You can now:
 > - Paste a job URL or JD text to evaluate it
+> - Type 'scan' to discover new jobs from {N} configured portals
 > - Type 'pipeline' to process your pending URL queue
 > - Type 'setup' again to update your profile at any time
 >

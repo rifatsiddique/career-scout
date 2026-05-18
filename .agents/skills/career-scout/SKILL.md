@@ -20,7 +20,7 @@ Determine mode from `$mode`:
 | `pipeline` | `pipeline-triage` |
 | `setup` | `setup` |
 | `cv` | `cv` (Phase 2) |
-| `scan` | `scan` (Phase 3) |
+| `scan` or `scout` | `scan` |
 | `interview-prep` | `interview-prep` (Phase 4) |
 | `auto` | `auto-pipeline` (Phase 5) |
 | `batch` | `batch` (Phase 5) |
@@ -49,8 +49,17 @@ career-scout — Command Center
   /career-scout cv                 → Generate tailored PDF CV from latest evaluation
   /career-scout cv --fast          → Draft HTML only, no reviewer or PDF (for manual editing)
 
+  /career-scout scan                  → Full discovery run (all configured companies)
+  /career-scout scan --fast           → Priority run (companies marked priority: true)
+  /career-scout scan --sources TYPE   → Scan specific portal types (greenhouse, ashby, lever)
+  /career-scout scan --dry-run        → Preview without writing files
+  /career-scout scan --import FILE    → Import jobs from CSV file
+  /career-scout scan --company NAME   → Scan a single company only
+  /career-scout scan --clean          → Force stale check now
+  /career-scout scan --new-chapter    → Archive old data and start fresh search
+  /career-scout scan --help           → Show flag reference
+
   Coming soon:
-  /career-scout scan               → Discover jobs from portals (Phase 3)
   /career-scout interview-prep     → STAR+R prep for a specific company (Phase 4)
   /career-scout auto               → Full pipeline: evaluate + CV + track (Phase 5)
   /career-scout batch              → Parallel evaluation of multiple URLs (Phase 5)
@@ -107,6 +116,6 @@ executing any mode. If either is missing or empty, prompt the user to run setup.
 |-------|--------|----------------|
 | 1: Foundation | **Active** | evaluate, pipeline, setup |
 | 2: CV Generation | **Active** | cv, cv --fast |
-| 3: Scout | Planned | scan |
+| 3: Scout | **Active** | scan, scout |
 | 4: Interview Prep | Planned | interview-prep |
 | 5: Auto-Pipeline + Batch | Planned | auto, batch, followup |

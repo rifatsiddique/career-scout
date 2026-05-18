@@ -39,7 +39,7 @@ the following steps exactly, in this order, before producing any output:
 | `setup` | Read `modes/setup.md`. Execute guided profile creation. |
 | `cv` | Read `modes/_shared.md`, then `modes/cv.md`. Execute CV generation workflow. |
 | `cv --fast` or `cv --draft-only` | Read `modes/_shared.md`, then `modes/cv.md`. Execute with FAST_MODE: draft HTML only, no reviewer or PDF. |
-| `scan` | Read `modes/_shared.md`, then `modes/scan.md`. (Phase 3 — not yet implemented) |
+| `scan` or `scout` | Read `modes/_shared.md`, then `modes/scan.md`. Execute job discovery. |
 | `interview-prep` | Read `modes/interview-prep.md`. (Phase 4 — not yet implemented) |
 | No input / `help` | Read `AGENTS.md` and show the mode routing table. |
 

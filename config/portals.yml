@@ -1,13 +1,15 @@
 # career-scout portal scanner configuration
 #
-# Customize this file for your target industry and companies.
-# The Scout uses these entries to discover new job postings.
+# See config/portals.example.yml for a fully populated example with 50+ companies.
+# Run 'setup' for guided configuration, or copy the example file manually.
 #
-# Three types of entries:
-#   1. tracked_companies  - specific companies you want to monitor
-#   2. search_queries     - broad web searches for job boards
-#   3. title_filter       - keywords to include/exclude from results
-#   4. location_filter    - geographic filtering (optional)
+# New fields in Phase 3:
+#   priority: true        — mark dream companies for 'scan --fast' daily checks
+#   stale_threshold_days  — pending items older than this get stale-checked (default 21)
+#   lookback_days         — ignore scan-history entries older than this for dedup (default 180)
+
+stale_threshold_days: 21
+lookback_days: 180
 
 title_filter:
   positive: []                       # JD title must contain at least one of these

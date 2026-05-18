@@ -20,6 +20,9 @@ They are created during setup and evolve as you use the system.
 | `data/pipeline.md` | Your job pipeline (Scout writes, Evaluator updates) |
 | `data/applications.md` | Your application tracker |
 | `data/scan-history.tsv` | Your scan dedup history |
+| `data/inbox.txt` | Job inbox — drop URLs here, Scout drains on every run |
+| `data/archived.md` | Dead/stale links removed from pipeline (recoverable) |
+| `data/.scout-state.json` | Scout state (last_clean, last_scan, dry spell counter) |
 | `reports/*` | Your evaluation reports (generated, but yours) |
 | `output/*` | Your generated CVs and cover letters |
 
@@ -45,7 +48,8 @@ They can be updated without affecting your data.
 | `templates/prompts/*` | Externalized prompt templates |
 | `templates/states.yml` | Canonical status definitions |
 | `templates/cv/manifest.yml` | Template registry |
-| `scripts/*` | Automation scripts (generate-pdf, scan, verify) |
+| `scripts/*` | Automation scripts (generate-pdf, scan, liveness, verify) |
+| `config/portals.example.yml` | Example portal scanner configuration |
 | `fonts/*` | Self-hosted fonts for PDF generation |
 | `docs/*` | Documentation |
 | `.agents/skills/*/SKILL.md` | Skill registration |

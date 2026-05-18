@@ -1,0 +1,10 @@
+# Job Inbox — Scout drains this file on every run.
+# Drop URLs here, one per line. Optional metadata via pipes:
+#   URL | Company | Role | Source
+#
+# Examples:
+#   https://jobs.lever.co/openai/456
+#   https://boards.greenhouse.io/stripe/jobs/123 | Stripe | Sr. Engineer | browser-ext
+#
+# Lines without | will have metadata fetched automatically.
+# Lines with | will use metadata as-is (Company and Role used directly).

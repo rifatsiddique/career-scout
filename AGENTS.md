@@ -54,6 +54,9 @@ At the start of each session, silently check:
 | `data/pipeline.md` | Scout → Evaluator contract (pending + evaluated jobs) |
 | `data/applications.md` | Full application tracker |
 | `data/scan-history.tsv` | Scout dedup history — read via `scripts/check-history.mjs` only |
+| `data/inbox.txt` | Scout inbox — drop URLs here (one per line, optional pipe-delimited metadata) |
+| `data/archived.md` | Dead/stale links removed from pipeline (recoverable) |
+| `config/portals.example.yml` | Example portal scanner configuration (copy to portals.yml) |
 | `data/follow-ups.md` | Follow-up tracking |
 | `interview-prep/story-bank.md` | Accumulated STAR+R stories across evaluations |
 | `reports/` | Evaluation reports (`{###}-{company-slug}-{YYYY-MM-DD}.md`) |
@@ -82,7 +85,7 @@ loading rules per mode.
 | Types "pipeline" | Read `modes/_shared.md` + `modes/pipeline-triage.md` |
 | Types "setup" | Read `modes/setup.md` |
 | Types "cv" | Read `modes/_shared.md` + `modes/cv.md` (Phase 2) |
-| Types "scan" | Read `modes/_shared.md` + `modes/scan.md` (Phase 3) |
+| Types "scan" or "scout" | Read `modes/_shared.md` + `modes/scan.md` |
 | Types "interview-prep" | Read `modes/interview-prep.md` (Phase 4) |
 | Types "batch" | Read `modes/_shared.md` + `modes/batch.md` (Phase 5) |
 | Types nothing / asks for help | Show `.agents/skills/career-scout/SKILL.md` discovery menu |
