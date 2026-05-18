@@ -25,7 +25,6 @@
 
 import { readFileSync, writeFileSync, appendFileSync, existsSync, mkdirSync, readFile } from 'fs';
 import { readFile as readFileAsync } from 'fs/promises';
-import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import yaml from 'js-yaml';
@@ -322,6 +321,33 @@ async function importCsv(filePath) {
 
 async function main() {
   const args = process.argv.slice(2);
+
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(`career-scout scan — Zero-token portal scanner
+
+USAGE
+  node scripts/scan.mjs                        Scan all enabled companies
+  node scripts/scan.mjs --fast                 Priority companies only (priority: true)
+  node scripts/scan.mjs --sources TYPE         Scan specific API types (greenhouse,ashby,lever)
+  node scripts/scan.mjs --company NAME         Scan a single company
+  node scripts/scan.mjs --import FILE          Import jobs from a CSV file
+  node scripts/scan.mjs --dry-run              Preview without writing files
+
+OUTPUT
+  stdout: JSON { date, mode, stats, offers[], errors[] }
+  stderr: human-readable summary
+
+EXIT CODES
+  0  Success
+  1  Fatal error (portals.yml missing, CSV file not found)
+  2  CSV column mapping failed (agent should do LLM-based mapping)
+
+CONFIG
+  config/portals.yml           Companies + title/location filters
+  config/portals.example.yml   Copy to portals.yml and customize`);
+    process.exit(0);
+  }
+
   const dryRun = args.includes('--dry-run');
   const fastMode = args.includes('--fast');
   const companyFlag = args.indexOf('--company');
