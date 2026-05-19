@@ -355,10 +355,10 @@ Companies searched:    {n}
 Jobs found:            {n}
 Filtered (title):      {n}
 Filtered (location):   {n}
-Already seen:          {n}
+Duplicates:            {n}
 From your inbox:       {n}
 ────────────────────────────────────────────
-New in your job queue: {n}
+New in your pipeline:  {n}
 
 [if new offers > 0: list each: + Company | Title | source-tag]
 [if errors: list per-company errors from SCAN_RESULTS.errors]
