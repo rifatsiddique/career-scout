@@ -146,8 +146,17 @@ scan --import referrals.csv  # Import from CSV file
 scan --dry-run               # Preview without writing files
 scan --clean                 # Force stale link check now
 scan --new-chapter           # Archive old data and start a fresh search
-scan --help                  # Show full flag reference
+scan --discover              # Find new companies based on your CV
+scan --discover --focus X    # Focus discovery on a specific domain
+scan --help                  # Show full flag reference (includes recipes)
 ```
+
+**Don't know which companies to track?** Run `scan --discover` — the agent reads your CV,
+finds competitors, peer companies, and niche players in your domain, resolves their career
+portals, and adds them to your config. You approve each one before it's added.
+
+Want to explore a different area without editing your CV? `scan --discover --focus "robotics"`
+pivots the search to any domain you name.
 
 **Stale link cleanup:** Scout automatically checks old pending jobs weekly and
 archives dead links to `data/archived.md`. To restore a job: move the row back

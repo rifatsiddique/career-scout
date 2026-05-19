@@ -57,7 +57,9 @@ career-scout — Command Center
   /career-scout scan --company NAME   → Scan a single company only
   /career-scout scan --clean          → Force stale check now
   /career-scout scan --new-chapter    → Archive old data and start fresh search
-  /career-scout scan --help           → Show flag reference
+  /career-scout scan --discover       → Find new companies based on your CV
+  /career-scout scan --discover --focus X  → Focus discovery on a specific domain
+  /career-scout scan --help           → Show flag reference (includes recipes)
 
   Coming soon:
   /career-scout interview-prep     → STAR+R prep for a specific company (Phase 4)

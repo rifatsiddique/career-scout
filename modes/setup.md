@@ -321,7 +321,22 @@ If no: skip. User can copy the example file manually later.
 >  A broad filter catches both "AI Engineer" AND "Technical PM" roles at the same companies.
 >  You can always tighten filters later if you're getting too many irrelevant results.
 
-If portals.yml is already configured: skip this step silently.
+If portals.yml is already configured with 5+ companies: skip this step silently.
+
+**After portals.yml is set up** (whether from example file or already had entries),
+if total `tracked_companies` count is still low (fewer than 5 enabled companies),
+make it an active invitation:
+
+> "Your portals.yml has {N} companies. Want me to find more based on your background?
+>  I'll search for competitors of your past employers, companies in your domain, and
+>  industry players with scannable career portals. You'll approve each one before it's added."
+>
+> Run discovery now? (yes/no)
+
+**If yes:** Execute Step 0d from `modes/scan.md` inline — the user just said yes,
+don't make them type a separate command. They're engaged now.
+
+**If no:** "No problem — run 'scan --discover' anytime to find companies later."
 
 ---
 
@@ -332,11 +347,12 @@ If portals.yml is already configured: skip this step silently.
 > - **Market:** {market value}
 > - **Comp target:** {range}
 > - **Scoring calibration:** {N} Golden Examples
-> - **Portal scanner:** {configured with N companies / not configured}
+> - **Portal scanner:** {N} companies configured ({M} from discovery / not configured}
 > 
 > You can now:
 > - Paste a job URL or JD text to evaluate it
 > - Type 'scan' to discover new jobs from {N} configured portals
+> - Type 'scan --fast' to check only your priority (dream) companies
 > - Type 'pipeline' to process your pending URL queue
 > - Type 'setup' again to update your profile at any time
 >

@@ -20,6 +20,8 @@ Parse flags from user input before doing anything:
 | `scan --clean` | Force stale check now (don't wait for weekly trigger) |
 | `scan --new-chapter` | Show impact summary, require `--confirm` to proceed |
 | `scan --new-chapter --confirm` | Archive all data files and start fresh |
+| `scan --discover` | Find new companies based on your CV and add to portals.yml |
+| `scan --discover --focus TOPIC` | Focus discovery on a specific domain (overrides CV) |
 | `scan --help` | Show flag reference |
 
 ---
@@ -40,6 +42,8 @@ COMMANDS
   scan --import FILE        Import jobs from a CSV file
   scan --clean              Run stale check now (don't wait for weekly trigger)
   scan --new-chapter        Archive current data and start fresh (shows impact first)
+  scan --discover           Find new companies based on your CV and add to portals.yml
+  scan --discover --focus X Focus discovery on a specific domain (e.g., "medical devices")
   scan --help               Show this help
 
 INBOX
@@ -52,6 +56,14 @@ KEY FILES
   data/pipeline.md          Pending jobs (Scout writes, Evaluator processes)
   data/archived.md          Dead links removed from pipeline (recoverable)
   data/.scout-state.json    Scan state (last run, dry spell counter)
+
+RECIPES
+  Discover based on my CV:        scan --discover
+  Discover for a specific niche:  scan --discover --focus "Robotics startups in Munich"
+  Daily habit (dream companies):  scan --fast
+  Import from recruiter email:    Paste URLs in data/inbox.txt, then: scan
+  Full sweep (all companies):     scan
+  Start a fresh search:           scan --new-chapter
 ```
 
 ---
@@ -122,6 +134,148 @@ Run `scan --new-chapter --confirm` to proceed.
    Set `last_clean` AND `last_scan` to TODAY — prevents an immediate stale check on an empty pipeline.
 5. Print: "New chapter started. Data archived to data/archive/YYYY-MM-DD/. Run `scan` to begin."
 6. STOP (don't run discovery after reset).
+
+---
+
+## Step 0d: Discover Companies (if `--discover` flag)
+
+**STOP after this step** — don't run the normal portal scan.
+
+### Phase 1: Extract profile signals
+
+**If `--focus TOPIC` provided:** Use the topic as the primary domain. Skip CV-derived
+domains. Still use market/location from profile.
+
+**Otherwise:** Read `cv.md`, `config/profile.yml`, `modes/_profile.md`. Extract:
+
+- **Past employers** — company names from Work Experience in cv.md
+- **Target role keywords** — from `target_roles.primary` in profile.yml
+- **Domain signals** — domain keywords from archetype table in _profile.md
+- **Market/location** — `location.market` + `location.country` from profile.yml;
+  ALSO `location_filter.allow/block` from portals.yml for geographic constraints
+- **Existing companies (dedup set)** — build two sets from portals.yml `tracked_companies`:
+  - Normalized names: lowercase, strip "Inc"/"Corp"/"Ltd"/"GmbH"/"AG"/"SE"/"S.A." suffixes
+  - URL slugs: extract slug from `careers_url` (e.g., `jobs.ashbyhq.com/wolfspeed` → `wolfspeed`)
+  - A discovered company is duplicate if EITHER normalized name OR URL slug matches
+
+**Guard:** If cv.md is empty or has no Work Experience content, stop:
+> "Your CV doesn't have enough content for discovery. Add your work experience to cv.md first."
+
+Show the user what was derived before searching:
+```
+Based on your profile, I'll search for companies in:
+  1. {Domain A} — from your experience at {Employer 1}, {Employer 2}
+  2. {Domain B} — from your archetype '{Archetype Name}'
+  3. Market: {market}, {location}
+  [if --focus: "Focus: '{TOPIC}' (overriding profile domains)"]
+
+Searching for companies with Greenhouse, Ashby, or Lever portals...
+```
+
+### Phase 2: WebSearch for companies
+
+Build 4-6 WebSearch queries. Include market/geography in EVERY query.
+
+Query patterns:
+- `"top {domain} companies hiring {role keywords} {market/region}"`
+- `"{past employer} competitors {domain} {market/region}"`
+- `"{domain} startups {market/region} careers site:jobs.ashbyhq.com OR site:jobs.lever.co OR site:job-boards.greenhouse.io"`
+- `"best {domain} companies {year} {market/region}"`
+
+**Market-aware language:** For non-US markets, include local-language queries:
+- DACH: `"Top {domain} Arbeitgeber {city}"` or `"{domain} Unternehmen {region} Karriere"`
+- France: `"{domain} entreprises qui recrutent {city}"`
+- Remote: `"remote-first companies hiring {role keywords}"`
+
+**If `--focus TOPIC`:** Replace `{domain}` with the user-provided topic.
+
+**Batching:** Prefer list-returning queries ("top 20 {domain} companies") over individual
+lookups. Extract unique company names from results. Remove duplicates against the dedup
+set. Target: 10–20 candidate companies.
+
+### Phase 3: Resolve ATS portal URLs
+
+Batch 3–5 companies per WebSearch for efficiency:
+`"{Company A}" OR "{Company B}" OR "{Company C}" careers site:jobs.ashbyhq.com OR site:jobs.lever.co OR site:job-boards.greenhouse.io`
+
+For each company, classify the careers portal:
+
+| URL pattern | Result |
+|-------------|--------|
+| `jobs.ashbyhq.com/{slug}` | Ashby — enabled: true |
+| `jobs.lever.co/{slug}` | Lever — enabled: true |
+| `job-boards.greenhouse.io/{slug}` or `job-boards.eu.greenhouse.io/{slug}` | Greenhouse — enabled: true (also construct api: field) |
+| `*.wd1.myworkdayjobs.com` or `*.wd5.myworkdayjobs.com` | enabled: false, "Uses Workday — add jobs via inbox.txt" |
+| `*.taleo.net` | enabled: false, "Uses Taleo — add jobs via inbox.txt" |
+| `*.icims.com` | enabled: false, "Uses iCIMS — add jobs via inbox.txt" |
+| `apply.workable.com/*` | enabled: false, "Uses Workable — add jobs via inbox.txt" |
+| Other / not found | enabled: false, "No scannable portal — add jobs via inbox.txt" |
+
+### Phase 4: Present results
+
+Split into two sections. Numbering is continuous across both sections.
+
+```
+Scannable (Greenhouse / Ashby / Lever — zero-token scanning):
+
+  #   Company              Why                                       Portal
+  1   Wolfspeed            Uses same SiC stack as your ADI work     jobs.ashbyhq.com/wolfspeed
+  2   Navitas Semi         GaN pioneer, peer group to Delta         jobs.lever.co/navitas
+  3   Infineon             Direct competitor of Analog Devices       job-boards.greenhouse.io/infineon
+
+Manual only (no scannable API — add jobs via data/inbox.txt):
+
+  #   Company              Why                                       ATS
+  8   Eaton                Power management, peer to Delta           Uses Workday
+  9   Texas Instruments    Analog/mixed-signal competitor            Uses Workday
+
+Skipped {N} companies already in portals.yml.
+```
+
+**"Why" column:** Reference the specific connection — not generic labels:
+- "Uses same GaN/SiC stack as your work at ADI" (tech stack)
+- "Peer group to your Delta Electronics role" (past employer peer)
+- "Direct competitor of Analog Devices" (market competitor)
+- "Berlin-based, matches your DACH market" (geography)
+
+If any company is a direct competitor of a past employer, flag it:
+> "Infineon is a direct competitor of your past employer Analog Devices.
+>  Marking as priority: true for --fast daily scans. (Change anytime in portals.yml.)"
+
+Ask:
+> "Add to portals.yml? Type 'all', specific numbers '1,3,5', or 'none'."
+
+### Phase 5: Write to portals.yml
+
+For each selected company, append to `tracked_companies` in portals.yml.
+Include a YAML comment so the user remembers WHY it's there weeks later:
+
+```yaml
+# Discovery: SiC power specialist — competitor to Analog Devices (2026-05-18)
+- name: Wolfspeed
+  careers_url: https://jobs.ashbyhq.com/wolfspeed
+  notes: "SiC power specialist, competitor to Analog Devices"
+  enabled: true
+```
+
+Fields: name, careers_url, api (Greenhouse only), notes, enabled, priority (if competitor).
+
+**Contextual next-step (user never wonders "now what?"):**
+
+- Companies added:
+  > "Added {N} companies to config/portals.yml ({M} scannable, {K} manual-only).
+  >  Next: Run 'scan' to search these new companies for open roles."
+
+- 0 found (all deduped):
+  > "No new companies found — your portals.yml already covers this space.
+  >  Try: scan --discover --focus '{different domain}'"
+
+- 0 found (search empty):
+  > "Couldn't find matching companies. Try broadening:
+  >  scan --discover --focus '{broader domain or region}'"
+
+- User said "none":
+  > "No companies added. Run 'scan --discover' anytime to try again."
 
 ---
 
