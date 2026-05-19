@@ -42,31 +42,31 @@ Show this menu:
 ```
 career-scout — Command Center
 
-  /career-scout [URL or JD text]   → EVALUATE: full A-G analysis + report + tracker
-  /career-scout evaluate           → Evaluation mode (same as pasting URL/JD directly)
-  /career-scout pipeline           → Process pending URLs from data/pipeline.md
-  /career-scout setup              → Guided profile creation / update archetypes / recalibrate
-  /career-scout cv                 → Generate tailored PDF CV from latest evaluation
-  /career-scout cv --fast          → Draft HTML only, no reviewer or PDF (for manual editing)
+  /career-scout [URL or JD text]   → Analyze this job — fit score, CV tips, interview prep
+  /career-scout evaluate           → Analyze a job (same as pasting URL directly)
+  /career-scout pipeline           → Review jobs in your queue (data/pipeline.md)
+  /career-scout setup              → Set up your profile / update job types and targets
+  /career-scout cv                 → Generate a tailored PDF resume for the last job you analyzed
+  /career-scout cv --fast          → Quick editable draft (no PDF — for manual tweaks)
 
-  /career-scout scan                  → Full discovery run (all configured companies)
-  /career-scout scan --fast           → Priority run (companies marked priority: true)
-  /career-scout scan --sources TYPE   → Scan specific portal types (greenhouse, ashby, lever)
-  /career-scout scan --dry-run        → Preview without writing files
-  /career-scout scan --import FILE    → Import jobs from CSV file
-  /career-scout scan --company NAME   → Scan a single company only
-  /career-scout scan --clean          → Force stale check now
-  /career-scout scan --new-chapter    → Archive old data and start fresh search
-  /career-scout scan --discover       → Find new companies based on your CV
-  /career-scout scan --discover --focus X  → Focus discovery on a specific domain
-  /career-scout scan --help           → Show flag reference (includes recipes)
+  /career-scout scan                  → Search all your companies for new jobs
+  /career-scout scan --fast           → Quick check — your favorite companies only
+  /career-scout scan --sources TYPE   → Search one job board type (greenhouse, ashby, lever)
+  /career-scout scan --dry-run        → Preview what a search would find (nothing is saved)
+  /career-scout scan --import FILE    → Add jobs from a spreadsheet or CSV
+  /career-scout scan --company NAME   → Search just one company
+  /career-scout scan --clean          → Check for dead/expired job links right now
+  /career-scout scan --new-chapter    → Archive your old search history and start fresh
+  /career-scout scan --discover       → Find companies that match your background
+  /career-scout scan --discover --focus X  → Search for companies in a specific industry
+  /career-scout scan --help           → Show all options with examples
 
   Coming soon:
   /career-scout interview-prep     → STAR+R prep for a specific company (Phase 4)
   /career-scout auto               → Full pipeline: evaluate + CV + track (Phase 5)
   /career-scout batch              → Parallel evaluation of multiple URLs (Phase 5)
 
-Inbox: add URLs to data/pipeline.md → /career-scout pipeline
+Drop job URLs in data/inbox.txt → run /career-scout scan → /career-scout pipeline to review
 ```
 
 ---

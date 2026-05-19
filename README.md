@@ -85,7 +85,7 @@ Or paste JD text:
 [paste full JD]
 ```
 
-You get blocks A–G, a saved report in `reports/`, and a tracker row in `data/applications.md`.
+You get a full analysis (fit score, salary context, CV tips, interview prep), a saved report, and a row added to your application tracker automatically.
 
 ### 5. Process queued jobs
 
@@ -101,7 +101,7 @@ After evaluating a job (score ≥ 65):
 > cv
 ```
 
-Or for a quick HTML draft you'll edit manually:
+Or for a quick editable version before generating a PDF:
 ```
 > cv --fast
 ```
@@ -132,7 +132,7 @@ your history, and appends new jobs to `data/pipeline.md`. Then run `pipeline` to
 **Inbox — drop URLs from any source:**
 
 Add URLs to `data/inbox.txt` (one per line). Scout drains this file on every run.
-Optional metadata via pipes:
+Optional: add company name, title, and source (separated by |):
 ```
 https://boards.greenhouse.io/stripe/jobs/123
 https://jobs.lever.co/openai/456 | OpenAI | ML Platform | browser-ext
@@ -140,27 +140,27 @@ https://jobs.lever.co/openai/456 | OpenAI | ML Platform | browser-ext
 
 **Other scan flags:**
 ```
-scan --sources greenhouse    # Only Greenhouse portals
-scan --company Anthropic     # Single company
-scan --import referrals.csv  # Import from CSV file
-scan --dry-run               # Preview without writing files
-scan --clean                 # Force stale link check now
-scan --new-chapter           # Archive old data and start a fresh search
-scan --discover              # Find new companies based on your CV
-scan --discover --focus X    # Focus discovery on a specific domain
-scan --help                  # Show full flag reference (includes recipes)
+scan --sources greenhouse    # Only search Greenhouse-based companies
+scan --company Anthropic     # Search just this one company
+scan --import referrals.csv  # Add jobs from a spreadsheet
+scan --dry-run               # See what a search would find (nothing saved)
+scan --clean                 # Check for expired/dead job links right now
+scan --new-chapter           # Save your old history and start a fresh search
+scan --discover              # Find companies that match your background
+scan --discover --focus X    # Search for companies in a specific industry
+scan --help                  # Show all options with examples
 ```
 
-**Don't know which companies to track?** Run `scan --discover` — the agent reads your CV,
+**Not sure which companies to search?** Run `scan --discover` — the agent reads your CV,
 finds competitors, peer companies, and niche players in your domain, resolves their career
 portals, and adds them to your config. You approve each one before it's added.
 
 Want to explore a different area without editing your CV? `scan --discover --focus "robotics"`
 pivots the search to any domain you name.
 
-**Stale link cleanup:** Scout automatically checks old pending jobs weekly and
-archives dead links to `data/archived.md`. To restore a job: move the row back
-to `data/pipeline.md`.
+**Expired link cleanup:** Scout automatically checks old jobs weekly and removes
+dead links to your archive (`data/archived.md`). Changed your mind? Move the row
+back to your job queue (`data/pipeline.md`).
 
 ---
 
@@ -245,11 +245,12 @@ Full mapping: `docs/DATA_CONTRACT.md`
 | Role Quality | 10% |
 | Location | Pass/Fail (gate) |
 
-**Fit categories:** PERFECT_MATCH (90–100) → GOOD_FIT (80–89) → PARTIAL_MATCH (65–79) → HARD_MISMATCH (40–64) → POOR_FIT (0–39)
+**Match levels:**
+Perfect match (90–100) · Good fit (80–89) · Partial match (65–79) · Poor fit (40–64) · Not a match (0–39)
 
-Soft overrides: TOO_JUNIOR / OVERQUALIFIED (score still shown, category overridden)
+Special cases: Too junior or Overqualified — score still shown, with a note explaining why.
 
-**Apply bar: 80/100** — consistent with 740+ evaluations in the source project (career-ops).
+**Recommended minimum score to apply: 80/100** — consistent with 740+ evaluations in the source project (career-ops).
 
 ---
 
@@ -377,8 +378,8 @@ Your `cv.md`, `reports/`, `data/`, and `interview-prep/story-bank.md` are **not*
 
 | Issue | Fix |
 |-------|-----|
-| Archetype shows "Unclassified" | Run `setup` to define archetypes in `_profile.md` |
-| Block G signal 4 says "no history" | Expected on fresh install — scan-history.tsv is empty |
+| Job type shows "Unclassified" | Run `setup` to define your target job types |
+| Legitimacy check says "no history" | Normal on first use — your scan history is still empty |
 | LinkedIn URL fails | LinkedIn requires login — paste the JD text instead |
 | Score feels too high/low | Re-run `setup` and redo the Golden Examples calibration |
 | `.bak` files appearing | Setup backed up your profile before writing — safe to delete after verifying new content |

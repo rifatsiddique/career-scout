@@ -305,21 +305,22 @@ Check if `config/portals.yml` still contains only the empty template (no `tracke
 
 If empty:
 
-> "I can set up the job scanner with 50+ pre-configured companies (Greenhouse, Ashby, Lever portals).
->  Want me to customize the search keywords for your target roles and populate portals.yml?"
+> "I can add 50+ companies to your job search watch list — major companies on
+>  Greenhouse, Ashby, and Lever job boards, customized to your target roles.
+>  Want me to set that up? (saves to portals.yml)"
 
 If yes:
 1. Copy `config/portals.example.yml` → `config/portals.yml` (overwriting the empty template)
 2. Update `title_filter.positive` with keywords derived from `target_roles.primary` in profile.yml
    (e.g., "AI Engineer" → add "AI", "Engineer"; "Technical PM" → add "Product Manager", "Technical PM")
 3. Update `location_filter` to match the user's location/remote preferences from profile.yml
-4. Confirm: "Scanner configured with {N} companies. Run 'scan' to discover jobs."
+4. Confirm: "Done! {N} companies added to your watch list. Run 'scan' to search for open roles."
 
 If no: skip. User can copy the example file manually later.
 
-> **Tip:** Keep `title_filter` broad — the Evaluator does fine-grained scoring, not the Scanner.
->  A broad filter catches both "AI Engineer" AND "Technical PM" roles at the same companies.
->  You can always tighten filters later if you're getting too many irrelevant results.
+> **Tip:** Keep job title keywords broad here — the job analysis step does the fine matching.
+>  For example, a broad filter catches both "AI Engineer" and "Technical PM" at the same companies.
+>  You can always narrow things down later if the results feel too scattered.
 
 If portals.yml is already configured with 5+ companies: skip this step silently.
 
@@ -327,11 +328,11 @@ If portals.yml is already configured with 5+ companies: skip this step silently.
 if total `tracked_companies` count is still low (fewer than 5 enabled companies),
 make it an active invitation:
 
-> "Your portals.yml has {N} companies. Want me to find more based on your background?
->  I'll search for competitors of your past employers, companies in your domain, and
->  industry players with scannable career portals. You'll approve each one before it's added."
+> "Your watch list has {N} companies. Want me to find more?
+>  I'll search for competitors of your past employers and companies in your field
+>  that have job boards I can search automatically. You'll approve each one before it's added."
 >
-> Run discovery now? (yes/no)
+> Find more companies now? (yes/no)
 
 **If yes:** Execute Step 0d from `modes/scan.md` inline — the user just said yes,
 don't make them type a separate command. They're engaged now.
@@ -342,18 +343,18 @@ don't make them type a separate command. They're engaged now.
 
 ## Step 10: Confirm Ready
 
-> "Setup complete! Here's what's configured:
-> - **{N} archetypes** defined: {archetype names}
-> - **Market:** {market value}
-> - **Comp target:** {range}
-> - **Scoring calibration:** {N} Golden Examples
-> - **Portal scanner:** {N} companies configured ({M} from discovery / not configured}
+> "Setup complete! Here's what's ready:
+> - **Job types you're targeting:** {archetype names}
+> - **Your market:** {market value}
+> - **Salary target:** {range}
+> - **Scoring calibrated** with {N} examples from your feedback
+> - **Company watch list:** {N} companies to search ({M} found via discovery)
 > 
 > You can now:
-> - Paste a job URL or JD text to evaluate it
-> - Type 'scan' to discover new jobs from {N} configured portals
-> - Type 'scan --fast' to check only your priority (dream) companies
-> - Type 'pipeline' to process your pending URL queue
-> - Type 'setup' again to update your profile at any time
+> - Paste a job URL or description to get a full analysis
+> - Type 'scan' to search your {N} companies for open roles
+> - Type 'scan --fast' to quickly check only your favorite companies
+> - Type 'pipeline' to review jobs you've already found
+> - Type 'setup' again anytime to update your profile
 >
 > Tip: Add writing samples to `writing-samples/` for better-matched cover letters and application answers."

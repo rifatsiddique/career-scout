@@ -443,8 +443,9 @@ CONFIG
 
   // Warn if --fast found no priority companies
   if (fastMode && targets.length === 0) {
-    console.error('Warning: No companies marked priority: true in config/portals.yml.');
-    console.error('Mark dream companies with "priority: true" to use --fast mode.');
+    console.error('No favorite companies set up yet.');
+    console.error('Open config/portals.yml and add "priority: true" to your top companies,');
+    console.error('then run "scan --fast" for a quick daily check on just those.');
   }
 
   // 3. Load dedup sets

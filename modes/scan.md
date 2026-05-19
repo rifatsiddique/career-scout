@@ -34,36 +34,36 @@ When `--help` flag detected, print and stop:
 career-scout scan — Job Discovery
 
 COMMANDS
-  scan / scout              Full discovery run (all enabled companies)
-  scan --fast               Priority run (companies marked priority: true)
-  scan --sources TYPE       Only scan portals of type: greenhouse, ashby, lever
-  scan --company NAME       Scan a single company only
-  scan --dry-run            Preview results without writing any files
-  scan --import FILE        Import jobs from a CSV file
-  scan --clean              Run stale check now (don't wait for weekly trigger)
-  scan --new-chapter        Archive current data and start fresh (shows impact first)
-  scan --discover           Find new companies based on your CV and add to portals.yml
-  scan --discover --focus X Focus discovery on a specific domain (e.g., "medical devices")
+  scan / scout              Search all your companies for new jobs
+  scan --fast               Quick check — your favorite companies only
+  scan --sources TYPE       Search one job board type: greenhouse, ashby, or lever
+  scan --company NAME       Search just one company
+  scan --dry-run            Preview what a search would find (nothing is saved)
+  scan --import FILE        Add jobs from a spreadsheet or CSV
+  scan --clean              Check for dead/expired job links right now
+  scan --new-chapter        Archive your old search history and start fresh
+  scan --discover           Find companies that match your background (adds to your watch list)
+  scan --discover --focus X Search for companies in a specific industry (e.g., "medical devices")
   scan --help               Show this help
 
 INBOX
-  data/inbox.txt            Drop URLs here, one per line
-                            Optional metadata: URL | Company | Role | Source
-                            Drained on every scan run.
+  data/inbox.txt            Paste job URLs here — one per line
+                            Optional: add company name, title, source (separated by |)
+                            Picked up automatically on your next scan.
 
 KEY FILES
-  config/portals.yml        Companies to scan + title/location filters
-  data/pipeline.md          Pending jobs (Scout writes, Evaluator processes)
-  data/archived.md          Dead links removed from pipeline (recoverable)
-  data/.scout-state.json    Scan state (last run, dry spell counter)
+  config/portals.yml        Your company watch list + job title and location filters
+  data/pipeline.md          Your job queue — new jobs land here after scanning
+  data/archived.md          Expired or dead job links (you can restore them anytime)
+  data/.scout-state.json    Scan history (last run date, consecutive empty runs)
 
 RECIPES
   Discover based on my CV:        scan --discover
   Discover for a specific niche:  scan --discover --focus "Robotics startups in Munich"
-  Daily habit (dream companies):  scan --fast
-  Import from recruiter email:    Paste URLs in data/inbox.txt, then: scan
-  Full sweep (all companies):     scan
-  Start a fresh search:           scan --new-chapter
+  Daily habit (favorite companies): scan --fast
+  Add a job from a recruiter email: Paste the URL in data/inbox.txt, then: scan
+  Full search (all companies):    scan
+  Start a fresh job search:       scan --new-chapter
 ```
 
 ---
@@ -95,8 +95,8 @@ RECIPES
 
 **Returning user** (`.scout-state.json` exists AND `last_scan` > 60 days ago):
 
-  > "Note: You haven't run Scout in {N} days. If you're starting a fresh search,
-  >  run `scan --new-chapter` to archive old data first."
+  > "Note: You haven't run Scout in {N} days. Starting a new job search?
+  >  Run 'scan --new-chapter' to save your old search history and start clean."
 
 No question, no blocking. The scan continues regardless.
 
@@ -107,20 +107,22 @@ Skip this notice if `--clean`, `--new-chapter`, `--dry-run`, or `--import` flags
 **Without `--confirm`:** Read row counts from all data files, show impact and stop:
 
 ```
-This will archive:
-  data/pipeline.md       (N pending, M evaluated rows)
-  data/applications.md   (K entries)
-  data/scan-history.tsv  (J entries)
-  data/archived.md       (L entries)
-  data/follow-ups.md     (F entries)
+This will save your old search history to a folder and start fresh.
 
-Archive destination: data/archive/YYYY-MM-DD/
-  (If directory exists, append suffix: -2, -3, ...)
+What gets saved:
+  Your job queue        (data/pipeline.md — N waiting, M reviewed)
+  Your application log  (data/applications.md — K entries)
+  Your scan history     (data/scan-history.tsv — J entries)
+  Your archived links   (data/archived.md — L entries)
+  Your follow-up notes  (data/follow-ups.md — F entries)
 
-NOT archived: data/inbox.txt (pending items carry forward)
-NOT touched:  reports/, output/, config/
+Saved to: data/archive/{today's date}/
+  (If folder already exists, a suffix is added: -2, -3, ...)
 
-Run `scan --new-chapter --confirm` to proceed.
+NOT saved: data/inbox.txt (your pending URLs carry forward to the new search)
+NOT touched: reports/, output/, config/
+
+Run 'scan --new-chapter --confirm' to proceed.
 ```
 
 **With `--confirm`:**
@@ -159,17 +161,17 @@ domains. Still use market/location from profile.
   - A discovered company is duplicate if EITHER normalized name OR URL slug matches
 
 **Guard:** If cv.md is empty or has no Work Experience content, stop:
-> "Your CV doesn't have enough content for discovery. Add your work experience to cv.md first."
+> "Your CV needs more content before I can search for matching companies. Add your work experience to cv.md first."
 
 Show the user what was derived before searching:
 ```
-Based on your profile, I'll search for companies in:
+Based on your CV and profile, I'll search for companies in:
   1. {Domain A} — from your experience at {Employer 1}, {Employer 2}
-  2. {Domain B} — from your archetype '{Archetype Name}'
-  3. Market: {market}, {location}
-  [if --focus: "Focus: '{TOPIC}' (overriding profile domains)"]
+  2. {Domain B} — from your target job type '{Archetype Name}'
+  3. Focusing on: {market}, {location preferences}
+  [if --focus: "Focus: '{TOPIC}' (overriding profile signals)"]
 
-Searching for companies with Greenhouse, Ashby, or Lever portals...
+Searching for companies with job boards I can search automatically...
 ```
 
 ### Phase 2: WebSearch for companies
@@ -216,20 +218,20 @@ For each company, classify the careers portal:
 Split into two sections. Numbering is continuous across both sections.
 
 ```
-Scannable (Greenhouse / Ashby / Lever — zero-token scanning):
+Can search automatically (Greenhouse, Ashby, and Lever job boards):
 
   #   Company              Why                                       Portal
   1   Wolfspeed            Uses same SiC stack as your ADI work     jobs.ashbyhq.com/wolfspeed
   2   Navitas Semi         GaN pioneer, peer group to Delta         jobs.lever.co/navitas
   3   Infineon             Direct competitor of Analog Devices       job-boards.greenhouse.io/infineon
 
-Manual only (no scannable API — add jobs via data/inbox.txt):
+Requires manual browsing (paste job URLs into data/inbox.txt):
 
-  #   Company              Why                                       ATS
+  #   Company              Why                                       Job system
   8   Eaton                Power management, peer to Delta           Uses Workday
   9   Texas Instruments    Analog/mixed-signal competitor            Uses Workday
 
-Skipped {N} companies already in portals.yml.
+Skipped {N} companies already in your watch list (portals.yml).
 ```
 
 **"Why" column:** Reference the specific connection — not generic labels:
@@ -243,7 +245,8 @@ If any company is a direct competitor of a past employer, flag it:
 >  Marking as priority: true for --fast daily scans. (Change anytime in portals.yml.)"
 
 Ask:
-> "Add to portals.yml? Type 'all', specific numbers '1,3,5', or 'none'."
+> "Add these to your company watch list? (portals.yml)
+>  Type 'all' to add everything, '1,3,5' for specific ones, or 'none' to skip."
 
 ### Phase 5: Write to portals.yml
 
@@ -263,19 +266,19 @@ Fields: name, careers_url, api (Greenhouse only), notes, enabled, priority (if c
 **Contextual next-step (user never wonders "now what?"):**
 
 - Companies added:
-  > "Added {N} companies to config/portals.yml ({M} scannable, {K} manual-only).
-  >  Next: Run 'scan' to search these new companies for open roles."
+  > "Added {N} companies to your watch list ({M} auto-searchable, {K} need manual browsing).
+  >  Next: Run 'scan' to search your new companies for open roles."
 
 - 0 found (all deduped):
-  > "No new companies found — your portals.yml already covers this space.
-  >  Try: scan --discover --focus '{different domain}'"
+  > "No new companies found — your watch list already covers this area.
+  >  Try a different angle: scan --discover --focus '{different domain}'"
 
 - 0 found (search empty):
-  > "Couldn't find matching companies. Try broadening:
+  > "Couldn't find matching companies — try casting a wider net:
   >  scan --discover --focus '{broader domain or region}'"
 
 - User said "none":
-  > "No companies added. Run 'scan --discover' anytime to try again."
+  > "Nothing added. You can run 'scan --discover' anytime to try again."
 
 ---
 
@@ -346,29 +349,29 @@ Update `data/.scout-state.json`:
 Print:
 
 ```
-Scout Complete — {date} [{PRIORITY RUN | full run}]
+Scan Complete — {date} [{Favorites only | All companies}]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Companies scanned:     {n}
+Companies searched:    {n}
 Jobs found:            {n}
 Filtered (title):      {n}
 Filtered (location):   {n}
-Duplicates:            {n}
-From inbox:            {n}
+Already seen:          {n}
+From your inbox:       {n}
 ────────────────────────────────────────────
-New in pipeline:       {n}
+New in your job queue: {n}
 
 [if new offers > 0: list each: + Company | Title | source-tag]
-[if errors: list per-company API errors from SCAN_RESULTS.errors]
+[if errors: list per-company errors from SCAN_RESULTS.errors]
 ```
 
 **Conditional next-step message:**
 
 | Condition | Message |
 |-----------|---------|
-| 0 new jobs | "Pipeline is up to date." |
-| 0 new jobs AND consecutive_empty_scans >= 3 | "Note: Scout hasn't found new jobs in {n} consecutive runs. Consider broadening title_filter in config/portals.yml or adding more companies." |
-| 1–4 new jobs | "Run 'pipeline' to evaluate the new offers." |
-| 5+ new jobs | "Run 'pipeline' to evaluate the new offers — you have a solid batch to work through." |
+| 0 new jobs | "Your job queue is up to date." |
+| 0 new jobs AND consecutive_empty_scans >= 3 | "Note: No new jobs found in {n} searches in a row. Consider broadening your job title keywords in config/portals.yml or adding more companies." |
+| 1–4 new jobs | "Run 'pipeline' to review the new jobs." |
+| 5+ new jobs | "Run 'pipeline' to review the new jobs — you have a good batch to work through." |
 
 ---
 
@@ -406,17 +409,17 @@ For each row in pipeline.md Pending table:
 After stale check, print noisy summary:
 
 ```
-Stale Check
-━━━━━━━━━━━
-Checked:   {n} pending items older than {stale_threshold_days} days
-Archived:  {n} dead links
-  - Company | Role | Reason
+Expired Link Check
+━━━━━━━━━━━━━━━━━━
+Checked:    {n} jobs older than {stale_threshold_days} days
+Removed:    {n} dead or expired links
+  - Company | Role | Why removed
   - ...
-Flagged:   {n} uncertain (check Notes column in pipeline.md)
-Active:    {n} confirmed live
+Flagged:    {n} links to verify manually (see Notes column in your job queue)
+Still open: {n} confirmed active
 
-Archived items are in data/archived.md.
-To restore: move the row back to data/pipeline.md Pending table.
+Removed links are saved in data/archived.md.
+Changed your mind? Move the row back to your job queue (data/pipeline.md).
 ```
 
 Update `last_clean` in `.scout-state.json` to today.
