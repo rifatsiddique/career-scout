@@ -22,7 +22,7 @@ Human-in-the-loop: AI evaluates and drafts. You review and submit.
 |-------|--------|-------------|
 | Phase 1: Foundation | ✅ Complete | evaluate, pipeline triage, setup |
 | Phase 2: CV Generation | ✅ Complete | Multi-template PDF CVs + drafter-reviewer |
-| Phase 3: Scout | Planned | Portal API scanning (Greenhouse, Ashby, Lever) |
+| Phase 3: Scout | ✅ Complete | Portal API scanning, inbox drain, stale cleanup, --fast priority run |
 | Phase 4: Interview Prep | Planned | Company research + story bank |
 | Phase 5: Auto-Pipeline | Planned | One-command end-to-end + batch |
 
@@ -114,6 +114,45 @@ The cv mode:
 5. Generates a PDF via Playwright to `output/cv-{name}-{company}-{date}.pdf`
 6. Supports iterative changes after initial generation
 
+### 7. Discover new jobs
+
+Run a full scan of all configured company portals:
+```
+> scan
+```
+
+Or a quick daily check of your dream companies only:
+```
+> scan --fast
+```
+
+Scout scans Greenhouse, Ashby, and Lever APIs (zero LLM tokens), deduplicates against
+your history, and appends new jobs to `data/pipeline.md`. Then run `pipeline` to evaluate.
+
+**Inbox — drop URLs from any source:**
+
+Add URLs to `data/inbox.txt` (one per line). Scout drains this file on every run.
+Optional metadata via pipes:
+```
+https://boards.greenhouse.io/stripe/jobs/123
+https://jobs.lever.co/openai/456 | OpenAI | ML Platform | browser-ext
+```
+
+**Other scan flags:**
+```
+scan --sources greenhouse    # Only Greenhouse portals
+scan --company Anthropic     # Single company
+scan --import referrals.csv  # Import from CSV file
+scan --dry-run               # Preview without writing files
+scan --clean                 # Force stale link check now
+scan --new-chapter           # Archive old data and start a fresh search
+scan --help                  # Show full flag reference
+```
+
+**Stale link cleanup:** Scout automatically checks old pending jobs weekly and
+archives dead links to `data/archived.md`. To restore a job: move the row back
+to `data/pipeline.md`.
+
 ---
 
 ## File Structure
@@ -129,21 +168,31 @@ career-scout/
 │   ├── _shared.md                # Scoring system, archetype detection, global rules
 │   ├── _profile.md               # YOUR archetypes, behavioral profile, writing style (USER layer)
 │   ├── evaluate.md               # A-G evaluation blocks
+│   ├── cv.md                     # CV generation workflow (Phase 2)
+│   ├── scan.md                   # Job discovery workflow (Phase 3)
 │   ├── pipeline-triage.md        # Pipeline inbox processing
 │   └── setup.md                  # Guided profile creation
 │
 ├── config/
 │   ├── profile.yml               # YOUR identity, targets, comp, market (USER layer)
-│   └── portals.yml               # Portal scanner config (Phase 3)
+│   ├── portals.yml               # YOUR tracked companies + title/location filters (USER layer)
+│   └── portals.example.yml       # Example with 50+ pre-configured companies
 │
 ├── data/
 │   ├── pipeline.md               # Scout ↔ Evaluator contract (Pending + Evaluated)
 │   ├── applications.md           # Full application tracker
-│   ├── scan-history.tsv          # Scout dedup log
+│   ├── scan-history.tsv          # Scout dedup log (append-only)
+│   ├── inbox.txt                 # Drop job URLs here — Scout drains on every run
+│   ├── archived.md               # Dead/stale links removed from pipeline (recoverable)
+│   ├── .scout-state.json         # Scan state (last run, dry spell counter)
 │   └── follow-ups.md             # Follow-up tracker
 │
 ├── scripts/
-│   └── check-history.mjs         # TSV parser for Block G repost/evergreen detection
+│   ├── scan.mjs                  # Zero-token portal scanner (Greenhouse/Ashby/Lever)
+│   ├── check-history.mjs         # TSV parser for Block G repost/evergreen detection
+│   ├── generate-pdf.mjs          # Playwright HTML→PDF (Phase 2)
+│   ├── liveness-core.mjs         # Job posting expiry/zombie detection
+│   └── check-liveness.mjs        # CLI liveness checker
 │
 ├── templates/
 │   ├── domain-packs/
@@ -165,10 +214,10 @@ career-scout/
 Two types of files. **Never mix them up.**
 
 **User layer** — your personal data, never auto-updated:
-`cv.md`, `config/profile.yml`, `modes/_profile.md`, `data/*`, `reports/*`, `output/*`, `interview-prep/story-bank.md`, `writing-samples/*`
+`cv.md`, `config/profile.yml`, `config/portals.yml`, `modes/_profile.md`, `data/*`, `reports/*`, `output/*`, `interview-prep/story-bank.md`, `writing-samples/*`
 
 **System layer** — instructions and tooling, safe to update:
-`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `modes/_shared.md`, `modes/evaluate.md`, `modes/pipeline-triage.md`, `modes/setup.md`, `scripts/*`, `templates/*`
+`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `modes/_shared.md`, `modes/evaluate.md`, `modes/cv.md`, `modes/scan.md`, `modes/pipeline-triage.md`, `modes/setup.md`, `scripts/*`, `templates/*`, `config/portals.example.yml`
 
 Full mapping: `docs/DATA_CONTRACT.md`
 
@@ -332,5 +381,9 @@ Your `cv.md`, `reports/`, `data/`, and `interview-prep/story-bank.md` are **not*
 Full architecture, design decisions, and implementation phases: `plan_rs/CONSOLIDATION-PLAN.md`
 
 Phase 1 detailed spec: `plan_rs/phase1-foundation.md`
+
+Phase 2 detailed spec: `plan_rs/phase2-cv-generation.md`
+
+Phase 3 detailed spec: `plan_rs/phase3-scout.md`
 
 Testing guide: `plan_rs/phase1-user-testing-guide.md`
