@@ -141,7 +141,25 @@ CSS variables (`:root { --margins; --base-font-size; --bullet-spacing }`) that c
 behavior — regenerating the HTML would break this mechanism. The template's `.page { padding: var(--margins); }`
 approach is intentional (reliable across all renderers; `@page { margin: var(--margins) }` is not).
 
-### 1e. Extract ATS keywords from JD (15-20 keywords)
+### 1e. Read Anti-Slop Writing Rules
+
+Read `templates/writing-rules.md`. These rules apply to every bullet, summary, and
+competency description you generate. Key constraints:
+
+- **No zombie bullets** — every bullet must be specific to this candidate. Apply the
+  Substitution Test: replace company name with ___ — if the bullet still works for
+  anyone, rewrite it with technical specifics.
+- **No banned words** (53 words: "leverage", "spearheaded", "utilize", "synergies", etc.)
+- **No banned phrases** ("proven track record", "cross-functional collaboration", etc.)
+- **Stats must be specific** — include units, conditions, methodology. "Improved performance
+  by 30%" is vague; "Reduced switching losses from 12W to 3.8W at 500kHz" is specific.
+- **Vary bullet lengths** — don't make every bullet 15-22 words. Mix: 8, 22, 14, 9.
+- **Max 1 em dash** in the entire CV. Use commas.
+- **No tidy summary closers** — summary just stops when the content is done.
+
+These rules are enforced by the Reviewer in Step 2. Violations will be flagged.
+
+### 1f. Extract ATS keywords from JD (15-20 keywords)
 
 From the JD text (or Block E if JD unavailable): extract the 15-20 most important
 keywords for ATS optimization. These are specific technologies, methodologies,
@@ -149,7 +167,7 @@ tools, and role-specific terms — not generic words like "communication" or "le
 
 Store as `ATS_KEYWORDS`.
 
-### 1f. Fill each placeholder
+### 1g. Fill each placeholder
 
 For each `{{PLACEHOLDER}}` in the template, generate the content:
 
@@ -246,7 +264,7 @@ Bullet ordering rules (apply BOTH together):
 
 Reorder skill categories so JD-matching categories appear first.
 
-### 1g. Apply deterministic cuts (Layer 1)
+### 1h. Apply deterministic cuts (Layer 1)
 
 Before rendering final HTML, apply these hard rules — UNLESS an item is protected by CV Generation Rules:
 
@@ -258,7 +276,7 @@ Before rendering final HTML, apply these hard rules — UNLESS an item is protec
 | Remove GPA for degrees older than 5 years | Yes — if CV Rules say "always include GPA" |
 | Collapse coursework to one line | Yes — if CV Rules protect coursework |
 
-### 1h. Apply relevance-weighted cutting (Layer 2, if content exceeds 2 pages estimate)
+### 1i. Apply relevance-weighted cutting (Layer 2, if content exceeds 2 pages estimate)
 
 Estimate content length. If clearly overflowing (experienced engineers with 3+ roles and 20+ bullets often will):
 
@@ -269,7 +287,7 @@ Score each remaining (unprotected) line on:
 
 Cut the lowest-scoring lines. Relevance beats recency — an older-role bullet that matches JD keywords survives over a recent-role bullet that doesn't.
 
-### 1i. Apply interview backtrack test (skip if FAST_MODE)
+### 1j. Apply interview backtrack test (skip if FAST_MODE)
 
 **If FAST_MODE: skip this step entirely — proceed to 1j.**
 
@@ -284,7 +302,7 @@ For every generated bullet, classify:
 Collect all "Flag" items with their original wording for Step 4.
 Silently remove "Never" items and note them in the discard log.
 
-### 1j. Write draft to disk
+### 1k. Write draft to disk
 
 Write the filled, cut, and cleaned HTML to `output/draft-{company-slug}.html`.
 
@@ -299,7 +317,7 @@ Write the filled, cut, and cleaned HTML to `output/draft-{company-slug}.html`.
 
 ## Step 2: REVIEWER — Fresh-Context Critique (skip if FAST_MODE or score < 80)
 
-**If FAST_MODE:** Step 1j already exited — this step is never reached.
+**If FAST_MODE:** Step 1k already exited — this step is never reached.
 
 **If composite score < 80 (PARTIAL_MATCH, 65-79):** Skip to Step 4. Before skipping, tell the user:
 > "Running single-pass draft mode (score: {N}/100 — PARTIAL_MATCH). The Drafter-Reviewer loop
@@ -355,6 +373,12 @@ Provide your critique in the format below.
 4. **Verify CV Generation Rules compliance** — check "always include" items are present, "never cut" sections survived, formatting rules respected. Flag violations.
 5. Apply the interview backtrack test independently
 6. Search the web to verify company-specific claims (partnerships, products, technologies) — **search for the company/technology, not the candidate. Do not include candidate name, employer, or personal details in search queries.**
+7. **Anti-slop audit** (per `templates/writing-rules.md`):
+   - **Substitution Test:** Replace each company name with ___. Any bullet that still sounds generic → flag as zombie bullet.
+   - **Banned words scan:** Flag any of the 53 banned words (delve, leverage, spearheaded, utilize, synergies, etc.)
+   - **Banned phrases scan:** Flag boilerplate ("proven track record", "cross-functional collaboration", etc.)
+   - **AI Bingo Test:** Count: banned words + em dashes + uniform bullet lengths + rule-of-three. If 3+ hits → request a rewrite pass.
+   - **Stats specificity:** Flag vague metrics ("improved by 30%") — stats need units, conditions, or methodology.
 
 ### Reviewer output format
 
@@ -382,7 +406,7 @@ Apply intelligence — don't literally copy the reviewer's text if it violates C
 or the backtrack test. Note any edits you choose not to apply and the reason.
 
 **Merge reviewer flags:** The reviewer may have identified additional "Flag" items during its
-independent backtrack test. Merge these into the flag list from Step 1i. Present all flags
+independent backtrack test. Merge these into the flag list from Step 1j. Present all flags
 together in Step 4 — do not show drafter flags and reviewer flags separately.
 
 ### 3b. Evaluate Part B suggestions
@@ -459,7 +483,7 @@ Reply with your decisions, request any changes, or say "go" to generate the PDF.
 
 **Before making any edits after this pause:** Re-read `output/draft-{company-slug}.html` from disk.
 The user may have manually edited the file in their IDE during the pause. Do NOT use the cached
-version from Step 1j — always read fresh before editing. This prevents overwriting the user's changes.
+version from Step 1k — always read fresh before editing. This prevents overwriting the user's changes.
 
 **If the user provides exact replacement text for any flagged item, use it verbatim.**
 Do not "improve" or rephrase it. The user knows what they want to say.
