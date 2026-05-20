@@ -561,6 +561,21 @@ project-root/
 - [x] Test: scan --dry-run → valid JSON *(verified 2026-05-18)*
 - [x] Test: --fast + no priority companies → clear warning *(verified 2026-05-18)*
 
+### Phase 3c: scan --discover ✅ Complete (2026-05-20)
+
+**Goal:** Auto-discover companies from the user's CV and add to portals.yml.
+**Spec:** `plan_rs/phase3-discover.md` (3 Gemini review rounds)
+
+- [x] Add `--discover` and `--discover --focus TOPIC` to `modes/scan.md` flag routing
+- [x] Add Step 0d to `modes/scan.md` — 5-phase discovery: extract signals → WebSearch → resolve ATS URLs → split table (scannable/manual) → write portals.yml with YAML comments
+- [x] Market-aware queries (DACH/France/remote local-language examples)
+- [x] Dedup by normalized name + URL slug (catches "Apple" vs "Apple Inc.")
+- [x] ATS identification for disabled companies (Workday/Taleo/iCIMS/Workable named)
+- [x] Priority suggestion for direct competitors of past employers
+- [x] RECIPES block added to `scan --help` output
+- [x] Setup Step 9 active invitation (offer to run --discover inline if <5 companies)
+- [x] Update SKILL.md discovery menu, README.md Quick Start
+
 ### Phase 3b: Advanced Discovery (deferred)
 
 - [ ] Level 1: Playwright scraping of careers pages (non-API portals)
