@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.8
-**Last Updated:** 2026-05-22 17:30 -- Phase 4 UX retrofit sweep complete. P1/P2/P3/P6 applied to cv.md, scan.md, pipeline-triage.md. Phase 4 fully done.
+**Version:** 1.9
+**Last Updated:** 2026-05-22 18:00 -- Added UX bug fixes to roadmap: P1 path resolution (AI outputs relative paths), classic-professional header (misleading title → HEADLINE, add WORK_AUTH). Plan at plan_rs/fix-ux-bugs.md.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -645,6 +645,20 @@ Tests (T1-T17, see plan §6e — workflow paths, schema edge cases, anti-fabrica
 - [ ] --tldr, comp skip path, UX P1+P2, cross-mode nudge
 - [ ] Subagent path with fallback (Q2), Jaccard dedup (Q4), legacy schema co-existence (Q5)
 - [ ] Citation lint sweep (Q7), "Lessons from Last Time" (Q10), P6 default-N safety
+
+### UX Bug Fixes (pending — plan_rs/fix-ux-bugs.md)
+
+**Bug A — P1 paths not clickable** (file paths output as relative, not `file:///` absolute):
+- [ ] `modes/_shared.md` P1: add explicit project-root resolution instruction (run `cd`/`pwd`)
+- [ ] `modes/cv.md`: lock P2 format, remove old "Tell the user" plain-text block, add PROJECT_ROOT resolution
+- [ ] `modes/interview-prep.md`: add PROJECT_ROOT resolution before P1 path print
+
+**Bug B — Classic-professional header**:
+- [ ] Replace `{{CURRENT_TITLE}}` → `{{HEADLINE}}` in template HTML (tag line from cv.md/profile, not JD title)
+- [ ] Add `headline: ""` optional field to `config/profile.yml`
+- [ ] Add `{{WORK_AUTH}}` to contact row (sourced from `profile.yml → visa_status`), hidden when empty
+- [ ] Ensure `{{PHONE}}` separator is hidden when phone is empty
+- [ ] Update `modes/cv.md` placeholder vocabulary table for `{{HEADLINE}}` and `{{WORK_AUTH}}`
 
 ### Phase 5: Auto-Pipeline + Batch (Week 8)
 
