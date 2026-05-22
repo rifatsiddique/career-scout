@@ -529,10 +529,19 @@ Update `data/applications.md`:
 - Find the row for this company + role
 - Set the PDF column to ✅ and note the filename
 
-Tell the user:
-> "CV generated: output/{filename}.pdf
-> {N} pages | {size} KB
-> Report: reports/{REPORT_NUM}-{slug}-{date}.md (Section I has reviewer critique)"
+```
+📂 CV: file:///{absolute-path}/output/{filename}.pdf
+
+What to do next:
+  1. Open the PDF above and review before submitting
+  2. Submit your application — then update status → pipeline
+  3. Once they schedule an interview → interview-prep {company-slug}
+```
+
+[P3 nudge — only if composite ≥ 80 (GOOD_FIT+)]:
+```
+💡 After submitting and landing an interview, run: interview-prep {company-slug}
+```
 
 ---
 

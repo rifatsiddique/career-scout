@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.7
-**Last Updated:** 2026-05-22 17:00 -- Phase 4 (Interview Prep + Story Bank) main implementation complete. modes/interview-prep.md, modes/deep.md, story-bank.md schema, Block F schema, UX P1-P6 in _shared.md, AGENTS.md routing, SKILL.md, DATA_CONTRACT.md, README.md, setup.md all updated. Retrofit sweep (P1-P6 in evaluate/cv/scan/pipeline-triage) deferred to next commit.
+**Version:** 1.8
+**Last Updated:** 2026-05-22 17:30 -- Phase 4 UX retrofit sweep complete. P1/P2/P3/P6 applied to cv.md, scan.md, pipeline-triage.md. Phase 4 fully done.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -623,13 +623,13 @@ UX Conventions (P1-P6) — project-wide standards introduced in this phase:
 - [x] README.md updated — Phase 4 status, new "Prepare for an Interview" Quick Start section
 - [x] setup.md updated — story bank mention + P2 next steps
 
-Retrofit sweep (next commit, post-Phase 4 main — applies P1-P6 to existing modes):
+Retrofit sweep (✅ complete 2026-05-22):
 
-- [ ] `modes/evaluate.md` — P1 (report path) already added; full P2 block, Block F P6 prompt added
-- [ ] `modes/cv.md` — add P1+P2+P3 (next step nudge to interview-prep)
-- [ ] `modes/scan.md` — add P1+P2 (next step: pipeline-triage)
-- [ ] `modes/pipeline-triage.md` — add P3 (Interview-status nudge for missing prep docs)
-- [ ] One-time editor-opening hint in setup.md first-run output
+- [x] `modes/evaluate.md` — P1 (report path), P2 (next steps), P3 (interview-prep nudge for GOOD_FIT+), Block F P6 prompt
+- [x] `modes/cv.md` — P1 (PDF path), P2 (next steps: review, submit, interview-prep), P3 (GOOD_FIT+ nudge)
+- [x] `modes/scan.md` — P1 (pipeline.md path), P2 (next steps), P6 (pipeline.md write confirmation)
+- [x] `modes/pipeline-triage.md` — P3 (Interview-status nudge for missing prep docs), P2 (next steps)
+- [ ] One-time editor-opening hint in setup.md first-run output (deferred — low value)
 
 Phase 4b (deferred):
 

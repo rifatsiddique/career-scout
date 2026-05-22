@@ -328,10 +328,17 @@ Skip entirely if `--dry-run` (show what WOULD be added instead).
    ```
    | {url} | {company} | {title} | {source} | {YYYY-MM-DD} | |
    ```
-3. Write updated pipeline.md
-4. CRITICAL: Append only. Never remove or modify existing rows.
+3. Before writing, apply P6 User Layer Write Confirmation:
+   ```
+   ⚠️ This will update data/pipeline.md (adding {N} new jobs).
+      A backup has been saved to pipeline.md.bak.
+      Proceed? [y/N]
+   ```
+   If user declines: skip write and reset. Recognize `--yes` to bypass.
+4. Write updated pipeline.md
+5. CRITICAL: Append only. Never remove or modify existing rows.
    Preserve the Evaluated section exactly as-is.
-5. AFTER pipeline.md is written: reset inbox.txt to comment-only header.
+6. AFTER pipeline.md is written: reset inbox.txt to comment-only header.
    (This ordering prevents data loss: if crash before Step 3, inbox.txt still has entries
    and dedup prevents duplicates on next run.)
 
@@ -372,6 +379,16 @@ New in your pipeline:  {n}
 | 0 new jobs AND consecutive_empty_scans >= 3 | "Note: No new jobs found in {n} searches in a row. Consider broadening your job title keywords in config/portals.yml or adding more companies." |
 | 1–4 new jobs | "Run 'pipeline' to review the new jobs." |
 | 5+ new jobs | "Run 'pipeline' to review the new jobs — you have a good batch to work through." |
+
+[Only when new jobs > 0]:
+```
+📂 Pipeline: file:///{absolute-path}/data/pipeline.md
+
+What to do next:
+  1. Review and evaluate new jobs → pipeline
+  2. Evaluate a specific job directly → paste its URL
+  3. Search again tomorrow → scan --fast
+```
 
 ---
 

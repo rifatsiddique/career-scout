@@ -69,6 +69,23 @@ After processing all pending URLs, output a summary table:
 
 Show totals: `{N} evaluated, {M} recommended to apply, {K} skipped`.
 
+**P3 nudge — Interview-status rows without a prep doc:**
+After the summary table, scan `data/applications.md` for rows where Status = `Interview`.
+For each, check whether `interview-prep/{company-slug}-{role-slug}.md` exists.
+For each missing prep doc (max 3 shown):
+```
+💡 {Company} is at Interview status — no prep doc yet. Run: interview-prep {company-slug}
+```
+If more than 3 are missing: add one line `... and {N} more Interview rows without prep docs.`
+If all Interview rows have prep docs: print nothing (no nudge).
+
+```
+What to do next:
+  1. Evaluate the top pending job → paste its URL
+  2. Generate a CV for a role you're moving forward on → cv
+  3. Update a status → tell me: "move {company} to {status}"
+```
+
 ---
 
 ## Pipeline File Format Reference
