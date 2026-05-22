@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.9
-**Last Updated:** 2026-05-22 18:00 -- Added UX bug fixes to roadmap: P1 path resolution (AI outputs relative paths), classic-professional header (misleading title → HEADLINE, add WORK_AUTH). Plan at plan_rs/fix-ux-bugs.md.
+**Version:** 1.10
+**Last Updated:** 2026-05-22 18:15 -- Added Bug C to UX bug fixes: move Core Competencies after Work Experience in both templates. Plan at plan_rs/fix-ux-bugs.md.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -652,6 +652,9 @@ Tests (T1-T17, see plan §6e — workflow paths, schema edge cases, anti-fabrica
 - [ ] `modes/_shared.md` P1: add explicit project-root resolution instruction (run `cd`/`pwd`)
 - [ ] `modes/cv.md`: lock P2 format, remove old "Tell the user" plain-text block, add PROJECT_ROOT resolution
 - [ ] `modes/interview-prep.md`: add PROJECT_ROOT resolution before P1 path print
+
+**Bug C — Section order (both templates)**:
+- [ ] Move Core Competencies to after Work Experience: Summary → Experience → Competencies → Projects → Education → Skills
 
 **Bug B — Classic-professional header**:
 - [ ] Replace `{{CURRENT_TITLE}}` → `{{HEADLINE}}` in template HTML (tag line from cv.md/profile, not JD title)

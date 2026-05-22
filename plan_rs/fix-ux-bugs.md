@@ -150,12 +150,63 @@ no CSS changes needed. Verify it still looks right with a longer headline like
 
 ---
 
+---
+
+## Bug C: Core Competencies section order
+
+### Symptom
+
+Both templates currently render sections in this order:
+1. Professional Summary
+2. **Core Competencies** ← currently here
+3. Work Experience
+4. Projects
+5. Education
+6. Skills
+
+Core Competencies reads like a keyword dump when placed before work history. Recruiters
+scan Work Experience first; competency tags are more useful as a reinforcement after
+seeing the evidence, not as a preamble before it.
+
+### Fix
+
+Move the `<!-- CORE COMPETENCIES -->` HTML block to after `<!-- WORK EXPERIENCE -->` in
+both templates:
+
+**New order:**
+1. Professional Summary
+2. Work Experience
+3. **Core Competencies** ← moved here
+4. Projects
+5. Education
+6. Skills
+
+### Changes required
+
+| File | Change |
+|------|--------|
+| `templates/cv/classic-professional.html` | Move `<!-- CORE COMPETENCIES -->` block (lines ~362-368) to after `<!-- WORK EXPERIENCE -->` block |
+| `templates/cv/ats-optimized.html` | Same — move `<!-- CORE COMPETENCIES -->` block (lines ~387-393) to after `<!-- WORK EXPERIENCE -->` block |
+
+No CSS changes. No mode file changes. No placeholder changes.
+The section comment `<!-- CORE COMPETENCIES -->` and its div move as a unit.
+
+### Test
+
+Generate a CV with both templates. Verify:
+- Work Experience appears before Core Competencies in the rendered PDF
+- No other sections are displaced
+- Competencies tags still render correctly (no broken layout)
+
+---
+
 ## Implementation order
 
-1. Bug B (template) first — self-contained HTML + profile.yml + cv.md changes, easily visual-verified
-2. Bug A (clickable paths) second — `_shared.md` + `cv.md` + `interview-prep.md` changes
+1. Bug C (section reorder) — two-line HTML move in each template, lowest risk
+2. Bug B (template header) — HTML + profile.yml + cv.md changes
+3. Bug A (clickable paths) — `_shared.md` + `cv.md` + `interview-prep.md` changes
 
-Single commit covering both fixes.
+Single commit covering all three fixes.
 
 ## Acceptance criteria
 
@@ -166,3 +217,5 @@ Single commit covering both fixes.
 - [ ] `visa_status` appears in contact row when populated, invisible when empty
 - [ ] `phone` separator hidden when phone is empty
 - [ ] `headline` in profile.yml overrides derived tag line when set
+- [ ] Both templates render: Summary → Work Experience → Core Competencies → Projects → Education → Skills
+- [ ] No layout breakage in either template after section reorder
