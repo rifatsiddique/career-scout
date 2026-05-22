@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.5
-**Last Updated:** 2026-05-22 -- PDF multi-page top-margin fix (generate-pdf.mjs now reads --margins and applies as Playwright page-level margin); classic-professional gets deep-navy accent + becomes default template.
+**Version:** 1.6
+**Last Updated:** 2026-05-22 -- Phase 4 (Interview Prep + Story Bank) detailed plan locked at v1.2 after 2 Gemini review rounds. All D1-D9 / P1-P6 / Q1-Q10 resolved. Plan at `plan_rs/phase4-interview-prep.md`.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -590,15 +590,53 @@ project-root/
 - [ ] LinkedIn integration via browser extension writing to inbox.txt
 - [ ] BrightData LinkedIn API (optional)
 
-### Phase 4: Interview Prep + Story Bank (Week 7)
+### Phase 4: Interview Prep + Story Bank (planning complete 2026-05-22, ready to execute)
 
-**Goal:** STAR+R story bank that grows over evaluations.
+**Goal:** Company-specific interview prep + curated Story Bank + post-interview debrief loop.
+**Detailed plan:** `plan_rs/phase4-interview-prep.md` (v1.2, locked — 2 Gemini review rounds, all open questions resolved)
 
-- [ ] Port `interview-prep.md` mode from career-ops
-- [ ] Port story bank format and accumulation pattern
-- [ ] Port company research workflow (Glassdoor, Blind, engineering blog searches)
-- [ ] Create `interview-prep/story-bank.md` template
-- [ ] Test: evaluate 3 jobs → verify story bank grows, stories map to JD requirements
+Core deliverables (see plan §6 for the full task list):
+
+- [ ] Port `modes/interview-prep.md` from career-ops, adapted to career-scout conventions
+- [ ] Add Pre-Flight Cheatsheet block (top of output, fixed cardinality 3 across all sub-blocks)
+- [ ] Add Compensation Calibration block (reads Block D + profile.yml comp targets)
+- [ ] Add citation lint sweep + referenced report header (not embedded)
+- [ ] Implement `interview-prep --tldr` (cheatsheet to terminal, no file write)
+- [ ] Implement `interview-prep --bank-review` (Jaccard ≥ 0.55 dedup, weak-Reflection flag, legacy schema upgrade)
+- [ ] Implement `interview-prep --debrief <company>` (post-interview close-the-loop)
+- [ ] Port `modes/deep.md` (standalone, called by interview-prep when intel is thin)
+- [ ] Update story-bank.md schema (table header per story) + legacy-schema co-existence parser
+- [ ] Update evaluate.md Block F to append in new schema
+
+UX Conventions (P1-P6) — project-wide standards introduced in this phase:
+
+- [ ] P1: Clickable `file:///` artifact paths
+- [ ] P2: "What to do next" block at end of every mode
+- [ ] P3: Cross-mode nudges (pipeline-triage → interview-prep, cv → interview-prep)
+- [ ] P4: `--tldr` variant for long-output modes
+- [ ] P5: Compact path display for multi-file output
+- [ ] P6: User Layer Write Confirmation (`.bak` + default-N prompt + `--yes` escape hatch)
+- [ ] Document P1-P6 in `modes/_shared.md`
+
+Retrofit sweep (separate commit, post-Phase 4 main — applies P1-P6 to existing modes):
+
+- [ ] `modes/evaluate.md`, `modes/cv.md`, `modes/scan.md`, `modes/pipeline-triage.md`, `modes/setup.md`
+- [ ] One-time editor-opening hint in setup mode first-run output
+
+Phase 4b (deferred):
+
+- [ ] Roleplay/practice mode (`interview-prep --practice`)
+- [ ] Pre-interview countdown reminder
+- [ ] Cross-interview pattern detection (after 3+ debriefs)
+- [ ] Mock-interview transcript scoring
+- [ ] Self-learning memory from LangHire
+
+Tests (T1-T17, see plan §6e — workflow paths, schema edge cases, anti-fabrication, CLI parity):
+
+- [ ] Cold start, mapping accuracy, citation honesty, bank curation, debrief loop, CLI parity, Block F migration
+- [ ] --tldr, comp skip path, UX P1+P2, cross-mode nudge
+- [ ] Subagent path with fallback (Q2), Jaccard dedup (Q4), legacy schema co-existence (Q5)
+- [ ] Citation lint sweep (Q7), "Lessons from Last Time" (Q10), P6 default-N safety
 
 ### Phase 5: Auto-Pipeline + Batch (Week 8)
 
