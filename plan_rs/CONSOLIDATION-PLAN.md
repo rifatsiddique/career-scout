@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.10
-**Last Updated:** 2026-05-22 18:15 -- Added Bug C to UX bug fixes: move Core Competencies after Work Experience in both templates. Plan at plan_rs/fix-ux-bugs.md.
+**Version:** 1.11
+**Last Updated:** 2026-05-22 18:30 -- Added Bug D: user-facing report docs (interview-prep, deep research) rendered as styled HTML alongside .md. scripts/md-to-html.mjs + templates/docs/viewer.html. Plan at plan_rs/fix-ux-bugs.md.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -657,6 +657,16 @@ Tests (T1-T17, see plan §6e — workflow paths, schema edge cases, anti-fabrica
 - [ ] Move Core Competencies to after Work Experience: Summary → Experience → Competencies → Projects → Education → Skills
 
 **Bug B — Classic-professional header**:
+- [ ] Replace `{{CURRENT_TITLE}}` → `{{HEADLINE}}`; add `headline:` to profile.yml
+- [ ] Add `{{WORK_AUTH}}` from `visa_status`; fix empty-field separators
+
+**Bug D — HTML viewer for user-facing report docs**:
+- [ ] `npm install marked`
+- [ ] `scripts/md-to-html.mjs` — MD → HTML conversion script
+- [ ] `templates/docs/viewer.html` — styled viewer template (tables, checkboxes, print-friendly)
+- [ ] `modes/interview-prep.md` — call script after .md write; P1 → .html; fallback to .md
+- [ ] `modes/deep.md` — same
+- [ ] `docs/DATA_CONTRACT.md` — note .html files as generated companions
 - [ ] Replace `{{CURRENT_TITLE}}` → `{{HEADLINE}}` in template HTML (tag line from cv.md/profile, not JD title)
 - [ ] Add `headline: ""` optional field to `config/profile.yml`
 - [ ] Add `{{WORK_AUTH}}` to contact row (sourced from `profile.yml → visa_status`), hidden when empty

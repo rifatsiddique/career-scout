@@ -200,13 +200,131 @@ Generate a CV with both templates. Verify:
 
 ---
 
+---
+
+## Bug D: User-facing report docs should also render as styled HTML
+
+### Symptom
+
+`interview-prep/{company}-{role}.md` and `interview-prep/{company}-deep-research.md`
+are opened in a text editor or raw GitHub preview. Markdown tables (Story Bank Mapping,
+Process Overview, Round-by-Round) and checklists are hard to scan in raw form. There is
+no nice-to-read view for these documents.
+
+### Goal
+
+After each mode writes a `.md` file, also produce a styled `.html` companion:
+- `interview-prep/{slug}.html` alongside `interview-prep/{slug}.md`
+- `interview-prep/{slug}-deep-research.html` alongside the `.md`
+
+The HTML is for human reading (browser, ctrl+click in VS Code). The `.md` stays for
+AI consumption (modes read `.md`, not `.html`). P1 clickable path points to the `.html`.
+
+Evaluation reports (`reports/*.md`) are out of scope for this change — they are
+AI-to-AI artifacts more than user-facing reading docs.
+
+### Approach
+
+A lightweight Node.js conversion script (`scripts/md-to-html.mjs`) that:
+1. Reads the `.md` file
+2. Converts markdown → HTML using the `marked` package (MIT, ~50 KB, zero sub-deps)
+3. Injects the HTML body into a styled viewer template (`templates/docs/viewer.html`)
+4. Writes the `.html` file
+
+The mode calls: `node scripts/md-to-html.mjs {input.md} {output.html}` after writing
+the `.md`. If the script fails (Node unavailable, marked not installed), the mode falls
+back gracefully: print the `.md` path instead, note the HTML could not be generated.
+
+### New dependency
+
+```
+npm install marked
+```
+
+`marked` is the standard markdown-to-HTML library in the Node.js ecosystem. Pure JS,
+no native binaries, no Playwright needed.
+
+### New files
+
+**`scripts/md-to-html.mjs`**
+
+```
+Usage: node scripts/md-to-html.mjs <input.md> <output.html>
+- Reads input .md
+- Parses with marked (GFM mode: tables, checkboxes, fenced code)
+- Reads templates/docs/viewer.html
+- Replaces {{TITLE}}, {{CONTENT}}, {{SOURCE_MD}}, {{GENERATED_DATE}}
+- Writes output .html
+- Exits 0 on success, 1 on error
+```
+
+**`templates/docs/viewer.html`**
+
+A clean HTML template for viewing career-scout markdown reports. Design goals:
+- System fonts only (no external CDN — works offline)
+- Good table rendering (prep docs are table-heavy)
+- Checkbox list rendering (`- [ ]` → actual checkboxes, checked on click)
+- Print-friendly (user might print a prep doc before an interview)
+- A thin header bar: document title + "Source: {slug}.md" + generation date
+- Max reading width ~800px centered, comfortable line-height
+
+Styling priorities:
+- Tables: alternating row shading, header background matching accent color
+- `h2` sections: bold with a bottom border (matches the doc's section structure)
+- Code/pre blocks: light grey background, monospace
+- Checkboxes: native `<input type="checkbox">` so the user can tick items as they prep
+- No JavaScript framework — a few lines of vanilla JS for checkbox interactivity only
+
+### Mode changes
+
+**`modes/interview-prep.md`** — after Step 8 writes the `.md`:
+```
+After writing the .md file, run:
+  node scripts/md-to-html.mjs interview-prep/{slug}.md interview-prep/{slug}.html
+
+If exit code 0: P1 points to the .html file.
+  📂 Prep doc: file:///{PROJECT_ROOT}/interview-prep/{slug}.html
+  (Markdown for AI use: interview-prep/{slug}.md)
+
+If exit code non-zero (script unavailable): P1 points to .md instead.
+  📂 Prep doc: file:///{PROJECT_ROOT}/interview-prep/{slug}.md
+```
+
+Same for `--debrief`: after appending the debrief section to the `.md`, regenerate
+the `.html` (re-run the script on the same files).
+
+**`modes/deep.md`** — same pattern after writing the deep research `.md`.
+
+### DATA_CONTRACT.md update
+
+Add note: `interview-prep/*.html` files are generated companions to their `.md`
+counterparts. They are auto-regenerated on every mode run and are safe to delete
+(the `.md` is the source of truth). They belong to the User Layer directory but
+are System-generated artifacts — do not edit them directly.
+
+### Tests
+
+- T-html-1: Run `interview-prep {company}`. Verify `.html` file exists alongside `.md`.
+  Open in browser. Verify tables render correctly (no raw `|` characters).
+- T-html-2: Run `interview-prep --debrief {company}`. Verify `.html` is regenerated
+  (newer timestamp than `.md`).
+- T-html-3: Run `deep {company}`. Verify `.html` companion created.
+- T-html-4: Simulate script failure (rename scripts/md-to-html.mjs). Verify fallback
+  to `.md` path in P1 output, no crash.
+- T-html-5: Open `.html` in browser. Click a checklist checkbox. Verify it toggles
+  (vanilla JS interaction).
+
+---
+
 ## Implementation order
 
 1. Bug C (section reorder) — two-line HTML move in each template, lowest risk
 2. Bug B (template header) — HTML + profile.yml + cv.md changes
-3. Bug A (clickable paths) — `_shared.md` + `cv.md` + `interview-prep.md` changes
+3. Bug D (HTML viewer) — new script + template + mode changes (can be separate commit)
+4. Bug A (clickable paths) — `_shared.md` + `cv.md` + `interview-prep.md` changes
+   (do last since Bug D changes what paths are printed)
 
-Single commit covering all three fixes.
+Bugs C + B in one commit. Bug D in a second commit. Bug A in a third commit.
 
 ## Acceptance criteria
 
@@ -219,3 +337,8 @@ Single commit covering all three fixes.
 - [ ] `headline` in profile.yml overrides derived tag line when set
 - [ ] Both templates render: Summary → Work Experience → Core Competencies → Projects → Education → Skills
 - [ ] No layout breakage in either template after section reorder
+- [ ] `interview-prep {company}` produces both `.md` and `.html`; P1 points to `.html`
+- [ ] `deep {company}` produces both `.md` and `.html`; P1 points to `.html`
+- [ ] HTML tables, checklists, and headings render correctly in browser
+- [ ] Checklist items are interactive (clickable checkboxes)
+- [ ] Graceful fallback to `.md` path when script unavailable
