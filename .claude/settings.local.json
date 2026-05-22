@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(node C:\\\\Work\\\\Git-Python\\\\career-scout\\\\scripts\\\\generate-pdf.mjs C:\\\\Work\\\\Git-Python\\\\career-scout\\\\output\\\\_test-margin.html C:\\\\Work\\\\Git-Python\\\\career-scout\\\\output\\\\_test-margin.pdf)",
+      "Bash(git *)",
+      "PowerShell(Invoke-Item *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Work\\Local_GitClones"
+    ]
+  }
+}
