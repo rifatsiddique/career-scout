@@ -19,6 +19,12 @@
     --base-font-size: 11px;
     --margins: 0.5in;
     --bullet-spacing: 0.15em;
+    /* Accent color used on name, section titles, company names, and dividers.
+       Default is deep navy (#1e3a5f) — conservative, ATS-safe, finance/
+       enterprise appropriate. Swap to #722f37 (burgundy) or #2d5016 (forest
+       green) for a different tone. Body text stays dark (#1c1c1c) for ATS. */
+    --accent: #1e3a5f;
+    --accent-muted: #4a6985;
   }
 
   /*
@@ -57,16 +63,18 @@
     background: #ffffff;
   }
 
-  /* Margins controlled by CSS variable, not Playwright PDF options */
+  /* Page-level margins come from --margins applied by generate-pdf.mjs at the
+     Playwright layer so they repeat on every page in multi-page PDFs.
+     Padding here is 0 so margins are not doubled. */
   .page {
     width: 100%;
-    padding: var(--margins);
+    padding: 0;
   }
 
   /* === HEADER === */
   .header {
     margin-bottom: 24px;
-    border-bottom: 2px solid #1c1c1c;
+    border-bottom: 2px solid var(--accent);
     padding-bottom: 14px;
   }
 
@@ -74,7 +82,7 @@
     font-family: 'Source Serif Pro', Georgia, serif;
     font-size: 26px;
     font-weight: 700;
-    color: #1c1c1c;
+    color: var(--accent);
     letter-spacing: 0.01em;
     margin-bottom: 6px;
     line-height: 1.15;
@@ -114,10 +122,10 @@
     font-family: 'Source Serif Pro', Georgia, serif;
     font-size: 13px;
     font-weight: 700;
-    color: #1c1c1c;
+    color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    border-bottom: 1px solid #bbb;
+    border-bottom: 1px solid var(--accent-muted);
     padding-bottom: 4px;
     margin-bottom: 12px;
   }
@@ -164,7 +172,7 @@
     font-family: 'Source Serif Pro', Georgia, serif;
     font-size: 12px;
     font-weight: 700;
-    color: #1c1c1c;
+    color: var(--accent);
   }
 
   .job-period {
@@ -207,7 +215,7 @@
     font-family: 'Source Serif Pro', Georgia, serif;
     font-size: 11.5px;
     font-weight: 700;
-    color: #1c1c1c;
+    color: var(--accent);
   }
 
   .project-desc {
@@ -239,7 +247,7 @@
   .edu-title {
     font-weight: 700;
     font-size: var(--base-font-size);
-    color: #1c1c1c;
+    color: var(--accent);
     font-family: 'Source Serif Pro', Georgia, serif;
   }
 
@@ -302,7 +310,7 @@
 
   .skill-category {
     font-weight: 700;
-    color: #1c1c1c;
+    color: var(--accent);
     font-size: 10.5px;
   }
 

@@ -34,5 +34,5 @@ location:
   market: ""                         # Regional context for comp/labor law. Options: US-West, US-East, DACH, UK, Francophone, Japan, etc.
 
 cv:
-  default_template: "ats-optimized"  # Options: ats-optimized, classic-professional, academic-research, technical-engineering
-  template_overrides: {}             # Map archetype → template, e.g. {academic: "academic-research"}
+  default_template: "classic-professional"  # Options: classic-professional, ats-optimized, academic-research, technical-engineering
+  template_overrides: {}                    # Map archetype → template, e.g. {academic: "academic-research"}

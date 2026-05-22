@@ -77,10 +77,12 @@
     background: #ffffff;
   }
 
-  /* Margins controlled by CSS variable, not Playwright PDF options */
+  /* Page-level margins come from --margins applied by generate-pdf.mjs at the
+     Playwright layer so they repeat on every page in multi-page PDFs.
+     Padding here is 0 so margins are not doubled. */
   .page {
     width: 100%;
-    padding: var(--margins);
+    padding: 0;
   }
 
   /* === HEADER === */

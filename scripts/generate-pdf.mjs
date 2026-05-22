@@ -10,8 +10,9 @@
  * Uses Chromium headless to render the HTML and produce a clean, ATS-parseable PDF.
  *
  * Notes for career-scout:
- *   - Page margins are controlled by CSS variables (--margins: 0.5in) in the template,
- *     NOT by Playwright PDF options. Playwright margin is set to 0.
+ *   - Page margins are controlled by the --margins CSS variable in the template
+ *     (default: 0.5in). This script reads that value and applies it as Playwright's
+ *     PDF page-level margin so it repeats on every page (single page or multi-page).
  *   - Font paths are resolved relative to career-scout/fonts/ (one level up from scripts/).
  *   - Output directory is career-scout/output/ (one level up from scripts/).
  *   - Page count is printed to stdout so the caller can check for overflow.
@@ -116,6 +117,15 @@ async function generatePDF() {
 
   let html = await readFile(inputPath, 'utf-8');
 
+  // Extract --margins CSS variable from the template :root block so it can be
+  // applied as Playwright's page-level margin. Page-level margins repeat on
+  // every page break, whereas the box padding on .page would only apply once
+  // at the top and once at the bottom of the whole div (page 2+ would have
+  // zero top margin).
+  const marginsMatch = html.match(/--margins:\s*([^;\s]+)\s*;/);
+  const cssMargins = marginsMatch ? marginsMatch[1].trim() : '0.5in';
+  console.log(`Margins: ${cssMargins} (from --margins CSS variable)`);
+
   // Resolve font paths relative to career-scout/fonts/
   // Templates reference fonts as ./fonts/ — resolve to absolute file:// URLs
   const fontsDir = resolve(projectRoot, 'fonts');
@@ -149,16 +159,17 @@ async function generatePDF() {
     // Wait for fonts to load
     await page.evaluate(() => document.fonts.ready);
 
-    // Margins are controlled by CSS variables in the template (--margins: 0.5in).
-    // Playwright margin is set to 0 so CSS has full control.
+    // Page-level margins come from --margins (extracted above). Applied via
+    // Playwright so they repeat on every page in multi-page output. The .page
+    // div in the template sets padding: 0 so margins are not doubled.
     const pdfBuffer = await page.pdf({
       format: format,
       printBackground: true,
       margin: {
-        top: '0',
-        right: '0',
-        bottom: '0',
-        left: '0',
+        top: cssMargins,
+        right: cssMargins,
+        bottom: cssMargins,
+        left: cssMargins,
       },
       preferCSSPageSize: false,
     });

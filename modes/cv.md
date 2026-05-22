@@ -61,15 +61,15 @@ or note "JD not available in report — tailoring will rely on Block E only."
 ### 0e. Determine template
 
 ```
-1. If user specified a template override (e.g., "use classic-professional") → use that
+1. If user specified a template override (e.g., "use ats-optimized") → use that
 2. Check profile.yml → cv.template_overrides for a mapping matching the detected archetype
-3. Fall back to profile.yml → cv.default_template (default: "ats-optimized")
+3. Fall back to profile.yml → cv.default_template (default: "classic-professional")
 ```
 
 Read `templates/cv/manifest.yml` to validate the selected template file exists and has status "ready".
-If status is "planned": tell user this template is not yet implemented, fall back to "ats-optimized".
+If status is "planned": tell user this template is not yet implemented, fall back to "classic-professional".
 
-Store: `TEMPLATE_ID`, `TEMPLATE_FILE` path (e.g., `templates/cv/ats-optimized.html`).
+Store: `TEMPLATE_ID`, `TEMPLATE_FILE` path (e.g., `templates/cv/classic-professional.html`).
 
 ### 0f. Check Playwright prerequisite (skip if FAST_MODE)
 

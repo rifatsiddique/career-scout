@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.4
-**Last Updated:** 2026-05-15 -- Phase 2 complete and Gemini end-to-end tested (Generac simulation: TOO_JUNIOR framing, backtrack catch, Section I persistence, PDF generated).
+**Version:** 1.5
+**Last Updated:** 2026-05-22 -- PDF multi-page top-margin fix (generate-pdf.mjs now reads --margins and applies as Playwright page-level margin); classic-professional gets deep-navy accent + becomes default template.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -108,20 +108,21 @@ Built as agent skills that work with **Gemini CLI** (primary) and any other agen
 
 Career-ops currently ships one HTML template (Space Grotesk + DM Sans → Playwright → PDF). The new system supports **up to 5 templates**, selectable per application.
 
-### Template 1: ATS-Optimized (from career-ops)
+### Template 1: Classic Professional ⭐ DEFAULT
+
+- **Stack:** HTML → Playwright → PDF
+- **Design:** Conservative serif (Source Serif Pro / Georgia), deep-navy (`#1e3a5f`) accent on h1, section titles, dividers, job-company, and edu-title. Body text stays dark for ATS safety.
+- **Best for:** Default template — works for finance, consulting, enterprise, government, and most general applications
+- **Differentiation:** Understated, no gradient, more whitespace, navy accent gives polish without sacrificing ATS parsing
+- **Accent override:** `--accent` and `--accent-muted` CSS variables — swap to burgundy/forest green per use case
+
+### Template 2: ATS-Optimized (from career-ops)
 
 - **Source:** `cv-template.html` from career-ops
 - **Stack:** HTML → Playwright → PDF
-- **Design:** Single column, Space Grotesk headings, DM Sans body, gradient header
-- **Best for:** Most applications — passes ATS parsing reliably
+- **Design:** Single column, Space Grotesk headings, DM Sans body, teal/purple gradient header
+- **Best for:** Applications with heavy automated screening or stated ATS-only requirements
 - **Placeholders:** `{{NAME}}`, `{{SUMMARY_TEXT}}`, `{{COMPETENCIES}}`, `{{EXPERIENCE}}`, etc.
-
-### Template 2: Classic Professional (new)
-
-- **Stack:** HTML → Playwright → PDF
-- **Design:** Conservative serif (e.g., Source Serif Pro / Libre Baskerville), minimal color, traditional layout
-- **Best for:** Finance, consulting, enterprise, government roles
-- **Differentiation:** Understated, no gradient, more whitespace
 
 ### Template 3: Academic/Research (inspired by ai-job-search)
 
@@ -540,6 +541,11 @@ project-root/
 - [x] Test: Generac simulation — TOO_JUNIOR promotion framing, backtrack catch ("Led high volume manufacturing" reverted), Section I appended to report, PDF generated (1 page, 68.2 KB)
 
 **Spec:** `plan_rs/phase2-cv-generation.md` (v2.2 — 4 Gemini review rounds, 4 Claude architect fixes)
+
+#### Phase 2 post-launch polish (2026-05-22)
+
+- [x] **PDF multi-page top-margin fix.** Switched margin model from `.page { padding: var(--margins) }` (which only applied padding at the top of page 1 and the bottom of the last page) to Playwright's page-level margin option. `generate-pdf.mjs` now reads the `--margins` value from the template's `:root` block and passes it to `page.pdf({ margin: ... })`, so margins repeat on every page in multi-page PDFs. Both templates updated to set `.page { padding: 0 }`.
+- [x] **classic-professional becomes default.** Added `--accent` (`#1e3a5f` deep navy) + `--accent-muted` CSS variables. Accent applied to h1, section titles, section underlines, job-company, project-title, edu-title, skill-category. Body text stays `#1c1c1c` for ATS safety. `profile.yml` default_template, `modes/cv.md`, `README.md`, and `manifest.yml` updated. Manifest entry order reflects new default.
 
 ### Phase 3: Scout ✅ Complete (2026-05-18)
 

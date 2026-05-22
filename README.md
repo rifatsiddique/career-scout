@@ -284,8 +284,8 @@ compensation:
   minimum: ""        # walk-away number
 
 cv:
-  default_template: "ats-optimized"   # ats-optimized | classic-professional
-  template_overrides: {}               # archetype → template mapping, e.g. "Technical AI PM": "classic-professional"
+  default_template: "classic-professional"   # classic-professional | ats-optimized
+  template_overrides: {}                      # archetype → template mapping, e.g. "Technical AI PM": "ats-optimized"
 ```
 
 ### modes/_profile.md — key sections
