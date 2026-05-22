@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.11
-**Last Updated:** 2026-05-22 18:30 -- Added Bug D: user-facing report docs (interview-prep, deep research) rendered as styled HTML alongside .md. scripts/md-to-html.mjs + templates/docs/viewer.html. Plan at plan_rs/fix-ux-bugs.md.
+**Version:** 1.12
+**Last Updated:** 2026-05-22 18:45 -- fix-ux-bugs.md v1.1: Gemini review incorporated — path resolution via file context, 75-char headline limit, CSS flexbox separators, Skills adjacent to Competencies, localStorage persistence for checklist state.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -654,7 +654,7 @@ Tests (T1-T17, see plan §6e — workflow paths, schema edge cases, anti-fabrica
 - [ ] `modes/interview-prep.md`: add PROJECT_ROOT resolution before P1 path print
 
 **Bug C — Section order (both templates)**:
-- [ ] Move Core Competencies to after Work Experience: Summary → Experience → Competencies → Projects → Education → Skills
+- [ ] Reorder: Summary → Work Experience → Core Competencies → Skills → Projects → Education (Skills moved adjacent to Competencies)
 
 **Bug B — Classic-professional header**:
 - [ ] Replace `{{CURRENT_TITLE}}` → `{{HEADLINE}}`; add `headline:` to profile.yml

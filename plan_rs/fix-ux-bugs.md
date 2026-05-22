@@ -1,10 +1,10 @@
 # Plan: UX Bug Fixes
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-05-22
-**Parent Plan:** CONSOLIDATION-PLAN.md §11 (Phase 4 polish)
+**Last Updated:** 2026-05-22 -- Gemini review incorporated: path resolution via file context (not shell), 75-char headline limit, CSS flexbox separators (belt-and-suspenders with omit-empty), Skills moved adjacent to Competencies, localStorage persistence for HTML checkboxes.
 
-Two bugs found during live testing after Phase 4. Both are small, targeted fixes.
+Four bugs found during live testing after Phase 4. Gemini review round 1 complete.
 
 ---
 
@@ -35,20 +35,22 @@ AI has two competing patterns and picks the wrong one.
 
 ### Fix
 
-**1. `modes/_shared.md` P1** — Add an explicit "how to resolve the project root" block:
+**1. `modes/_shared.md` P1** — Replace the shell-command approach with file-context resolution:
 
-> Before printing any file path, run a shell command to get the working directory.
-> On Windows: `cd` (no arguments) prints the absolute path.
-> On macOS/Linux: `pwd`.
-> Cache the result as `PROJECT_ROOT`. Every file path in terminal output uses:
-> `file:///{PROJECT_ROOT}/{relative-path}`
-> (forward slashes, no trailing slash on PROJECT_ROOT, no leading slash on relative-path).
+> Derive PROJECT_ROOT from the absolute path of any file you have already read or written
+> in this session. Every file operation returns or uses an absolute path — extract the
+> project root from it. Example: if you just wrote
+> `C:/Work/Git-Python/career-scout/output/cv-smith-acme-2026-05-22.pdf`,
+> the PROJECT_ROOT is `C:/Work/Git-Python/career-scout`.
+> Use forward slashes in file:/// URIs even on Windows.
+> **Never run a shell command (cd / pwd) to resolve the path** — this triggers permission
+> prompts in sandboxed CLIs and is unnecessary.
 
 **2. `modes/cv.md` post-generation output** — Replace the current block with an explicit
 instruction that uses the resolved PROJECT_ROOT and locks the P2 format:
 
 ```
-Resolve PROJECT_ROOT via shell (cd / pwd). Then print:
+Derive PROJECT_ROOT from the path of the PDF you just wrote. Then print:
 
 📂 CV: file:///{PROJECT_ROOT}/output/{filename}.pdf
 
@@ -61,8 +63,8 @@ What to do next:
 💡 After submitting and landing an interview, run: interview-prep {company-slug}
 ```
 
-**3. `modes/interview-prep.md` terminal output** — Same fix: add the PROJECT_ROOT
-resolution instruction before the P1 path print.
+**3. `modes/interview-prep.md` terminal output** — Same fix: derive PROJECT_ROOT from
+the path of the .md or .html file just written, not from a shell command.
 
 **4. Delete the old "Tell the user" block** that still exists above the new P1/P2 output
 in cv.md (it's the pre-Phase-4 message that says "CV generated: output/{filename}.pdf"
@@ -106,10 +108,13 @@ Examples:
 - `AI Platform Engineer — MLOps & Agentic Systems`
 
 Format: `{Role/Domain} | {1-2 key differentiators}` — one line, no period.
+**Maximum 75 characters.** If the derived headline exceeds 75 characters, shorten it:
+drop the least distinctive differentiator, abbreviate years ("8+ yrs" not "8+ years"),
+or tighten the role name. The 75-char limit prevents the line wrapping in the header.
 
 The drafter derives this from `cv.md` most recent role + `_profile.md` archetype's
 "what they buy" column. It does NOT read from the JD. If the user has a `headline:`
-field in `profile.yml`, use that instead and skip derivation.
+field in `profile.yml`, use that instead and skip derivation (but still enforce 75 chars).
 
 **2. Add `{{WORK_AUTH}}` to the contact row** (after LOCATION or PHONE).
 
@@ -118,10 +123,29 @@ Source: `profile.yml → visa_status`. Examples: "US Citizen", "Green Card Holde
 
 Skip (render nothing, remove separator) if `visa_status` is empty.
 
-**3. Ensure `{{PHONE}}` is rendered or hidden cleanly.**
+**3. CSS-based contact row separators (belt-and-suspenders with AI omission).**
 
-If `profile.yml → phone` is empty: remove the `{{PHONE}}` span AND its following
-separator from the contact row. Don't leave a dangling `|` separator.
+Two-layer approach — both required:
+
+*Layer 1 (AI)*: When filling the template, omit the entire `<span class="contact-item">`
+for any field that is empty (phone, work_auth, portfolio). Do not leave an empty span.
+
+*Layer 2 (CSS)*: Use the adjacent-sibling pseudo-element so the browser handles
+separator rendering:
+```css
+.contact-item + .contact-item::before {
+  content: " | ";
+  color: #bbb;
+  margin: 0 4px;
+}
+```
+This renders a `|` before every contact item that follows another — no first-item
+separator, no trailing separator. If Layer 1 (AI omission) works, Layer 2 is redundant.
+If the AI leaves an empty span, Layer 2 still fails gracefully — an empty span has no
+visible content, so the separator before it is invisible in practice.
+
+Replace the current HTML separator `<span class="separator">|</span>` pattern entirely.
+The contact row becomes: each field is a `<span class="contact-item">`, no manual `|` spans.
 
 ### Changes required
 
@@ -173,30 +197,36 @@ seeing the evidence, not as a preamble before it.
 Move the `<!-- CORE COMPETENCIES -->` HTML block to after `<!-- WORK EXPERIENCE -->` in
 both templates:
 
-**New order:**
+**New order (revised after Gemini review):**
 1. Professional Summary
 2. Work Experience
 3. **Core Competencies** ← moved here
-4. Projects
-5. Education
-6. Skills
+4. **Skills** ← moved up to sit adjacent to Competencies
+5. Projects
+6. Education
+
+Rationale: keeping both keyword sections (Competencies + Skills) adjacent concentrates
+all keyword content in one area. Splitting them with Projects and Education in between
+creates a scattered look. Projects and Education move to the end — supporting narrative,
+not the primary scanner target for senior roles.
 
 ### Changes required
 
 | File | Change |
 |------|--------|
-| `templates/cv/classic-professional.html` | Move `<!-- CORE COMPETENCIES -->` block (lines ~362-368) to after `<!-- WORK EXPERIENCE -->` block |
-| `templates/cv/ats-optimized.html` | Same — move `<!-- CORE COMPETENCIES -->` block (lines ~387-393) to after `<!-- WORK EXPERIENCE -->` block |
+| `templates/cv/classic-professional.html` | Move `<!-- CORE COMPETENCIES -->` block to after `<!-- WORK EXPERIENCE -->`; move `<!-- SKILLS -->` block to immediately after `<!-- CORE COMPETENCIES -->` |
+| `templates/cv/ats-optimized.html` | Same reorder |
 
 No CSS changes. No mode file changes. No placeholder changes.
-The section comment `<!-- CORE COMPETENCIES -->` and its div move as a unit.
+Each section comment block and its div move as a unit.
 
 ### Test
 
 Generate a CV with both templates. Verify:
 - Work Experience appears before Core Competencies in the rendered PDF
-- No other sections are displaced
-- Competencies tags still render correctly (no broken layout)
+- Skills section appears directly after Core Competencies
+- Projects and Education appear at the end
+- No other sections are displaced; no layout breakage
 
 ---
 
@@ -273,7 +303,9 @@ Styling priorities:
 - `h2` sections: bold with a bottom border (matches the doc's section structure)
 - Code/pre blocks: light grey background, monospace
 - Checkboxes: native `<input type="checkbox">` so the user can tick items as they prep
-- No JavaScript framework — a few lines of vanilla JS for checkbox interactivity only
+- No JavaScript framework — vanilla JS only for two purposes:
+  1. Checkbox interactivity (convert `- [ ]` checkboxes to clickable inputs)
+  2. **localStorage persistence** — checkbox state survives tab close/refresh
 
 ### Mode changes
 
@@ -302,6 +334,30 @@ counterparts. They are auto-regenerated on every mode run and are safe to delete
 (the `.md` is the source of truth). They belong to the User Layer directory but
 are System-generated artifacts — do not edit them directly.
 
+**localStorage persistence script** (included verbatim in `templates/docs/viewer.html`):
+
+```js
+document.addEventListener("DOMContentLoaded", () => {
+  const docId = window.location.pathname; // unique key per prep doc
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+  // Restore saved state
+  checkboxes.forEach((cb, index) => {
+    const saved = localStorage.getItem(`${docId}-cb-${index}`);
+    if (saved !== null) cb.checked = saved === 'true';
+
+    // Save on change
+    cb.addEventListener('change', () => {
+      localStorage.setItem(`${docId}-cb-${index}`, cb.checked);
+    });
+  });
+});
+```
+
+This turns the prep doc into a lightweight persistent productivity app — the user can
+tick off technical checklist items as they study and the state survives tab close and
+page refresh.
+
 ### Tests
 
 - T-html-1: Run `interview-prep {company}`. Verify `.html` file exists alongside `.md`.
@@ -311,8 +367,10 @@ are System-generated artifacts — do not edit them directly.
 - T-html-3: Run `deep {company}`. Verify `.html` companion created.
 - T-html-4: Simulate script failure (rename scripts/md-to-html.mjs). Verify fallback
   to `.md` path in P1 output, no crash.
-- T-html-5: Open `.html` in browser. Click a checklist checkbox. Verify it toggles
-  (vanilla JS interaction).
+- T-html-5: Open `.html` in browser. Tick 3 checklist items. Close tab. Reopen the
+  same file. Verify the 3 items are still checked (localStorage persistence).
+- T-html-6: Open two different company prep docs. Verify their checkbox states are
+  independent (different localStorage keys via `window.location.pathname`).
 
 ---
 
@@ -325,6 +383,20 @@ are System-generated artifacts — do not edit them directly.
    (do last since Bug D changes what paths are printed)
 
 Bugs C + B in one commit. Bug D in a second commit. Bug A in a third commit.
+
+---
+
+## Gemini Review Round 1 — Response
+
+| Point | Decision | Notes |
+|-------|----------|-------|
+| Path resolution: use file context, not shell | **Adopted** | P1 in `_shared.md` updated: derive PROJECT_ROOT from the absolute path of any file already read/written, never run `cd`/`pwd` |
+| Headline 75-char limit | **Adopted** | Added to `{{HEADLINE}}` fill rule in modes/cv.md; applies to both derived and profile.yml-set values |
+| CSS `::after` separators | **Adopted with modification** | Adopted CSS `+ ::before` adjacent-sibling approach; kept AI "omit empty spans" instruction as belt-and-suspenders — CSS alone can't reliably handle empty spans left in DOM |
+| Skills adjacent to Competencies | **Adopted** | New order: Summary → Work Experience → Competencies → Skills → Projects → Education |
+| localStorage persistence | **Adopted in full** | Spec and code included verbatim in Bug D; added T-html-5 and T-html-6 tests |
+
+---
 
 ## Acceptance criteria
 
@@ -340,5 +412,5 @@ Bugs C + B in one commit. Bug D in a second commit. Bug A in a third commit.
 - [ ] `interview-prep {company}` produces both `.md` and `.html`; P1 points to `.html`
 - [ ] `deep {company}` produces both `.md` and `.html`; P1 points to `.html`
 - [ ] HTML tables, checklists, and headings render correctly in browser
-- [ ] Checklist items are interactive (clickable checkboxes)
+- [ ] Checklist items are interactive (clickable checkboxes) and state persists across refreshes via localStorage
 - [ ] Graceful fallback to `.md` path when script unavailable
