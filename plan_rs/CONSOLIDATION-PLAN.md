@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.6
-**Last Updated:** 2026-05-22 -- Phase 4 (Interview Prep + Story Bank) detailed plan locked at v1.2 after 2 Gemini review rounds. All D1-D9 / P1-P6 / Q1-Q10 resolved. Plan at `plan_rs/phase4-interview-prep.md`.
+**Version:** 1.7
+**Last Updated:** 2026-05-22 17:00 -- Phase 4 (Interview Prep + Story Bank) main implementation complete. modes/interview-prep.md, modes/deep.md, story-bank.md schema, Block F schema, UX P1-P6 in _shared.md, AGENTS.md routing, SKILL.md, DATA_CONTRACT.md, README.md, setup.md all updated. Retrofit sweep (P1-P6 in evaluate/cv/scan/pipeline-triage) deferred to next commit.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -590,38 +590,46 @@ project-root/
 - [ ] LinkedIn integration via browser extension writing to inbox.txt
 - [ ] BrightData LinkedIn API (optional)
 
-### Phase 4: Interview Prep + Story Bank (planning complete 2026-05-22, ready to execute)
+### Phase 4: Interview Prep + Story Bank (✅ main implementation 2026-05-22)
 
 **Goal:** Company-specific interview prep + curated Story Bank + post-interview debrief loop.
 **Detailed plan:** `plan_rs/phase4-interview-prep.md` (v1.2, locked — 2 Gemini review rounds, all open questions resolved)
 
-Core deliverables (see plan §6 for the full task list):
+Core deliverables:
 
-- [ ] Port `modes/interview-prep.md` from career-ops, adapted to career-scout conventions
-- [ ] Add Pre-Flight Cheatsheet block (top of output, fixed cardinality 3 across all sub-blocks)
-- [ ] Add Compensation Calibration block (reads Block D + profile.yml comp targets)
-- [ ] Add citation lint sweep + referenced report header (not embedded)
-- [ ] Implement `interview-prep --tldr` (cheatsheet to terminal, no file write)
-- [ ] Implement `interview-prep --bank-review` (Jaccard ≥ 0.55 dedup, weak-Reflection flag, legacy schema upgrade)
-- [ ] Implement `interview-prep --debrief <company>` (post-interview close-the-loop)
-- [ ] Port `modes/deep.md` (standalone, called by interview-prep when intel is thin)
-- [ ] Update story-bank.md schema (table header per story) + legacy-schema co-existence parser
-- [ ] Update evaluate.md Block F to append in new schema
+- [x] Port `modes/interview-prep.md` from career-ops, adapted to career-scout conventions
+- [x] Add Pre-Flight Cheatsheet block (top of output, fixed cardinality 3 across all sub-blocks)
+- [x] Add Compensation Calibration block (reads Block D + profile.yml comp targets)
+- [x] Add citation lint sweep + referenced report header (not embedded)
+- [x] Implement `interview-prep --tldr` (cheatsheet to terminal, no file write)
+- [x] Implement `interview-prep --bank-review` (Jaccard ≥ 0.55 dedup, weak-Reflection flag, legacy schema upgrade)
+- [x] Implement `interview-prep --debrief <company>` (post-interview close-the-loop)
+- [x] Port `modes/deep.md` (standalone, called by interview-prep when intel is thin)
+- [x] Update story-bank.md schema (table header per story) + legacy-schema co-existence parser
+- [x] Update evaluate.md Block F to append in new schema + P6 confirmation prompt
 
 UX Conventions (P1-P6) — project-wide standards introduced in this phase:
 
-- [ ] P1: Clickable `file:///` artifact paths
-- [ ] P2: "What to do next" block at end of every mode
-- [ ] P3: Cross-mode nudges (pipeline-triage → interview-prep, cv → interview-prep)
-- [ ] P4: `--tldr` variant for long-output modes
-- [ ] P5: Compact path display for multi-file output
-- [ ] P6: User Layer Write Confirmation (`.bak` + default-N prompt + `--yes` escape hatch)
-- [ ] Document P1-P6 in `modes/_shared.md`
+- [x] P1: Clickable `file:///` artifact paths
+- [x] P2: "What to do next" block at end of every mode
+- [x] P3: Cross-mode nudges (evaluate → cv/interview-prep)
+- [x] P4: `--tldr` variant for long-output modes
+- [x] P5: Compact path display for multi-file output
+- [x] P6: User Layer Write Confirmation (`.bak` + default-N prompt + `--yes` escape hatch)
+- [x] Document P1-P6 in `modes/_shared.md`
+- [x] AGENTS.md routing updated — `deep` mode added, `(Phase 4)` marker removed
+- [x] SKILL.md discovery menu updated — all interview-prep sub-commands + deep listed
+- [x] DATA_CONTRACT.md updated — per-file notes for interview-prep/ files
+- [x] README.md updated — Phase 4 status, new "Prepare for an Interview" Quick Start section
+- [x] setup.md updated — story bank mention + P2 next steps
 
-Retrofit sweep (separate commit, post-Phase 4 main — applies P1-P6 to existing modes):
+Retrofit sweep (next commit, post-Phase 4 main — applies P1-P6 to existing modes):
 
-- [ ] `modes/evaluate.md`, `modes/cv.md`, `modes/scan.md`, `modes/pipeline-triage.md`, `modes/setup.md`
-- [ ] One-time editor-opening hint in setup mode first-run output
+- [ ] `modes/evaluate.md` — P1 (report path) already added; full P2 block, Block F P6 prompt added
+- [ ] `modes/cv.md` — add P1+P2+P3 (next step nudge to interview-prep)
+- [ ] `modes/scan.md` — add P1+P2 (next step: pipeline-triage)
+- [ ] `modes/pipeline-triage.md` — add P3 (Interview-status nudge for missing prep docs)
+- [ ] One-time editor-opening hint in setup.md first-run output
 
 Phase 4b (deferred):
 

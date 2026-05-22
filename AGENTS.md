@@ -86,7 +86,8 @@ loading rules per mode.
 | Types "setup" | Read `modes/setup.md` |
 | Types "cv" | Read `modes/_shared.md` + `modes/cv.md` (Phase 2) |
 | Types "scan" or "scout" | Read `modes/_shared.md` + `modes/scan.md` |
-| Types "interview-prep" | Read `modes/interview-prep.md` (Phase 4) |
+| Types "interview-prep" | Read `modes/interview-prep.md` |
+| Types "deep" | Read `modes/deep.md` |
 | Types "batch" | Read `modes/_shared.md` + `modes/batch.md` (Phase 5) |
 | Types nothing / asks for help | Show `.agents/skills/career-scout/SKILL.md` discovery menu |
 

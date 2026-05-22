@@ -21,7 +21,8 @@ Determine mode from `$mode`:
 | `setup` | `setup` |
 | `cv` | `cv` (Phase 2) |
 | `scan` or `scout` | `scan` |
-| `interview-prep` | `interview-prep` (Phase 4) |
+| `interview-prep` | `interview-prep` |
+| `deep` | `deep` |
 | `auto` | `auto-pipeline` (Phase 5) |
 | `batch` | `batch` (Phase 5) |
 | `followup` | `followup` (Phase 5) |
@@ -61,8 +62,13 @@ career-scout — Command Center
   /career-scout scan --discover --focus X  → Search for companies in a specific industry
   /career-scout scan --help           → Show all options with examples
 
+  /career-scout interview-prep <company>            → Full interview prep doc — questions, story mapping, cheatsheet
+  /career-scout interview-prep <company> --tldr     → Print Pre-Flight Cheatsheet to terminal (10-min pre-call review)
+  /career-scout interview-prep --bank-review        → Curate story bank — dedup, sharpen weak stories, upgrade schema
+  /career-scout interview-prep --debrief <company>  → Post-interview capture — what was asked, what worked, lessons
+  /career-scout deep <company>                      → Strategic company research — direction, culture, candidate angle
+
   Coming soon:
-  /career-scout interview-prep     → STAR+R prep for a specific company (Phase 4)
   /career-scout auto               → Full pipeline: evaluate + CV + track (Phase 5)
   /career-scout batch              → Parallel evaluation of multiple URLs (Phase 5)
 
@@ -96,6 +102,7 @@ Read only `modes/{mode-file}`.
 |------|-----------|
 | `setup` | `modes/setup.md` |
 | `interview-prep` | `modes/interview-prep.md` |
+| `deep` | `modes/deep.md` |
 | `followup` | `modes/followup.md` |
 
 ### All modes: also read user data
@@ -119,5 +126,5 @@ executing any mode. If either is missing or empty, prompt the user to run setup.
 | 1: Foundation | **Active** | evaluate, pipeline, setup |
 | 2: CV Generation | **Active** | cv, cv --fast |
 | 3: Scout | **Active** | scan, scout |
-| 4: Interview Prep | Planned | interview-prep |
+| 4: Interview Prep | **Active** | interview-prep, deep |
 | 5: Auto-Pipeline + Batch | Planned | auto, batch, followup |

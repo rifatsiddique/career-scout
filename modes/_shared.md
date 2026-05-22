@@ -233,4 +233,90 @@ Applies to ALL candidate-facing text (CVs, cover letters, LinkedIn, form answers
 ### Vary structure
 - Don't start every bullet with the same verb
 - Mix sentence lengths: short. Then longer with context. Short again.
+
+---
+
+## UX Conventions (P1–P6)
+
+Project-wide terminal output patterns. Every mode follows these. Introduced in Phase 4.
+
+### P1 — Artifact Paths Are Clickable
+
+Print absolute paths with `file://` prefix for any file the user needs to open.
+Most modern terminals (Windows Terminal, VS Code, JetBrains) auto-linkify absolute paths.
+
+```
+Format: 📂 {Artifact name}: file:///{absolute-path}/{file}
+
+Example:
+  📂 Prep doc: file:///C:/Work/Git-Python/career-scout/interview-prep/acme-senior-eng.md
+```
+
+Use forward slashes in the URL portion even on Windows.
+
+### P2 — Every Mode Ends with "What to do next"
+
+After the artifact path, print a numbered list of likely next actions as runnable commands.
+Max three items. No prose — just the command and a one-line description.
+
+```
+What to do next:
+  1. {command} → {one-line description}
+  2. {command} → {one-line description}
+  3. {command} → {one-line description}
+```
+
+### P3 — Cross-Mode Nudges
+
+When a mode detects a missing-but-expected artifact from another mode, print a single-line
+nudge — not an interrupt, not a multi-paragraph warning.
+
+| Detected condition | Mode that prints the nudge |
+|-------------------|---------------------------|
+| applications.md has Interview-status row with no matching `interview-prep/` file | pipeline-triage |
+| cv mode finishes a PDF and fit is GOOD_FIT+ | cv |
+| evaluate finishes with fit GOOD_FIT+ | evaluate |
+| setup finishes and pipeline.md is empty | setup |
+
+One nudge per condition. Never stack nudges. The mode still completes its normal work.
+
+### P4 — Long Outputs Have a `--tldr` Variant
+
+Any mode that writes a long markdown artifact supports `--tldr`:
+- Prints a compact summary directly to the terminal
+- Skips file generation
+- Is safe to pipe
+
+Implemented in: `interview-prep` (prints Pre-Flight Cheatsheet).
+Future: `evaluate --tldr` could print fit score + top 3 gaps.
+
+### P5 — Compact Path Display in Long Outputs
+
+When reporting multiple files in a single message:
+
+```
+Generated:
+  Report     file:///.../reports/018-acme-2026-05-22.md
+  CV PDF     file:///.../output/cv-jane-acme-2026-05-22.pdf
+  Prep doc   file:///.../interview-prep/acme-senior-eng.md
+```
+
+### P6 — User Layer Write Confirmation
+
+Before writing to any User Layer file, surface a confirmation prompt:
+
+```
+⚠️ This will update {file} ({what's changing in 1 line}).
+   A backup has been saved to {file}.bak.
+   Proceed? [y/N]
+```
+
+Rules:
+- **Backup before write** — `.bak` files written automatically; old `.bak` replaced
+- **Show what changes** — "adding 3 stories", "appending debrief section" — concrete, not vague
+- **One confirmation per logical change** — interactive sub-modes confirm per decision
+- **Default is N (cancel)** — typo safety; user must type y or yes
+- **Skippable** — recognize `--yes` / `--no-confirm` flags for batch/headless mode
+
+Applies to: story-bank.md appends, applications.md edits, pipeline.md edits, any other User Layer write.
 - No passive voice in CV bullets

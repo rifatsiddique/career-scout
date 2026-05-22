@@ -275,14 +275,37 @@ If composite ≥ 80 (GOOD_FIT+): also include 2-3 cover letter angles, and note:
 Generate 4-8 STAR+R stories mapped to JD requirements. Use archetype's "Proof
 point sources" from `_profile.md` to select experiences.
 
-| # | JD Requirement | Story Summary | S | T | A | R | Reflection |
-|---|---------------|---------------|---|---|---|---|------------|
-| 1 | {requirement} | {title} | {situation} | {task} | {action} | {result} | {lesson / what you'd do differently} |
+| # | JD Requirement | Story Title | Themes | Key Action | Result |
+|---|---------------|-------------|--------|-----------|--------|
+| 1 | {requirement} | {title} | {tags} | {action summary} | {quantified result} |
 
-**Reflection** signals seniority — extract lessons, not just events.
+**Story Bank:** Read `interview-prep/story-bank.md`. Skip stories already there (match by title).
+For each new story, append to `interview-prep/story-bank.md` using the Phase 4 schema below.
+Apply P6 User Layer Write Confirmation before appending:
+```
+⚠️ This will update story-bank.md (adding {N} new stories from this evaluation).
+   A backup has been saved to story-bank.md.bak.
+   Proceed? [y/N]
+```
 
-**Story Bank:** Read `interview-prep/story-bank.md`. Skip stories already there.
-Append new ones — builds the bank across evaluations.
+**Story append format (new schema — use this for all new stories):**
+```markdown
+### Story {NN}: {Title}
+
+| | |
+|---|---|
+| **Themes** | {comma-separated tags from JD requirement} |
+| **Source** | Report #{NNN} — {Company} — {Role} |
+| **Date Lived** | {YYYY or YYYY Q{N}} |
+| **Status** | active |
+| **Best for** | "{likely interview question phrasings}" |
+
+- **Situation:** {context and background}
+- **Task:** {what you needed to accomplish}
+- **Action:** {what you specifically did — your role, not the team's}
+- **Result:** {quantified outcome}
+- **Reflection:** {what you learned / what you'd do differently — signals seniority}
+```
 
 Also include:
 - 1 portfolio project / case study recommendation (which to lead with and why)
@@ -460,5 +483,14 @@ Check `data/applications.md` for existing company + role entry.
 3. {gap + mitigation}
 
 **Recommended Action:** {Apply immediately / Apply with gap strategy / Consider carefully / Skip}
-**Report:** reports/{REPORT_NUM}-{slug}-{date}.md
 ```
+
+📂 Report: file:///{absolute-path}/reports/{REPORT_NUM}-{slug}-{date}.md
+
+What to do next:
+  1. Generate a tailored CV → cv
+  2. Quick editable draft first → cv --fast
+  3. [If composite ≥ 80 only] After submitting and landing an interview → interview-prep {company-slug}
+
+💡 [P3 nudge — only if composite ≥ 80]: Once you submit and they schedule an interview, run:
+   interview-prep {company-slug}

@@ -23,7 +23,7 @@ Human-in-the-loop: AI evaluates and drafts. You review and submit.
 | Phase 1: Foundation | ✅ Complete | evaluate, pipeline triage, setup |
 | Phase 2: CV Generation | ✅ Complete | Multi-template PDF CVs + drafter-reviewer |
 | Phase 3: Scout | ✅ Complete | Portal API scanning, inbox drain, stale cleanup, --fast priority run |
-| Phase 4: Interview Prep | Planned | Company research + story bank |
+| Phase 4: Interview Prep | ✅ Complete | Company-specific prep docs, story bank mapping, Pre-Flight Cheatsheet, post-interview debrief |
 | Phase 5: Auto-Pipeline | Planned | One-command end-to-end + batch |
 
 ---
@@ -161,6 +161,54 @@ pivots the search to any domain you name.
 **Expired link cleanup:** Scout automatically checks old jobs weekly and removes
 dead links to your archive (`data/archived.md`). Changed your mind? Move the row
 back to your job queue (`data/pipeline.md`).
+
+---
+
+## Prepare for an Interview
+
+When an application moves from "applied" to "interview scheduled":
+
+```
+> interview-prep {company}
+```
+
+This generates a company-specific prep doc at `interview-prep/{company}-{role}.md` with:
+- **Process overview** — rounds, format, difficulty, positive experience rate (from Glassdoor/Blind)
+- **Round-by-round breakdown** — what each round tests, reported questions with citations
+- **Likely questions** — technical, behavioral, role-specific, and background red flags
+- **Story bank mapping** — your existing STAR+R stories matched to each likely question, gaps flagged
+- **Pre-Flight Cheatsheet** — at the top of the file: the irreducible 10-minute pre-call summary
+- **Technical prep checklist** — what this company actually tests (not generic advice)
+- **Company signals** — values they screen for, vocabulary to use, anti-patterns to avoid
+- **Compensation guidance** — ready-to-deliver recruiter script from your profile targets + Block D market data
+
+**10 minutes before the call:**
+```
+> interview-prep {company} --tldr
+```
+Prints just the Pre-Flight Cheatsheet to your terminal. No file written.
+
+**Curate your story bank:**
+```
+> interview-prep --bank-review
+```
+Finds duplicate stories (Jaccard similarity), flags weak Reflections, flags unquantified Results.
+Interactive — you approve every change.
+
+**Close the loop after the interview:**
+```
+> interview-prep --debrief {company}
+```
+Captures what was actually asked, which stories landed, and what to do differently. Updates story
+Reflections. Lessons are injected into future cheatsheets for the same company or same-archetype roles.
+
+**Strategic company research** (before applying or when intel is thin):
+```
+> deep {company}
+```
+Covers 6 axes: strategic direction, recent moves, engineering culture, likely challenges,
+competitive landscape, and candidate angle. Separate from interview-prep — covers the
+decision-to-apply moment, not the tactical prep pass.
 
 ---
 

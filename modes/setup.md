@@ -352,9 +352,19 @@ don't make them type a separate command. They're engaged now.
 > 
 > You can now:
 > - Paste a job URL or description to get a full analysis
+> - Paste a job URL or description to evaluate it and start your story bank
 > - Type 'scan' to search your {N} companies for open roles
 > - Type 'scan --fast' to quickly check only your favorite companies
 > - Type 'pipeline' to review jobs you've already found
 > - Type 'setup' again anytime to update your profile
 >
+> **Story bank:** As you evaluate jobs, Block F builds your interview story bank at
+> `interview-prep/story-bank.md` automatically. When you land an interview, run
+> `interview-prep {company}` to map your stories to that company's likely questions.
+>
 > Tip: Add writing samples to `writing-samples/` for better-matched cover letters and application answers."
+
+What to do next:
+  1. Discover companies in your domain → scan --discover
+  2. Or paste a job URL to start evaluating immediately
+  3. Type `setup` again anytime to update your profile, comp targets, or archetypes
