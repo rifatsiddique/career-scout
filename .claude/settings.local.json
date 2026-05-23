@@ -3,7 +3,10 @@
     "allow": [
       "PowerShell(node C:\\\\Work\\\\Git-Python\\\\career-scout\\\\scripts\\\\generate-pdf.mjs C:\\\\Work\\\\Git-Python\\\\career-scout\\\\output\\\\_test-margin.html C:\\\\Work\\\\Git-Python\\\\career-scout\\\\output\\\\_test-margin.pdf)",
       "Bash(git *)",
-      "PowerShell(Invoke-Item *)"
+      "PowerShell(Invoke-Item *)",
+      "Bash(npm install *)",
+      "Bash(not exist *)",
+      "Bash(node scripts/md-to-html.mjs README.md)"
     ],
     "additionalDirectories": [
       "C:\\Work\\Local_GitClones"
