@@ -1,6 +1,6 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.12
+**Version:** 1.13
 **Last Updated:** 2026-05-22 18:45 -- fix-ux-bugs.md v1.1: Gemini review incorporated — path resolution via file context, 75-char headline limit, CSS flexbox separators, Skills adjacent to Competencies, localStorage persistence for checklist state.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
@@ -653,8 +653,9 @@ Tests (T1-T17, see plan §6e — workflow paths, schema edge cases, anti-fabrica
 - [ ] `modes/cv.md`: lock P2 format, remove old "Tell the user" plain-text block, add PROJECT_ROOT resolution
 - [ ] `modes/interview-prep.md`: add PROJECT_ROOT resolution before P1 path print
 
-**Bug C — Section order (both templates)**:
-- [ ] Reorder: Summary → Work Experience → Core Competencies → Skills → Projects → Education (Skills moved adjacent to Competencies)
+**Bug C — Core Competencies constraint (stays in original position)**:
+- [ ] CSS: 3-line max-height + `justify-content: space-between` on both templates
+- [ ] modes/cv.md: 12–15 items max, JD-relevance priority order for selection
 
 **Bug B — Classic-professional header**:
 - [ ] Replace `{{CURRENT_TITLE}}` → `{{HEADLINE}}`; add `headline:` to profile.yml

@@ -176,57 +176,71 @@ no CSS changes needed. Verify it still looks right with a longer headline like
 
 ---
 
-## Bug C: Core Competencies section order
+## Bug C: Core Competencies — 3-line limit + justified spacing
 
-### Symptom
+### Decision
 
-Both templates currently render sections in this order:
-1. Professional Summary
-2. **Core Competencies** ← currently here
-3. Work Experience
-4. Projects
-5. Education
-6. Skills
+Keep Core Competencies in its original position (after Professional Summary, before Work
+Experience). Do not reorder sections.
 
-Core Competencies reads like a keyword dump when placed before work history. Recruiters
-scan Work Experience first; competency tags are more useful as a reinforcement after
-seeing the evidence, not as a preamble before it.
+The problem was not placement — it was that the block can grow into an uncontrolled
+keyword dump. Fix: constrain it visually (3 lines max, justified spacing) and instruct
+the AI drafter to select only the highest-impact items for the specific JD.
 
 ### Fix
 
-Move the `<!-- CORE COMPETENCIES -->` HTML block to after `<!-- WORK EXPERIENCE -->` in
-both templates:
+**CSS changes (both templates):**
 
-**New order (revised after Gemini review):**
-1. Professional Summary
-2. Work Experience
-3. **Core Competencies** ← moved here
-4. **Skills** ← moved up to sit adjacent to Competencies
-5. Projects
-6. Education
+Replace the current competencies container CSS with justified flex layout and a
+max-height that enforces 3 visual lines:
 
-Rationale: keeping both keyword sections (Competencies + Skills) adjacent concentrates
-all keyword content in one area. Splitting them with Projects and Education in between
-creates a scattered look. Projects and Education move to the end — supporting narrative,
-not the primary scanner target for senior roles.
+```css
+/* classic-professional: .competencies-list */
+/* ats-optimized: .competencies-grid */
+.competencies-list,
+.competencies-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;  /* justified spacing across each line */
+  gap: 4px 0;
+  max-height: calc(3 * (1em * 1.6 + 4px));  /* 3 lines at current line-height */
+  overflow: hidden;
+}
+```
+
+Each competency tag keeps its existing `.competency-tag` / `.competency-item` styling.
+The `justify-content: space-between` spreads items evenly across each line so the block
+looks intentional, not like a ragged left-aligned list.
+
+**AI drafter instruction (modes/cv.md):**
+
+When filling `{{COMPETENCIES}}`, select **12–15 items maximum** — enough to fill
+approximately 3 lines at the template's font size. Priority order:
+1. Competencies that appear verbatim or as close synonyms in the JD
+2. Competencies matching the detected archetype's "what they buy" column in `_profile.md`
+3. Domain-specific technical competencies from `cv.md`
+4. Drop generic competencies last (communication, teamwork, leadership) unless the JD
+   explicitly calls for them
+
+If the user's full competency list exceeds 15, choose by impact — the ones a screener
+would recognize instantly as relevant to this specific role.
 
 ### Changes required
 
 | File | Change |
 |------|--------|
-| `templates/cv/classic-professional.html` | Move `<!-- CORE COMPETENCIES -->` block to after `<!-- WORK EXPERIENCE -->`; move `<!-- SKILLS -->` block to immediately after `<!-- CORE COMPETENCIES -->` |
-| `templates/cv/ats-optimized.html` | Same reorder |
+| `templates/cv/classic-professional.html` | CSS: `justify-content: space-between` + `max-height` (3 lines) on `.competencies-list` |
+| `templates/cv/ats-optimized.html` | Same CSS change on `.competencies-grid` |
+| `modes/cv.md` | Add fill instruction: 12–15 items max, JD-relevance priority order |
 
-No CSS changes. No mode file changes. No placeholder changes.
-Each section comment block and its div move as a unit.
+No section reorder. No new placeholders.
 
 ### Test
 
-Generate a CV with both templates. Verify:
-- Work Experience appears before Core Competencies in the rendered PDF
-- Skills section appears directly after Core Competencies
-- Projects and Education appear at the end
-- No other sections are displaced; no layout breakage
+Generate a CV with a large competency list (20+ items). Verify:
+- No more than 3 lines of competency tags appear in the rendered PDF
+- Tags are evenly spaced across each line (not ragged left-aligned)
+- The 12–15 selected items are the most JD-relevant, not just the first N alphabetically
 
 ---
 
@@ -393,7 +407,7 @@ Bugs C + B in one commit. Bug D in a second commit. Bug A in a third commit.
 | Path resolution: use file context, not shell | **Adopted** | P1 in `_shared.md` updated: derive PROJECT_ROOT from the absolute path of any file already read/written, never run `cd`/`pwd` |
 | Headline 75-char limit | **Adopted** | Added to `{{HEADLINE}}` fill rule in modes/cv.md; applies to both derived and profile.yml-set values |
 | CSS `::after` separators | **Adopted with modification** | Adopted CSS `+ ::before` adjacent-sibling approach; kept AI "omit empty spans" instruction as belt-and-suspenders — CSS alone can't reliably handle empty spans left in DOM |
-| Skills adjacent to Competencies | **Adopted** | New order: Summary → Work Experience → Competencies → Skills → Projects → Education |
+| Skills adjacent to Competencies | **Superseded by user** | User reverted: Competencies stays in original position (after Summary). Bug C is now "3-line limit + justified spacing + JD-priority selection" instead of a reorder. |
 | localStorage persistence | **Adopted in full** | Spec and code included verbatim in Bug D; added T-html-5 and T-html-6 tests |
 
 ---
@@ -407,8 +421,9 @@ Bugs C + B in one commit. Bug D in a second commit. Bug A in a third commit.
 - [ ] `visa_status` appears in contact row when populated, invisible when empty
 - [ ] `phone` separator hidden when phone is empty
 - [ ] `headline` in profile.yml overrides derived tag line when set
-- [ ] Both templates render: Summary → Work Experience → Core Competencies → Projects → Education → Skills
-- [ ] No layout breakage in either template after section reorder
+- [ ] Core Competencies renders no more than 3 lines in both templates
+- [ ] Competency tags are evenly justified across each line (not ragged left)
+- [ ] CV drafter selects 12–15 highest-JD-relevance items, not a full dump
 - [ ] `interview-prep {company}` produces both `.md` and `.html`; P1 points to `.html`
 - [ ] `deep {company}` produces both `.md` and `.html`; P1 points to `.html`
 - [ ] HTML tables, checklists, and headings render correctly in browser
