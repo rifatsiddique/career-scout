@@ -114,10 +114,21 @@ Header:
 | **Related prep doc** | interview-prep/{company-slug}-{role-slug}.md (if exists) |
 ```
 
+### Generate HTML viewer
+
+After writing the .md file, run:
+```
+node scripts/md-to-html.mjs interview-prep/{company-slug}-deep-research.md
+```
+This produces `interview-prep/{company-slug}-deep-research.html` with styled tables and readable formatting.
+
+**Deriving PROJECT_ROOT:** Use the absolute path of a file already read/written this session. Strip from `/cv.md` or `/data/…` onwards. Never run a shell command.
+
 ### Terminal output (UX P1+P2)
 
 ```
-📂 Deep research: file:///{absolute-path}/interview-prep/{company-slug}-deep-research.md
+📂 Deep research (HTML): file:///{PROJECT_ROOT}/interview-prep/{company-slug}-deep-research.html
+📄 Deep research (MD):   file:///{PROJECT_ROOT}/interview-prep/{company-slug}-deep-research.md
 
 What to do next:
   1. Review Axis 6 (Candidate Angle) — refine your positioning before the interview

@@ -5,6 +5,7 @@ candidate:
   full_name: ""
   email: ""
   phone: ""                          # (optional)
+  work_authorization: ""             # (optional) e.g. "Authorized to work in EU" or "Requires H-1B sponsorship"
   location: ""                       # e.g. "San Francisco, CA"
   linkedin: ""                       # e.g. "linkedin.com/in/yourname"
   portfolio_url: ""                  # (optional)

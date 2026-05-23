@@ -173,9 +173,11 @@ For each `{{PLACEHOLDER}}` in the template, generate the content:
 
 **`{{NAME}}`** — candidate's full name from `profile.yml`
 
-**`{{CURRENT_TITLE}}`** — current/target role title (used in classic-professional template header)
+**`{{HEADLINE}}`** — brief professional identity tagline (classic-professional template only). Fill from `profile.yml → narrative.headline` if set; otherwise derive from `cv.md` + `_profile.md` archetypes (e.g. "Senior AI Engineer · LLM Systems · Fintech"). Hard cap: 75 characters. If blank/unset, omit the element — do NOT output `{{HEADLINE}}` literally.
 
 **`{{PHONE}}`, `{{EMAIL}}`, `{{LINKEDIN_URL}}`, `{{LINKEDIN_DISPLAY}}`, `{{PORTFOLIO_URL}}`, `{{PORTFOLIO_DISPLAY}}`, `{{LOCATION}}`** — from `profile.yml`. Apply market date format to any date fields.
+
+**`{{WORK_AUTH}}`** — work authorization status from `profile.yml → candidate.work_authorization` (e.g. "Authorized to work in EU", "Requires H-1B sponsorship"). If blank/unset, omit — do NOT output `{{WORK_AUTH}}` literally.
 
 **`{{LANG}}`** — `en` for English, `de` for DACH German CV, etc.
 
@@ -197,8 +199,9 @@ For each `{{PLACEHOLDER}}` in the template, generate the content:
 **`{{COMPETENCIES}}`** — Build a grid of competency tags:
 - For `ats-optimized.html`: wrap each in `<span class="competency-tag">...</span>`
 - For `classic-professional.html`: wrap each in `<span class="competency-item">...</span>`
-- Map JD requirements to candidate skills. Lead with ATS keywords that match actual skills.
-- 8-14 competencies. No skills the candidate doesn't have.
+- Map JD requirements to candidate skills. Lead with highest-impact ATS keywords that match actual skills.
+- 12-15 items maximum. Order by JD relevance (most important first). No skills the candidate doesn't have.
+- If the candidate has more than 15 qualifying skills, select the 12-15 that appear in or most closely mirror the JD language.
 
 **`{{EXPERIENCE}}`** — For each role from `cv.md`, generate:
 
@@ -530,13 +533,15 @@ Update `data/applications.md`:
 - Set the PDF column to ✅ and note the filename
 
 ```
-📂 CV: file:///{absolute-path}/output/{filename}.pdf
+📂 CV: file:///{PROJECT_ROOT}/output/{filename}.pdf
 
 What to do next:
   1. Open the PDF above and review before submitting
   2. Submit your application — then update status → pipeline
   3. Once they schedule an interview → interview-prep {company-slug}
 ```
+
+> **P1 — deriving PROJECT_ROOT**: Use the absolute path of a file you have already read or written in this session (e.g., `cv.md`, `data/applications.md`). Strip everything from `/cv.md` or `/data/…` onwards to get the project root. Never run a shell command to find the path.
 
 [P3 nudge — only if composite ≥ 80 (GOOD_FIT+)]:
 ```
@@ -592,7 +597,7 @@ Apply all CSS changes at once — do not loop. Single regeneration.
 | Placeholder | Content | Notes |
 |-------------|---------|-------|
 | `{{NAME}}` | Full name | from profile.yml |
-| `{{CURRENT_TITLE}}` | Current/target role title | classic-professional only |
+| `{{HEADLINE}}` | Professional identity tagline | classic-professional only; max 75 chars; omit if blank |
 | `{{PHONE}}` | Phone number | stripped from reviewer prompt |
 | `{{EMAIL}}` | Email address | stripped from reviewer prompt |
 | `{{LINKEDIN_URL}}` | Full URL | |
@@ -600,6 +605,7 @@ Apply all CSS changes at once — do not loop. Single regeneration.
 | `{{PORTFOLIO_URL}}` | Portfolio/GitHub URL | |
 | `{{PORTFOLIO_DISPLAY}}` | Display text | |
 | `{{LOCATION}}` | City, State/Country | |
+| `{{WORK_AUTH}}` | Work authorization status | omit if blank |
 | `{{LANG}}` | HTML lang attribute | "en", "de", "ja" |
 | `{{SECTION_*}}` | Section headings | localized per market |
 | `{{SUMMARY_TEXT}}` | Professional summary | rewritten, archetype-framed |

@@ -389,7 +389,7 @@ Header:
 | | |
 |---|---|
 | **Company / Role** | {company} — {role} |
-| **Evaluation Report** | file:///{absolute-path}/reports/{NNN}-{company}-{date}.md |
+| **Evaluation Report** | file:///{PROJECT_ROOT}/reports/{NNN}-{company}-{date}.md |
 | **Researched** | {YYYY-MM-DD} |
 | **Source Count** | {N} Glassdoor, {N} Blind, {N} LeetCode, {N} other |
 ```
@@ -406,13 +406,24 @@ File section order:
 9. `## 💰 Compensation Calibration` (Step 7b — if applicable)
 10. `## Priority for the Next N Days` (Step 7c — if interview date known)
 
+### Generate HTML viewer
+
+After writing the .md file, run:
+```
+node scripts/md-to-html.mjs interview-prep/{company-slug}-{role-slug}.md
+```
+This produces `interview-prep/{company-slug}-{role-slug}.html` with styled tables, interactive checkboxes, and localStorage persistence.
+
+**Deriving PROJECT_ROOT for paths:** Use the absolute path of a file you have already read or written in this session (e.g., `cv.md`, `data/applications.md`). Strip everything from `/cv.md` or `/data/…` onwards. Never run a shell command to find the path.
+
 ### Terminal output (UX Conventions P1+P2)
 
 ```
-📂 Prep doc: file:///{absolute-path}/interview-prep/{company-slug}-{role-slug}.md
+📂 Prep doc (HTML): file:///{PROJECT_ROOT}/interview-prep/{company-slug}-{role-slug}.html
+📄 Prep doc (MD):   file:///{PROJECT_ROOT}/interview-prep/{company-slug}-{role-slug}.md
 
 What to do next:
-  1. Open the prep doc above to review questions and story mappings
+  1. Open the HTML prep doc above — interactive checklist with persistent state
   2. Need deeper company research? → deep {company}
   3. After the interview, run → interview-prep --debrief {company}
 ```

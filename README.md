@@ -33,6 +33,7 @@ Human-in-the-loop: AI evaluates and drafts. You review and submit.
 - **Node.js >= 18** — for `scripts/check-history.mjs` (and Phase 2+ PDF generation)
 - **Gemini CLI** — primary runtime (`gemini` command in PATH)
 - *(Phase 2+)* Playwright + Chromium: `npx playwright install chromium`
+- *(Phase 4+)* `marked` (MD→HTML viewer): `npm install` (already in `package.json`)
 
 Verify:
 ```bash
@@ -248,6 +249,7 @@ career-scout/
 │   ├── scan.mjs                  # Zero-token portal scanner (Greenhouse/Ashby/Lever)
 │   ├── check-history.mjs         # TSV parser for Block G repost/evergreen detection
 │   ├── generate-pdf.mjs          # Playwright HTML→PDF (Phase 2)
+│   ├── md-to-html.mjs            # Markdown → styled HTML viewer (Phase 4)
 │   ├── liveness-core.mjs         # Job posting expiry/zombie detection
 │   └── check-liveness.mjs        # CLI liveness checker
 │

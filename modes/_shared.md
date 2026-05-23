@@ -246,13 +246,20 @@ Print absolute paths with `file://` prefix for any file the user needs to open.
 Most modern terminals (Windows Terminal, VS Code, JetBrains) auto-linkify absolute paths.
 
 ```
-Format: 📂 {Artifact name}: file:///{absolute-path}/{file}
+Format: 📂 {Artifact name}: file:///{PROJECT_ROOT}/{file}
 
 Example:
   📂 Prep doc: file:///C:/Work/Git-Python/career-scout/interview-prep/acme-senior-eng.md
 ```
 
 Use forward slashes in the URL portion even on Windows.
+
+**Deriving PROJECT_ROOT (CRITICAL — never run shell commands):**
+Use the absolute path of a file you have already read or written in this session.
+- If you read `cv.md` at `C:/Work/Git-Python/career-scout/cv.md` → PROJECT_ROOT = `C:/Work/Git-Python/career-scout`
+- If you wrote `reports/018-acme-2026-05-22.md` → strip `/reports/018-...` → same root
+- Replace backslashes with forward slashes in the URL portion.
+- If you cannot determine the root from file context, omit the path and note: `[path unavailable — open {file} from project directory]`
 
 ### P2 — Every Mode Ends with "What to do next"
 

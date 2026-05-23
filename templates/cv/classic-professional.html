@@ -88,18 +88,17 @@
     line-height: 1.15;
   }
 
-  .header-title {
-    font-size: 13px;
+  .header-headline {
+    font-size: 12px;
     font-weight: 400;
     color: #444;
     margin-bottom: 8px;
-    font-style: italic;
   }
 
   .contact-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 16px;
+    gap: 4px 0;
     font-size: 10px;
     color: #555;
   }
@@ -109,8 +108,10 @@
     text-decoration: none;
   }
 
-  .contact-row .separator {
+  .contact-item + .contact-item::before {
+    content: " | ";
     color: #bbb;
+    margin: 0 6px;
   }
 
   /* === SECTIONS === */
@@ -145,9 +146,12 @@
   .competencies-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 20px;
+    justify-content: space-between;
+    gap: 6px 0;
     font-size: 10.5px;
     color: #333;
+    max-height: 64px;
+    overflow: hidden;
   }
 
   .competency-item::before {
@@ -339,17 +343,14 @@
   <!-- HEADER -->
   <div class="header avoid-break">
     <h1>{{NAME}}</h1>
-    <div class="header-title">{{CURRENT_TITLE}}</div>
+    <div class="header-headline">{{HEADLINE}}</div>
     <div class="contact-row">
-      <span>{{PHONE}}</span>
-      <span class="separator">|</span>
-      <span>{{EMAIL}}</span>
-      <span class="separator">|</span>
-      <a href="{{LINKEDIN_URL}}">{{LINKEDIN_DISPLAY}}</a>
-      <span class="separator">|</span>
-      <a href="{{PORTFOLIO_URL}}">{{PORTFOLIO_DISPLAY}}</a>
-      <span class="separator">|</span>
-      <span>{{LOCATION}}</span>
+      <span class="contact-item">{{PHONE}}</span>
+      <span class="contact-item">{{EMAIL}}</span>
+      <a class="contact-item" href="{{LINKEDIN_URL}}">{{LINKEDIN_DISPLAY}}</a>
+      <a class="contact-item" href="{{PORTFOLIO_URL}}">{{PORTFOLIO_DISPLAY}}</a>
+      <span class="contact-item">{{LOCATION}}</span>
+      <span class="contact-item">{{WORK_AUTH}}</span>
     </div>
   </div>
 

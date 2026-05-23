@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.13
-**Last Updated:** 2026-05-22 18:45 -- fix-ux-bugs.md v1.1: Gemini review incorporated — path resolution via file context, 75-char headline limit, CSS flexbox separators, Skills adjacent to Competencies, localStorage persistence for checklist state.
+**Version:** 1.14
+**Last Updated:** 2026-05-22 20:00 -- UX bugs A-D implemented: P1 file-context path resolution in _shared.md, Bug B {{HEADLINE}}/{{WORK_AUTH}} on both templates + cv.md, Bug C 3-line competencies on both templates + 12-15 JD-priority in cv.md, Bug D md-to-html.mjs + viewer.html + interview-prep/deep output HTML links.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -646,33 +646,31 @@ Tests (T1-T17, see plan §6e — workflow paths, schema edge cases, anti-fabrica
 - [ ] Subagent path with fallback (Q2), Jaccard dedup (Q4), legacy schema co-existence (Q5)
 - [ ] Citation lint sweep (Q7), "Lessons from Last Time" (Q10), P6 default-N safety
 
-### UX Bug Fixes (pending — plan_rs/fix-ux-bugs.md)
+### UX Bug Fixes ✅ Complete
 
-**Bug A — P1 paths not clickable** (file paths output as relative, not `file:///` absolute):
-- [ ] `modes/_shared.md` P1: add explicit project-root resolution instruction (run `cd`/`pwd`)
-- [ ] `modes/cv.md`: lock P2 format, remove old "Tell the user" plain-text block, add PROJECT_ROOT resolution
-- [ ] `modes/interview-prep.md`: add PROJECT_ROOT resolution before P1 path print
-
-**Bug C — Core Competencies constraint (stays in original position)**:
-- [ ] CSS: 3-line max-height + `justify-content: space-between` on both templates
-- [ ] modes/cv.md: 12–15 items max, JD-relevance priority order for selection
+**Bug A — P1 paths not clickable**:
+- [x] `modes/_shared.md` P1: file-context PROJECT_ROOT derivation (no shell commands); fallback message if unknown
+- [x] `modes/cv.md`: `{absolute-path}` → `{PROJECT_ROOT}`; P1 derivation note added
+- [x] `modes/interview-prep.md`: PROJECT_ROOT derivation note added before terminal output block
 
 **Bug B — Classic-professional header**:
-- [ ] Replace `{{CURRENT_TITLE}}` → `{{HEADLINE}}`; add `headline:` to profile.yml
-- [ ] Add `{{WORK_AUTH}}` from `visa_status`; fix empty-field separators
+- [x] `{{CURRENT_TITLE}}` → `{{HEADLINE}}` in classic-professional.html + `modes/cv.md` fill logic + placeholder table
+- [x] `{{WORK_AUTH}}` added to both templates (classic-professional.html + ats-optimized.html) + `modes/cv.md` + `config/profile.yml`
+- [x] CSS `::before` separator on both templates; old `.separator` span pattern removed
+- [x] `config/profile.yml`: `work_authorization: ""` field added under `candidate:`
+
+**Bug C — Core Competencies constraint (stays in original position)**:
+- [x] classic-professional.html: `max-height: 64px; overflow: hidden; justify-content: space-between`
+- [x] ats-optimized.html: `max-height: 88px; overflow: hidden; justify-content: space-between`
+- [x] `modes/cv.md`: 12–15 items max, JD-priority order, selection rule for overflow
 
 **Bug D — HTML viewer for user-facing report docs**:
-- [ ] `npm install marked`
-- [ ] `scripts/md-to-html.mjs` — MD → HTML conversion script
-- [ ] `templates/docs/viewer.html` — styled viewer template (tables, checkboxes, print-friendly)
-- [ ] `modes/interview-prep.md` — call script after .md write; P1 → .html; fallback to .md
-- [ ] `modes/deep.md` — same
-- [ ] `docs/DATA_CONTRACT.md` — note .html files as generated companions
-- [ ] Replace `{{CURRENT_TITLE}}` → `{{HEADLINE}}` in template HTML (tag line from cv.md/profile, not JD title)
-- [ ] Add `headline: ""` optional field to `config/profile.yml`
-- [ ] Add `{{WORK_AUTH}}` to contact row (sourced from `profile.yml → visa_status`), hidden when empty
-- [ ] Ensure `{{PHONE}}` separator is hidden when phone is empty
-- [ ] Update `modes/cv.md` placeholder vocabulary table for `{{HEADLINE}}` and `{{WORK_AUTH}}`
+- [x] `npm install marked` — added to dependencies
+- [x] `scripts/md-to-html.mjs` — MD → HTML conversion script with title extraction, date, source path
+- [x] `templates/docs/viewer.html` — styled viewer (tables, interactive checkboxes, localStorage persistence, print-friendly)
+- [x] `modes/interview-prep.md` Step 8 — run script after .md write; P1 → .html + .md dual links
+- [x] `modes/deep.md` Step 3 — same pattern
+- Note: `docs/DATA_CONTRACT.md` .html companion note deferred (minor; not user-blocking)
 
 ### Phase 5: Auto-Pipeline + Batch (Week 8)
 
