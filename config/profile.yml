@@ -2,14 +2,16 @@
 # Fill in your details. Fields marked (optional) can be left blank.
 
 candidate:
+  # CONTACT FIELDS — used verbatim in generated CVs. Leave empty to omit (never fabricated).
+  # Do NOT use template placeholders — fill with your real values or leave blank.
   full_name: ""
   email: ""
-  phone: ""                          # (optional)
-  work_authorization: ""             # (optional) e.g. "Authorized to work in EU" or "Requires H-1B sponsorship"
+  phone: ""                          # (optional) leave blank to omit from CV
+  work_authorization: ""             # (optional) e.g. "Authorized to work in EU" or "Requires H-1B"
   location: ""                       # e.g. "San Francisco, CA"
-  linkedin: ""                       # e.g. "linkedin.com/in/yourname"
-  portfolio_url: ""                  # (optional)
-  github: ""                         # (optional)
+  linkedin: ""                       # e.g. "linkedin.com/in/yourname" — leave blank to omit
+  portfolio_url: ""                  # (optional) full URL — leave blank to omit
+  github: ""                         # (optional) e.g. "github.com/yourname" — leave blank to omit
 
 target_roles:
   primary: []                        # e.g. ["Senior AI Engineer", "Staff ML Engineer"]
@@ -37,3 +39,4 @@ location:
 cv:
   default_template: "classic-professional"  # Options: classic-professional, ats-optimized, academic-research, technical-engineering
   template_overrides: {}                    # Map archetype → template, e.g. {academic: "academic-research"}
+  diff_threshold: 0.5                       # Jaccard similarity threshold for cv-compare.mjs bullet matching (0.0-1.0). 0.5 = bullets sharing ≥50% of tokens are treated as rewrites of each other.

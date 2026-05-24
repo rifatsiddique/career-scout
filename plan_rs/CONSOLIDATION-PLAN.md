@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.14
-**Last Updated:** 2026-05-22 20:00 -- UX bugs A-D implemented: P1 file-context path resolution in _shared.md, Bug B {{HEADLINE}}/{{WORK_AUTH}} on both templates + cv.md, Bug C 3-line competencies on both templates + 12-15 JD-priority in cv.md, Bug D md-to-html.mjs + viewer.html + interview-prep/deep output HTML links.
+**Version:** 1.18
+**Last Updated:** 2026-05-24 -- UX improvements v2 ALL COMMITS COMPLETE (A-E). script-emits-URI pattern, audit-contact.mjs, cv-compare.mjs, generate-docx.mjs, lib/normalize-text.mjs, warning-block CSS, first-time DOCX hint, P3 nudge (composite≥85), feature-hints.json tracking. All 6 improvements shipped.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -671,6 +671,50 @@ Tests (T1-T17, see plan §6e — workflow paths, schema edge cases, anti-fabrica
 - [x] `modes/interview-prep.md` Step 8 — run script after .md write; P1 → .html + .md dual links
 - [x] `modes/deep.md` Step 3 — same pattern
 - Note: `docs/DATA_CONTRACT.md` .html companion note deferred (minor; not user-blocking)
+
+### UX Improvements v2 (plan_rs/ux-improvements-v2.md — in progress)
+
+**Improvement 1 — Script-emits-URI pattern (Bug A revisit)**:
+- [x] `scripts/generate-pdf.mjs`: prints `📂 Open: file:///...` + `   Path: ...` on stdout after write
+- [x] `modes/_shared.md` P1: rewrote rule — scripts emit URI, AI relays verbatim; fallback for AI-written files
+- [x] `modes/evaluate.md`: md-to-html.mjs call after report write; relay `📂 Open:` line
+- [x] `modes/interview-prep.md`: relay pattern (md-to-html.mjs stdout)
+- [x] `modes/deep.md`: relay pattern (md-to-html.mjs stdout)
+- [x] `modes/cv.md`: relay generate-pdf.mjs stdout verbatim; P3 nudge threshold → 85
+
+**Improvement 2 — CV comparison (deterministic diff)**:
+- [x] `scripts/cv-compare.mjs`: parses cv.md + tailored HTML, Jaccard bullet matching (threshold from profile.yml), emits compare-{slug}-{date}.md + runs md-to-html.mjs
+- [x] `templates/docs/viewer.html`: `.warning-block` CSS (amber highlight for fabrication-candidate items)
+- [x] `modes/cv.md` Step 5c: call cv-compare.mjs after audit + PDF; relay `📂 Open:` + surface any ⚠️ warnings
+- [x] `config/profile.yml`: `cv.diff_threshold: 0.5` (Jaccard threshold, configurable)
+
+**Improvement 3 — HTML for evaluation reports**:
+- [x] `modes/evaluate.md`: md-to-html.mjs called after report write; HTML is the primary link
+- [ ] `modes/scan.md`: pipeline.md HTML — deferred (skim use, not browsable)
+
+**Improvement 4 — Contact info vetting (anti-fabrication)**:
+- [x] `scripts/audit-contact.mjs`: deterministic contact field audit against profile.yml; exits 2 on fabrication
+- [x] `modes/cv.md` Step 0d: early contact audit printout (✅/❌ per field) + pause prompt
+- [x] `modes/cv.md` Step 1g: CONTACT INFO SOURCING rule table (absolute precedence)
+- [x] `modes/cv.md` Step 5a: run audit-contact.mjs before PDF; halt on exit code 2
+- [x] `modes/_shared.md` NEVER #9: never fabricate contact details
+- [x] `config/profile.yml`: contact field comments updated (never fabricated, leave blank to omit)
+- [x] `docs/DATA_CONTRACT.md`: reports/*.html + interview-prep/*.html entries added
+
+**Improvement 5 — DOCX export (opt-in)**:
+- [x] `scripts/lib/normalize-text.mjs`: shared ATS text normalization extracted from generate-pdf.mjs
+- [x] `scripts/generate-pdf.mjs`: refactored to import from lib/normalize-text.mjs
+- [x] `scripts/generate-docx.mjs`: programmatic DOCX builder — reads :root CSS tokens (accent, margins), parses content with node-html-parser, builds OOXML via `docx` npm package
+- [x] `modes/cv.md` Step 0a: parse --docx / --docx-only flags; Step 5d: DOCX generation step + fidelity note
+- [x] `package.json`: added `docx` + `node-html-parser` dependencies (npm installed)
+- [x] `.agents/skills/career-scout/SKILL.md`: --docx / --docx-only documented in discovery menu
+- [x] `README.md`: DOCX export section added under "Generate a CV"
+
+**Improvement 6 — UX hints (conservative)**:
+- [x] `modes/cv.md` Step 0g: check `data/.feature-hints.json` for `hints.docx_export` flag; set SHOW_DOCX_HINT
+- [x] `modes/cv.md` post-generation: show first-time hint if SHOW_DOCX_HINT; write marker to `data/.feature-hints.json`
+- [x] `modes/cv.md` P3 nudge: already in place (composite ≥ 85 + not --docx)
+- [x] `docs/DATA_CONTRACT.md`: `.feature-hints.json` registered as system layer
 
 ### Phase 5: Auto-Pipeline + Batch (Week 8)
 

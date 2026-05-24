@@ -25,8 +25,10 @@ They are created during setup and evolve as you use the system.
 | `data/inbox.txt` | Job inbox — drop URLs here, Scout drains on every run |
 | `data/archived.md` | Dead/stale links removed from pipeline (recoverable) |
 | `data/.scout-state.json` | Scout state (last_clean, last_scan, dry spell counter) |
-| `reports/*` | Your evaluation reports (generated, but yours) |
-| `output/*` | Your generated CVs and cover letters |
+| `reports/*.md` | Your evaluation reports (generated, but yours) |
+| `reports/*.html` | Auto-generated HTML companions to `.md` reports — regenerated each eval run; safe to delete; `.md` is source of truth; do not edit directly |
+| `interview-prep/*.html` | Auto-generated HTML companions to prep and deep-research docs — same rules as reports/*.html |
+| `output/*` | Your generated CVs, cover letters, comparisons, and DOCX exports |
 
 ## System Layer (safe to auto-update)
 
@@ -50,7 +52,8 @@ They can be updated without affecting your data.
 | `templates/prompts/*` | Externalized prompt templates |
 | `templates/states.yml` | Canonical status definitions |
 | `templates/cv/manifest.yml` | Template registry |
-| `scripts/*` | Automation scripts (generate-pdf, scan, liveness, verify) |
+| `scripts/*` | Automation scripts (generate-pdf, scan, liveness, verify, cv-compare, generate-docx, audit-contact) |
+| `data/.feature-hints.json` | Auto-created system state: tracks which one-time hints have been shown; safe to delete (hint reappears) |
 | `config/portals.example.yml` | Example portal scanner configuration |
 | `fonts/*` | Self-hosted fonts for PDF generation |
 | `docs/*` | Documentation |

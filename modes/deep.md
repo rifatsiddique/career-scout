@@ -122,18 +122,23 @@ node scripts/md-to-html.mjs interview-prep/{company-slug}-deep-research.md
 ```
 This produces `interview-prep/{company-slug}-deep-research.html` with styled tables and readable formatting.
 
-**Deriving PROJECT_ROOT:** Use the absolute path of a file already read/written this session. Strip from `/cv.md` or `/data/…` onwards. Never run a shell command.
-
 ### Terminal output (UX P1+P2)
 
+Relay the `📂 Open:` line from the md-to-html.mjs stdout (P1 pattern):
+
 ```
-📂 Deep research (HTML): file:///{PROJECT_ROOT}/interview-prep/{company-slug}-deep-research.html
-📄 Deep research (MD):   file:///{PROJECT_ROOT}/interview-prep/{company-slug}-deep-research.md
+{relay "📂 Open: file:///..." line from md-to-html.mjs stdout}
+{relay "   Path: ..." line from md-to-html.mjs stdout}
 
 What to do next:
   1. Review Axis 6 (Candidate Angle) — refine your positioning before the interview
   2. Run interview-prep {company} to map your stories to likely questions
   3. If you decide to apply, run evaluate {company} to get fit score + CV tips
+```
+
+If the HTML was not generated, show the .md path instead:
+```
+📂 Deep research: interview-prep/{company-slug}-deep-research.md
 ```
 
 ## Rules

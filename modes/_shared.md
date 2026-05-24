@@ -111,6 +111,9 @@ Run this algorithm at the start of every evaluation:
 6. Use corporate-speak (see ATS & Writing section)
 7. Skip registering an evaluated offer in `data/applications.md`
 8. Recommend compensation below market rate
+9. **Fabricate or infer contact details** (phone, email, LinkedIn URL, portfolio URL, GitHub) —
+   contact fields are filled EXCLUSIVELY from `config/profile.yml → candidate.*`. If empty,
+   omit the field. See `modes/cv.md` CONTACT INFO SOURCING rule.
 
 ### ALWAYS
 
@@ -240,26 +243,31 @@ Applies to ALL candidate-facing text (CVs, cover letters, LinkedIn, form answers
 
 Project-wide terminal output patterns. Every mode follows these. Introduced in Phase 4.
 
-### P1 — Artifact Paths Are Clickable
+### P1 — Artifact Paths Are Clickable (Script-Emits-URI Pattern)
 
-Print absolute paths with `file://` prefix for any file the user needs to open.
-Most modern terminals (Windows Terminal, VS Code, JetBrains) auto-linkify absolute paths.
+Writer scripts (`generate-pdf.mjs`, `md-to-html.mjs`, `generate-docx.mjs`, `cv-compare.mjs`)
+print canonical clickable URIs on stdout after writing any file. **Your job is to surface the
+`📂 Open: file:///...` line verbatim — do NOT reconstruct the URI yourself.**
+
+After running any writer script, look for this line in its stdout and relay it:
 
 ```
-Format: 📂 {Artifact name}: file:///{PROJECT_ROOT}/{file}
-
-Example:
-  📂 Prep doc: file:///C:/Work/Git-Python/career-scout/interview-prep/acme-senior-eng.md
+📂 Open: file:///C:/Work/Git-Python/career-scout/output/cv-acme-2026-05-23.pdf
+   Path: output/cv-acme-2026-05-23.pdf
 ```
 
-Use forward slashes in the URL portion even on Windows.
+The second line (`Path:`) gives a copy-pasteable relative path for terminals without link detection.
 
-**Deriving PROJECT_ROOT (CRITICAL — never run shell commands):**
-Use the absolute path of a file you have already read or written in this session.
-- If you read `cv.md` at `C:/Work/Git-Python/career-scout/cv.md` → PROJECT_ROOT = `C:/Work/Git-Python/career-scout`
-- If you wrote `reports/018-acme-2026-05-22.md` → strip `/reports/018-...` → same root
-- Replace backslashes with forward slashes in the URL portion.
-- If you cannot determine the root from file context, omit the path and note: `[path unavailable — open {file} from project directory]`
+**For files the AI writes directly** (not via a script), derive the URI from the absolute path
+used in the write operation. Strip backslashes → forward slashes. Never run pwd or cd.
+
+```
+Format: 📂 {Artifact}: file:///{abs_path_with_forward_slashes}
+         Path: {relative_path_from_project_root}
+```
+
+If the script fails or prints no `📂 Open:` line: show the relative path and note: `[file://
+link unavailable — open from project directory]`.
 
 ### P2 — Every Mode Ends with "What to do next"
 

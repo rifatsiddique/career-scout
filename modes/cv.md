@@ -9,10 +9,19 @@ Uses a drafter-reviewer workflow for high-fit applications.
 
 LLM streaming cannot pause mid-output. Complete ALL reads here before writing anything.
 
-### 0a. Check for --fast flag
+### 0a. Parse flags
 
-If the user invoked `cv --fast` or `cv --draft-only`:
-- Set `FAST_MODE = true`
+Check for these flags in the user's invocation:
+
+| Flag | Effect |
+|------|--------|
+| `--fast` / `--draft-only` | Set `FAST_MODE = true` — skips reviewer, backtrack test, and PDF |
+| `--docx` | Set `DOCX_MODE = pdf_and_docx` — generate both PDF and DOCX |
+| `--docx-only` | Set `DOCX_MODE = docx_only` — generate DOCX only, skip PDF |
+
+Defaults: `FAST_MODE = false`, `DOCX_MODE = none`
+
+If `--fast` is set:
 - FAST_MODE skips the reviewer, backtrack test, and PDF generation
 - The drafter fills the template, writes HTML to disk, reports the path, and exits
 - Proceed to Step 1 with `FAST_MODE` set
@@ -58,6 +67,27 @@ or note "JD not available in report — tailoring will rely on Block E only."
 3. `cv.md` — master CV (full content)
 4. `article-digest.md` — if it exists, read for proof point details
 
+**After reading profile.yml, immediately print the contact audit report:**
+
+```
+⚠️  Contact info status (from config/profile.yml):
+  ✅ Name: {full_name value}
+  ✅ Email: {email value}
+  ❌ Phone: not set — will be OMITTED from CV (not fabricated)
+  ✅ Location: {location value}
+  ❌ LinkedIn: not set — will be OMITTED from CV
+  ...
+```
+
+Print ✅ for any field that has a non-empty value; ❌ for any field that is empty.
+If ANY contact field is empty, ask the user:
+> "Some contact fields are missing (see above). Type **continue** to generate the CV with
+> those fields omitted, or **pause** to add them to config/profile.yml first."
+> **STOP. Wait for response before proceeding.**
+
+If all fields are populated: skip the prompt and continue silently.
+If user responds "pause": exit and let them fill in profile.yml before re-running.
+
 ### 0e. Determine template
 
 ```
@@ -77,7 +107,18 @@ If not FAST_MODE: verify Node.js is available by noting that the script requires
 If the user has not installed Playwright: `npx playwright install chromium` is required.
 Do not silently fail — if the install check is uncertain, note it for the user.
 
-### 0g. Determine output paths
+### 0g. Check first-time hint state
+
+Read `data/.feature-hints.json` if it exists.
+
+- If the file does not exist OR `hints.docx_export` is not `true`: set `SHOW_DOCX_HINT = true`
+- Otherwise: set `SHOW_DOCX_HINT = false`
+
+If `DOCX_MODE` is not `none` (user already used --docx/--docx-only): set `SHOW_DOCX_HINT = false` (they know about DOCX).
+
+This check is silent — do not print anything here. The hint is shown in post-generation output.
+
+### 0h. Determine output paths
 
 - Draft HTML: `output/draft-{company-slug}.html`
 - Final PDF: `output/cv-{candidate-last-name}-{company-slug}-{YYYY-MM-DD}.pdf`
@@ -168,6 +209,28 @@ tools, and role-specific terms — not generic words like "communication" or "le
 Store as `ATS_KEYWORDS`.
 
 ### 1g. Fill each placeholder
+
+**CONTACT INFO SOURCING — ABSOLUTE RULE (read before filling any placeholder):**
+
+Contact placeholders are filled EXCLUSIVELY from `config/profile.yml → candidate.*`.
+
+| Placeholder | Source field | If empty in profile.yml |
+|-------------|-------------|------------------------|
+| `{{NAME}}` | `candidate.full_name` | Stop — name is required |
+| `{{EMAIL}}` | `candidate.email` | Stop — email is required |
+| `{{PHONE}}` | `candidate.phone` | Omit the entire `<span class="contact-item">` for phone |
+| `{{LOCATION}}` | `candidate.location` | Omit the span |
+| `{{LINKEDIN_URL}}`, `{{LINKEDIN_DISPLAY}}` | `candidate.linkedin` | Omit the anchor + span |
+| `{{PORTFOLIO_URL}}`, `{{PORTFOLIO_DISPLAY}}` | `candidate.portfolio_url` | Omit the anchor + span |
+| `{{GITHUB}}` | `candidate.github` | Omit the span |
+| `{{WORK_AUTH}}` | `candidate.work_authorization` | Omit the span |
+| `{{HEADLINE}}` | `candidate.headline` if set; else derive from `cv.md` + `_profile.md` | Omit the element |
+
+**NEVER:**
+- Use `cv.md`, `article-digest.md`, the JD, or any other source for contact fields
+- Infer or construct a value (no "guess the LinkedIn URL from the name")
+- Leave a template placeholder string (e.g., "+1-555-0123", "your@email.com") in output
+- Emit `N/A` or `TBD` for missing fields — only omit
 
 For each `{{PLACEHOLDER}}` in the template, generate the content:
 
@@ -498,13 +561,37 @@ If user requests changes → re-read draft from disk, apply edits, then proceed 
 
 ## Step 5: Generate PDF + Verify
 
+### 5a. Contact info audit (MANDATORY — runs before PDF)
+
+Run the contact audit script against the filled draft HTML:
+
+```
+node scripts/audit-contact.mjs output/draft-{company-slug}.html config/profile.yml
+```
+
+The script prints a contact summary and exits with:
+- `0` → audit passed; proceed to PDF generation
+- `1` → script error; show the error message and stop
+- `2` → **FABRICATION or PLACEHOLDER DETECTED** — do NOT generate PDF
+  Show the audit output, then:
+  > "The contact audit failed (see above). Fix the issues in the draft HTML or in
+  > config/profile.yml and re-run. PDF generation is blocked until the audit passes."
+  **STOP. Do not run generate-pdf.mjs.**
+
+### 5b. PDF generation
+
 Run the PDF generation script. Suppress stderr to avoid Playwright/Chromium noise in the terminal:
 
 ```
 node scripts/generate-pdf.mjs output/draft-{company-slug}.html output/cv-{lastname}-{company-slug}-{YYYY-MM-DD}.pdf 2>/dev/null
 ```
 
-Capture stdout and exit code. The script prints: `Pages: {N}`, `Size: {N} KB`, and `OVERFLOW: ...` if applicable.
+Capture stdout and exit code from generate-pdf.mjs. The script prints: `Pages: {N}`, `Size: {N} KB`, `OVERFLOW: ...` if applicable, and the canonical URI lines:
+```
+✅ PDF written: {abs_path}
+📂 Open: file:///{abs_path_forward_slashes}
+   Path: {relative_path}
+```
 
 Check the exit code:
 - Exit code 0: success, ≤2 pages — proceed
@@ -526,14 +613,66 @@ If overflow (exit code 2):
    > than fits in 2 pages at readable sizes. You can: (a) remove a 'never cut' rule,
    > (b) edit the draft HTML directly, or (c) keep it as 3 pages."
 
+### 5c. CV comparison (skip if FAST_MODE)
+
+Run the deterministic comparison between master cv.md and the tailored draft HTML.
+This detects any content the AI added that does not appear in the master CV (fabrication candidates).
+
+```
+node scripts/cv-compare.mjs cv.md output/draft-{company-slug}.html {company-slug}
+```
+
+The script:
+1. Parses `cv.md` into sections/bullets
+2. Parses the draft HTML into the same structure
+3. Computes kept/rewritten/removed/added bullets via Jaccard similarity (threshold from profile.yml)
+4. Emits `output/compare-{slug}-{date}.md` with amber-highlighted warning blocks for added items
+5. Runs `md-to-html.mjs` on the comparison file
+6. Prints a terminal summary table and the `📂 Open:` line
+
+Relay the script's `📂 Open:` line verbatim. If the script reports added items (⚠️), surface the
+warning in your output so the user sees it before they review the PDF.
+
+If the script fails to run, note: "[comparison unavailable — run manually: node scripts/cv-compare.mjs cv.md output/draft-{company-slug}.html {company-slug}]" and continue.
+
+### 5d. DOCX generation (only if --docx or --docx-only)
+
+If `DOCX_MODE` is `none`: skip this step.
+
+Run the DOCX builder against the draft HTML:
+
+```
+node scripts/generate-docx.mjs output/draft-{company-slug}.html output/cv-{lastname}-{company-slug}-{YYYY-MM-DD}.docx
+```
+
+The script prints the canonical URI lines on success:
+```
+✅ DOCX written: {abs_path}
+📂 Open: file:///{abs_path_forward_slashes}
+   Path: {relative_path}
+   ℹ️  Style tokens applied: accent={hex}, margins={value}
+```
+
+Relay the `📂 Open:` and `   Path:` lines verbatim.
+
+If the script exits non-zero: report the error. If `docx` or `node-html-parser` are not installed, tell the user: "Run `npm install` in the project root, then retry."
+
+**FIDELITY NOTE (surface once, on first DOCX generation):**
+> The DOCX mirrors the PDF's visual structure — accent color, section headings, bullet layout,
+> and margins are applied. CSS-only constructs (flexbox separators, @font-face files) fall back
+> to DOCX equivalents. The result is a polished Word document, not a pixel-perfect replica.
+
 ### Post-generation
 
 Update `data/applications.md`:
 - Find the row for this company + role
 - Set the PDF column to ✅ and note the filename
 
+Relay the script's `📂 Open:` and `   Path:` lines from stdout:
+
 ```
-📂 CV: file:///{PROJECT_ROOT}/output/{filename}.pdf
+{relay "📂 Open: file:///..." line from generate-pdf.mjs stdout}
+{relay "   Path: ..." line from generate-pdf.mjs stdout}
 
 What to do next:
   1. Open the PDF above and review before submitting
@@ -541,11 +680,19 @@ What to do next:
   3. Once they schedule an interview → interview-prep {company-slug}
 ```
 
-> **P1 — deriving PROJECT_ROOT**: Use the absolute path of a file you have already read or written in this session (e.g., `cv.md`, `data/applications.md`). Strip everything from `/cv.md` or `/data/…` onwards to get the project root. Never run a shell command to find the path.
-
-[P3 nudge — only if composite ≥ 80 (GOOD_FIT+)]:
+[First-time hint — only if SHOW_DOCX_HINT is true]:
 ```
-💡 After submitting and landing an interview, run: interview-prep {company-slug}
+ℹ️  New: you can now generate a high-fidelity Word version with `cv --docx`.
+   (This message shows once — see README.md for full DOCX options.)
+```
+After printing this hint: write `{"hints": {"docx_export": true}}` to `data/.feature-hints.json`
+(create the file if it doesn't exist). This is a P6 User Layer write — no backup/confirmation needed
+(the file is system state, not user content).
+
+[P3 nudge — only if composite ≥ 85 AND user did NOT invoke --docx or --docx-only]:
+```
+💡 High-fit role — consider also generating a DOCX for ATS upload portals:
+   cv --docx-only   (creates output/cv-{slug}.docx alongside the PDF)
 ```
 
 ---

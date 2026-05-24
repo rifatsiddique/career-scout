@@ -407,6 +407,16 @@ Save to `reports/{REPORT_NUM}-{company-slug}-{YYYY-MM-DD}.md`
 
 Company slug: lowercase, spaces → hyphens.
 
+**After writing the .md file, generate the HTML viewer:**
+
+```
+node scripts/md-to-html.mjs reports/{REPORT_NUM}-{company-slug}-{YYYY-MM-DD}.md
+```
+
+The script prints `📂 Open: file:///...` — this is the canonical link to surface in the
+terminal output below. If the script fails (not installed / marked missing), fall back to
+showing the .md path instead.
+
 ```markdown
 # Evaluation: {Company} — {Role}
 
@@ -485,7 +495,17 @@ Check `data/applications.md` for existing company + role entry.
 **Recommended Action:** {Apply immediately / Apply with gap strategy / Consider carefully / Skip}
 ```
 
-📂 Report: file:///{absolute-path}/reports/{REPORT_NUM}-{slug}-{date}.md
+Relay the script's stdout `📂 Open:` line for the HTML report (P1 pattern):
+
+```
+📂 Report: {relay md-to-html.mjs "📂 Open: file:///..." line here}
+   Source:  reports/{REPORT_NUM}-{slug}-{date}.md
+```
+
+If the HTML was not generated, show:
+```
+📂 Report: reports/{REPORT_NUM}-{slug}-{date}.md
+```
 
 What to do next:
   1. Generate a tailored CV → cv

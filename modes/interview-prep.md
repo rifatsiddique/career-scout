@@ -414,18 +414,23 @@ node scripts/md-to-html.mjs interview-prep/{company-slug}-{role-slug}.md
 ```
 This produces `interview-prep/{company-slug}-{role-slug}.html` with styled tables, interactive checkboxes, and localStorage persistence.
 
-**Deriving PROJECT_ROOT for paths:** Use the absolute path of a file you have already read or written in this session (e.g., `cv.md`, `data/applications.md`). Strip everything from `/cv.md` or `/data/…` onwards. Never run a shell command to find the path.
-
 ### Terminal output (UX Conventions P1+P2)
 
+Relay the `📂 Open:` line from the md-to-html.mjs stdout (P1 pattern):
+
 ```
-📂 Prep doc (HTML): file:///{PROJECT_ROOT}/interview-prep/{company-slug}-{role-slug}.html
-📄 Prep doc (MD):   file:///{PROJECT_ROOT}/interview-prep/{company-slug}-{role-slug}.md
+{relay "📂 Open: file:///..." line from md-to-html.mjs stdout}
+{relay "   Path: ..." line from md-to-html.mjs stdout}
 
 What to do next:
   1. Open the HTML prep doc above — interactive checklist with persistent state
   2. Need deeper company research? → deep {company}
   3. After the interview, run → interview-prep --debrief {company}
+```
+
+If the HTML was not generated, show the .md path instead:
+```
+📂 Prep doc: interview-prep/{company-slug}-{role-slug}.md
 ```
 
 Follow-up prompts (print after the above, when applicable):

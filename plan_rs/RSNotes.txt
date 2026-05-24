@@ -1,2 +1,12 @@
-PDF second page no top margin consistently
+
+Create side by side CV comparison between master cv and the generated CV for the file and show it by default. Also save the md file
+
+Reviewer must check the contact details - do not AI slop it. If nt present - then levae emprty
+
+by default make also report.md and the deep dive.md and interview prep.md files in htm; and provide the links. 
+
+Add a TUI
+
+All the generated md file and pdf files shoudve shown as a link. It didn't
+
 

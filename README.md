@@ -107,13 +107,20 @@ Or for a quick editable version before generating a PDF:
 > cv --fast
 ```
 
+To also generate a Word document (for ATS portals that require DOCX):
+```
+> cv --docx          (PDF + DOCX)
+> cv --docx-only     (DOCX only)
+```
+
 The cv mode:
 1. Reads your latest evaluation report for scoring, gap analysis, and level strategy
 2. Tailors your master `cv.md` to the specific JD using Block C positioning + Block E changes
 3. For GOOD_FIT+ (≥80): spawns a reviewer agent that critiques the draft independently
 4. Presents a discard summary and any flagged rewording — you approve before PDF generation
 5. Generates a PDF via Playwright to `output/cv-{name}-{company}-{date}.pdf`
-6. Supports iterative changes after initial generation
+6. DOCX export (opt-in): `--docx` or `--docx-only` — high-fidelity Word version matching PDF design (accent color, margins, layout). Requires `npm install` in project root.
+7. Supports iterative changes after initial generation
 
 ### 7. Discover new jobs
 

@@ -49,6 +49,8 @@ career-scout — Command Center
   /career-scout setup              → Set up your profile / update job types and targets
   /career-scout cv                 → Generate a tailored PDF resume for the last job you analyzed
   /career-scout cv --fast          → Quick editable draft (no PDF — for manual tweaks)
+  /career-scout cv --docx          → Generate both PDF and DOCX (Word) versions
+  /career-scout cv --docx-only     → Generate DOCX only (for ATS portals that require Word)
 
   /career-scout scan                  → Search all your companies for new jobs
   /career-scout scan --fast           → Quick check — your favorite companies only
