@@ -60,6 +60,7 @@ They can be updated without affecting your data.
 | `data/batch/results/processed/*.json` | Archived result files after successful merge. Gitignored. |
 | `data/batch/.batch.lock` | Lock file preventing concurrent batch runs. Auto-deleted on clean completion. Gitignored. |
 | `data/batch/batch-input.tsv` | Optional manual job input for `batch` (url, company, role — tab-separated). |
+| `config/port-manifest.yml` | Profile porting manifest — defines which user-layer files to port and how (strategies, groupings, schema migration flags) |
 | `config/portals.example.yml` | Example portal scanner configuration |
 | `fonts/*` | Self-hosted fonts for PDF generation |
 | `docs/*` | Documentation |
@@ -70,4 +71,5 @@ They can be updated without affecting your data.
 1. System updates MUST NOT touch User layer files
 2. User layer files MUST NOT be committed to the shared repo (add to `.gitignore` if needed)
 3. When in doubt about a file's layer, treat it as User layer
-4. **Exception — `merge-tracker.mjs`:** This script writes to `data/applications.md` and `data/pipeline.md` (User layer) as part of the `batch` pipeline. It always writes a `.bak` backup first, and its writes are the direct consequence of a user-initiated `batch` command. This is the only authorized script-level write to User layer data files.
+4. **Exception — `merge-tracker.mjs`:** This script writes to `data/applications.md` and `data/pipeline.md` (User layer) as part of the `batch` pipeline. It always writes a `.bak` backup first, and its writes are the direct consequence of a user-initiated `batch` command.
+5. **Exception — `port-profile.mjs`:** This script writes user-layer files into the current instance as part of profile porting. It always creates a timestamped `.bak` backup before overwriting, runs only when explicitly invoked by the user, and never modifies the source instance.

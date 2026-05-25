@@ -37,7 +37,11 @@ At the start of each session, silently check:
 2. Does `config/profile.yml` have content beyond template placeholders?
 3. Does `modes/_profile.md` have content beyond template placeholders?
 
-**If any check fails:** Enter onboarding mode. Run `modes/setup.md`. Do NOT proceed with evaluations until setup is complete.
+**If any check fails:** Enter onboarding mode.
+- If the user indicates they have an existing career-scout instance → run `modes/port.md`
+- Otherwise → run `modes/setup.md`
+
+Do NOT proceed with evaluations until setup or port is complete.
 
 **If all pass:** Proceed normally.
 
@@ -92,6 +96,7 @@ loading rules per mode.
 | Types "deep" | Read `modes/deep.md` |
 | Types "auto" + URL | Read `modes/_shared.md` + `modes/evaluate.md` + `modes/cv.md` + `modes/auto-pipeline.md`, execute hands-off pipeline |
 | Types "batch" | Read `modes/_shared.md` + `modes/batch.md`, orchestrate subagents |
+| Types "port" or "import profile" | Read `modes/port.md`, execute guided profile porting |
 | Types nothing / asks for help | Show `.agents/skills/career-scout/SKILL.md` discovery menu |
 
 ---

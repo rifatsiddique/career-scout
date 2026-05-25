@@ -26,6 +26,7 @@ Determine mode from `$mode`:
 | `auto` | `auto-pipeline` |
 | `batch` | `batch` |
 | `followup` | `followup` (Phase 5) |
+| `port` or `import profile` | `port` |
 
 **Auto-detection:** If `$mode` is not a known sub-command AND contains a job
 posting URL (path segments: jobs/, careers/, posting/, opening/) or JD text
@@ -79,6 +80,10 @@ career-scout — Command Center
   /career-scout batch --retry-failed → Re-run only jobs that errored (not un-started pending jobs)
 
 Drop job URLs in data/inbox.txt → run /career-scout scan → /career-scout pipeline to review
+
+  /career-scout port              → Import your profile from a previous career-scout instance
+  /career-scout port --dry-run    → Preview what would be imported (nothing is written)
+  /career-scout port --groups 1,2 → Port only specific groups (core, pipeline, reports, etc.)
 ```
 
 ---
@@ -110,6 +115,7 @@ Read only `modes/{mode-file}`.
 | `interview-prep` | `modes/interview-prep.md` |
 | `deep` | `modes/deep.md` |
 | `followup` | `modes/followup.md` |
+| `port` | `modes/port.md` |
 
 ### All modes: also read user data
 
@@ -134,3 +140,4 @@ executing any mode. If either is missing or empty, prompt the user to run setup.
 | 3: Scout | **Active** | scan, scout |
 | 4: Interview Prep | **Active** | interview-prep, deep |
 | 5: Auto-Pipeline + Batch | **Active** | auto, batch |
+| 6: Profile Porting | **Active** | port |

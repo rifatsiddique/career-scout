@@ -25,6 +25,50 @@ Human-in-the-loop: AI evaluates and drafts. You review and submit.
 | Phase 3: Scout | ✅ Complete | Portal API scanning, inbox drain, stale cleanup, --fast priority run |
 | Phase 4: Interview Prep | ✅ Complete | Company-specific prep docs, story bank mapping, Pre-Flight Cheatsheet, post-interview debrief |
 | Phase 5: Auto-Pipeline + Batch | ✅ Complete | One-command end-to-end (`auto`) + parallel batch processing (`batch`) |
+| Phase 6: Profile Porting | ✅ Complete | Migrate personal data from a previous instance (`port`) |
+
+---
+
+## Upgrading from a Previous Version
+
+If you already have a career-scout instance with your profile, evaluations, story bank, and pipeline data, you can bring it all into the new version:
+
+### With your AI CLI (recommended)
+
+```bash
+cd /path/to/new-career-scout
+npm install
+gemini   # or: claude
+```
+
+```
+> port
+```
+
+The guided mode will ask for your old folder path, show you a preview of what will be ported, let you select groups, and create timestamped backups before writing anything.
+
+### With the script directly
+
+```bash
+# Preview — nothing is written
+node scripts/port-profile.mjs --source=/path/to/old-career-scout --dry-run
+
+# Execute — port everything
+node scripts/port-profile.mjs --source=/path/to/old-career-scout
+
+# Port specific groups only
+node scripts/port-profile.mjs --source=/path/to/old-career-scout --groups=core,pipeline,reports
+```
+
+After porting, commit your data to create a clean baseline:
+
+```bash
+git add . && git commit -m "Port profile from old instance"
+```
+
+**What gets ported:** CV, profile, portals, reports, story bank, pipeline, scan history, custom templates, and more — see `config/port-manifest.yml` for the full list.
+
+**What does NOT get ported:** System files (modes, scripts, default templates). System files in the new version contain improvements you want.
 
 ---
 

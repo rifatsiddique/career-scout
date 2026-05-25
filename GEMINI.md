@@ -41,6 +41,7 @@ the following steps exactly, in this order, before producing any output:
 | `cv --fast` or `cv --draft-only` | Read `modes/_shared.md`, then `modes/cv.md`. Execute with FAST_MODE: draft HTML only, no reviewer or PDF. |
 | `scan` or `scout` | Read `modes/_shared.md`, then `modes/scan.md`. Execute job discovery. |
 | `interview-prep` | Read `modes/interview-prep.md`. (Phase 4 — not yet implemented) |
+| `port` or `import profile` | Read `modes/port.md`. Execute guided profile porting. |
 | No input / `help` | Read `AGENTS.md` and show the mode routing table. |
 
 For full system context, rules, and file reference table: read `AGENTS.md`.
@@ -72,8 +73,11 @@ At the start of every session, silently verify:
 2. `config/profile.yml` has real values (not just template placeholders)
 3. `modes/_profile.md` has an archetype table defined
 
-If any check fails: tell the user which file is missing and offer to run `setup`.
-Do NOT proceed with evaluations until setup is complete.
+If any check fails:
+- If the user indicates they have an existing career-scout instance → run `modes/port.md`
+- Otherwise → tell the user which file is missing and offer to run `setup`
+
+Do NOT proceed with evaluations until setup or port is complete.
 
 ---
 

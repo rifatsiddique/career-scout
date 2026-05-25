@@ -1,0 +1,165 @@
+# config/port-manifest.yml — Profile porting manifest
+#
+# Defines which user-layer files to port between career-scout instances,
+# and how to handle each one.
+#
+# When future phases add new user-layer files, add an entry here.
+# No changes to port-profile.mjs are needed — it reads this manifest.
+#
+# Strategies:
+#   overwrite     - Copy source → dest, creating a timestamped .bak of dest
+#   copy-missing  - Copy only if file does not exist in dest (never overwrites)
+#   append-dedup  - Merge rows from source into dest, deduplicating by key column
+#
+# glob: true   - path is a pattern (dir/*.ext); script expands it at runtime
+# exclude      - filenames to skip when expanding a glob
+# required     - if true, script warns prominently when file is missing from source
+# schema_migrate - if true, run YAML schema migration after overwrite
+# dedup_column - column index (0-based) used as dedup key for append-dedup
+
+version: 1
+
+groups:
+  - id: core
+    name: "Core Profile"
+    description: "Your identity, CV, and behavioral profile"
+    files:
+      - path: "cv.md"
+        strategy: overwrite
+        required: true
+        description: "Master CV"
+
+      - path: "config/profile.yml"
+        strategy: overwrite
+        required: true
+        description: "Candidate identity, targets, compensation, and settings"
+        schema_migrate: true
+
+      - path: "config/portals.yml"
+        strategy: overwrite
+        required: false
+        description: "Custom company list for the scanner"
+
+      - path: "modes/_profile.md"
+        strategy: overwrite
+        required: true
+        description: "Archetypes, behavioral profile, writing style, and CV generation rules"
+
+      - path: "article-digest.md"
+        strategy: overwrite
+        required: false
+        description: "Proof points and project deep-dives"
+
+  - id: pipeline
+    name: "Pipeline & Tracking"
+    description: "Job pipeline, applications, follow-ups, and scan history"
+    files:
+      - path: "data/pipeline.md"
+        strategy: overwrite
+        required: false
+        description: "Job pipeline tracker (Scout writes Pending, Evaluator writes Evaluated)"
+
+      - path: "data/applications.md"
+        strategy: overwrite
+        required: false
+        description: "Full application tracker"
+
+      - path: "data/scan-history.tsv"
+        strategy: append-dedup
+        required: false
+        description: "Scanner dedup history — merged by URL to avoid re-scanning old jobs"
+        dedup_column: 0
+
+      - path: "data/inbox.txt"
+        strategy: overwrite
+        required: false
+        description: "Pending job URLs for the scanner"
+
+      - path: "data/archived.md"
+        strategy: overwrite
+        required: false
+        description: "Dead and stale links removed from pipeline (recoverable)"
+
+      - path: "data/.scout-state.json"
+        strategy: overwrite
+        required: false
+        description: "Scout runtime state (last scan date, dry-spell counter)"
+
+      - path: "data/follow-ups.md"
+        strategy: overwrite
+        required: false
+        description: "Follow-up tracking"
+
+  - id: reports
+    name: "Reports"
+    description: "Evaluation reports and their HTML companions"
+    files:
+      - path: "reports/*.md"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "Evaluation reports (markdown source — source of truth)"
+
+      - path: "reports/*.html"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "HTML companions (ported to avoid regeneration; new ones overwrite naturally)"
+
+  - id: interview
+    name: "Interview Prep"
+    description: "Story bank and company-specific prep docs"
+    files:
+      - path: "interview-prep/story-bank.md"
+        strategy: overwrite
+        required: false
+        description: "Accumulated STAR+R stories — main body of your interview library"
+
+      - path: "interview-prep/*.md"
+        strategy: copy-missing
+        glob: true
+        exclude: ["story-bank.md"]
+        required: false
+        description: "Per-company interview prep and deep-research docs"
+
+      - path: "interview-prep/*.html"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "HTML companions for interview prep docs"
+
+  - id: writing
+    name: "Writing Samples"
+    description: "Your writing for style calibration"
+    files:
+      - path: "writing-samples/*"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "Writing samples used by setup to calibrate your voice"
+
+  - id: customizations
+    name: "Custom Templates"
+    description: "User-created CV templates and domain packs (system defaults are not overwritten)"
+    files:
+      - path: "templates/cv/*.html"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "Custom CV templates — system-shipped ones already exist in new instance, so only new files are copied"
+
+      - path: "templates/domain-packs/*.yml"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "Custom domain packs (e.g., product-management.yml, biotech.yml)"
+
+  - id: output
+    name: "Output"
+    description: "Generated CVs, cover letters, comparison reports, and DOCX exports"
+    files:
+      - path: "output/*"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "Generated PDFs, HTML drafts, DOCX exports, and compare reports"

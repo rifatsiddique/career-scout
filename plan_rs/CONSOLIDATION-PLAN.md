@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.21
-**Last Updated:** 2026-05-25 -- Phase 6 placeholder added (safe upgrade / distribution). F1+F2 follow-ups marked complete.
+**Version:** 1.22
+**Last Updated:** 2026-05-25 -- Phase 6 implemented (profile porting engine: manifest + script + mode).
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -767,65 +767,43 @@ Key architectural decisions locked in Phase 5:
 - [x] F1: `scripts/generate-pdf.mjs` Chromium launch-retry (one-shot retry on resource-lock)
 - [x] F2: `modes/cv.md` Step 3a fuzzy edit-matching (locate core phrase in HTML, not literal paste)
 
-### Phase 6: Safe Upgrade / Distribution (planning)
+### Phase 6: Profile Porting ✅ Complete (2026-05-25)
 
-**Goal:** A user can upgrade career-scout (get new modes, script fixes, templates) without
-overwriting their personal work — `cv.md`, `config/profile.yml`, `modes/_profile.md`,
-`config/portals.yml`, `data/*`, `interview-prep/story-bank.md`, etc.
+**Goal:** A user can clone a new version of career-scout and safely migrate all their
+personal data (CV, profile, reports, story bank, pipeline, scan history, custom templates)
+from their old instance — without any merge conflicts or data loss.
 
-**Why this matters:** The project is a single git repo. A naive `git pull` will conflict with
-or silently overwrite user layer files. There is currently no safe upgrade path for anyone
-who has set up a real profile and accumulated reports, evaluations, and story bank entries.
+**Approach:** "Fresh clone + port" — user clones the new repo, then runs `port` to
+import their data. Avoids all git merge complexity. Old instance is never modified.
 
-**Status:** Brainstorming. Key questions open (see below). Spec in `plan_rs/phase6-upgrade.md` once approach is decided.
+**Design decisions locked:**
+- Git users only (primary audience clones the repo)
+- No .gitignore on user-layer files (users want git history on their data)
+- No separate data directory — keep the single-folder model
+- No VERSION file — not needed for this porting approach
+- Schema migration: textual injection preserving YAML comments (not yaml.dump)
+- Backups: timestamped .bak files (not simple .bak) to survive multiple port runs
 
-#### Open brainstorm questions
+**Deliverables:**
+- [x] `config/port-manifest.yml` — living registry of user-layer files with strategies
+- [x] `scripts/port-profile.mjs` — deterministic porting engine (375 lines)
+  - Dependency check (dynamic import + clean error)
+  - Case-insensitive source validation on Windows
+  - New-instance baseline for unrecognized file scan (recursive, no hardcoded list)
+  - Continue-on-failure with per-file try/catch (EBUSY/EPERM on Windows)
+  - Timestamped .bak backups (cv.md.20260525-143000.bak)
+  - Binary file support (readFileSync with encoding: null for PDF/DOCX)
+  - TSV header validation before append-dedup merge
+  - Comment-aware YAML injection (upward scan for preceding # blocks)
+  - Granular summary (Created / Updated / Merged / Failures)
+- [x] `modes/port.md` — guided AI mode (Step 0: npm check, git commit baseline, rollback)
+- [x] `AGENTS.md` — port routing + onboarding branch
+- [x] `GEMINI.md` — port routing + onboarding branch
+- [x] `.agents/skills/career-scout/SKILL.md` — Phase 6 Active, routing, discovery menu
+- [x] `docs/DATA_CONTRACT.md` — port-manifest.yml system layer entry + Rule 5
+- [x] `README.md` — "Upgrading from a Previous Version" section
 
-**Q1 — What does "install" look like today?**
-User clones the repo (or copies the folder). All files — system and user — live together.
-No package manager, no version number visible to the user. How do we add upgrade awareness
-without adding heavyweight tooling?
-
-**Q2 — Two upgrade channels to cover:**
-- **(a) git users** — `git pull` from the upstream repo. Fast, familiar, but clobbers user files.
-- **(b) non-git users** — downloaded a zip/tarball or copied the folder. Need a script path.
-Which is the primary audience? Design for both or pick one?
-
-**Q3 — `.gitignore` all user layer files?**
-If user layer files are gitignored, `git pull` only touches system layer — upgrade is safe by
-default. But the user can't use git to version their own `cv.md` / profile history.
-Trade-off: simplicity vs. user wanting git history on their own data.
-Alternative: user layer files gitignored by default with a README note saying "move your
-data to its own repo if you want git history."
-
-**Q4 — `scripts/upgrade.mjs` approach:**
-A script that copies system layer files from a local clone of the upstream repo (or an
-extracted zip) into the user's working directory, explicitly skipping everything in the
-user layer (DATA_CONTRACT.md as source of truth). Simple, explicit, no git required.
-Downside: user has to know to run it.
-
-**Q5 — Schema migrations:**
-What happens when `config/profile.yml` gains new required fields between versions?
-(e.g., `auto.min_cv_score` was added in Phase 5 — users who upgraded would be missing it.)
-Options: (a) mode files always default gracefully when keys are absent (already done for
-`auto.min_cv_score`), (b) an upgrade script patches missing keys with defaults,
-(c) `setup --upgrade` merges new schema fields into existing profile.
-
-**Q6 — Version awareness:**
-Should the system know its own version? A `VERSION` file or field in `package.json`?
-Useful for: "your system is out of date, run upgrade", migration guards, bug reports.
-Or is this over-engineering for a personal CLI tool?
-
-**Q7 — Separation of concerns (longer term):**
-Could user data live in a separate directory entirely — e.g., `~/career-scout-data/` —
-while the system lives in the cloned repo? The CLI would be pointed at the data dir.
-Clean separation, easy upgrades, but requires a config pointer and breaks the current
-"everything in one folder" simplicity that makes the project approachable.
-
-**Likely direction (to confirm):**
-- Primary: `.gitignore` all user layer files (safe `git pull` by default)
-- Secondary: `scripts/upgrade.mjs` for non-git / zip users + schema migration for new fields
-- No repo restructuring in Phase 6 — keep the single-folder model
+**Spec:** `plan_rs/phase6-port-profile.md` (v1.4 — 4 Gemini review rounds, 10/10 final)
 
 ---
 
