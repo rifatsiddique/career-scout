@@ -1,8 +1,8 @@
 # Phase 6: Profile Porting — Implementation Plan
 
-**Version:** 1.4
+**Version:** 1.5
 **Date:** 2026-05-25
-**Status:** Approved — 4 Gemini review rounds (10/10 final rating)
+**Status:** Phase 6 core complete. UX discoverability pass in progress (Round 5 review).
 **Spec file for Gemini:** `plan_rs/phase6-port-profile.md`
 
 ---
@@ -943,3 +943,167 @@ risks and "Day 1" improvements.
 **Post-R4 status:** All known technical risks addressed. The new-instance
 baseline approach for unrecognized file scanning is cleaner than the
 previous hardcoded exclusion list and eliminates a maintenance burden.
+
+---
+
+## Round 5 Review — UX Discoverability (2026-05-25)
+
+**Context:** Phase 6 implementation is complete and smoke-tested. This round
+addresses discoverability: will users find the `port` feature without reading
+the README? Two reviewers (Claude + Gemini) assessed README, onboarding logic,
+and mode UX. Gemini rated discoverability 6/10 — functionally complete, but
+the onboarding is reactive rather than proactive.
+
+### Gemini Findings + Claude Verdicts
+
+| # | Finding | Verdict | Action |
+|---|---------|---------|--------|
+| 1 | README is well-updated with Upgrading section — PASSED | **Agree (partial)** | README passes the user-facing test. However, the file structure tree is stale — `port-profile.mjs`, `port.md`, and `port-manifest.yml` are not listed. Adding these for developer navigability. |
+| 2 | AGENTS.md onboarding is reactive: "if user **indicates** they have an old instance" — user who types nothing will miss port | **Accept** | Change to proactive: when profile check fails, AI immediately offers two explicit paths ("New user? → setup" / "Upgrading? → port") rather than waiting for the user to volunteer this. |
+| 3 | modes/setup.md safety valve: when cv.md is empty, offer port escape hatch | **Accept** | When cv.md is empty in Step 1, add one line: "If you have an old career-scout folder, type 'port' to import your CV and data instead." Prevents the user from reconstructing a CV they already have. |
+| 4 | modes/setup.md: when cv.md has content but profile is missing, mention port | **Accept (light touch)** | Valid scenario: user manually copied cv.md but didn't port the rest. Add a single brief mention at the top of Step 1 when cv.md has content: "Have an old career-scout folder with reports and trackers? Type 'port'. Otherwise, continue." Keep it non-intrusive — genuine first-timers shouldn't feel interrogated. |
+
+### Additional Claude Findings (not in Gemini review)
+
+| # | Finding | Action |
+|---|---------|--------|
+| 5 | SKILL.md discovery menu: `port` is buried at the bottom after `batch` — a user opening the menu to orient themselves won't reach it | Move `port` to appear immediately after `setup` in the discovery menu, since it's the alternative to setup for returning users. |
+| 6 | GEMINI.md onboarding has the same passive wording as AGENTS.md | Apply same proactive fix to GEMINI.md Session Start block. |
+| 7 | README troubleshooting has no port row | Add: "Have data in an old instance? Run `port` to import it." |
+| 8 | README file structure missing port files | Add `port-profile.mjs`, `port.md`, `port-manifest.yml` to the structure tree under their respective directories. |
+| 9 | modes/port.md Step 6 missing .bak cleanup guidance | After porting, timestamped `.bak` files appear in the working tree. Users will wonder what they are. Add: "Once you've verified the ported files look correct, you can delete the `.bak` files — they're gitignored and won't appear in commits." |
+| 10 | modes/port.md Step 0: "run npm install" reads like an AI command, not a terminal command | Clarify with the exact terminal-side instruction: run `npm install` in a terminal in the new career-scout folder. |
+
+---
+
+## UX Discoverability Update — Implementation Plan
+
+### Files to Change
+
+| File | Change |
+|------|--------|
+| `AGENTS.md` | Proactive onboarding block — show two-path choice when profile missing |
+| `GEMINI.md` | Same proactive onboarding fix to Session Start block |
+| `modes/setup.md` | Step 1: port escape hatch when cv.md empty; brief port mention when cv.md has content |
+| `SKILL.md` | Move `port` commands up in discovery menu — right after `setup` |
+| `README.md` | Add port files to structure tree; add troubleshooting row; note .bak cleanup |
+| `modes/port.md` | Step 0: clarify npm install is terminal command; Step 6: .bak cleanup guidance |
+
+### Exact Content Changes
+
+#### AGENTS.md — replace onboarding block
+
+Current:
+```
+**If any check fails:** Enter onboarding mode.
+- If the user indicates they have an existing career-scout instance → run `modes/port.md`
+- Otherwise → run `modes/setup.md`
+```
+
+New:
+```
+**If any check fails:** Enter onboarding mode. Immediately offer two explicit paths:
+
+> "It looks like career-scout isn't configured yet. Which applies to you?
+>  1. **New user** — I'll guide you through setup (a few minutes)
+>  2. **Upgrading** — I have a previous career-scout folder with my CV and data"
+
+- If the user picks 2 or mentions an existing instance → read `modes/port.md`
+- Otherwise → read `modes/setup.md`
+```
+
+#### GEMINI.md — replace Session Start onboarding block
+
+Current:
+```
+If any check fails:
+- If the user indicates they have an existing career-scout instance → run `modes/port.md`
+- Otherwise → tell the user which file is missing and offer to run `setup`
+```
+
+New:
+```
+If any check fails, proactively offer two explicit paths:
+> "career-scout isn't configured yet. Are you:
+>  1. A new user? → I'll run setup
+>  2. Upgrading from an older instance? → I can import your data (type 'port')"
+
+- Path 2 or user mentions existing instance → run `modes/port.md`
+- Otherwise → run `modes/setup.md`
+```
+
+#### modes/setup.md — Step 1 additions
+
+After the `**If cv.md is empty or missing:**` block, add to the existing prompt:
+```
+>  (If you have an old career-scout folder with your data, type 'port'
+>   to import it instead of starting from scratch.)
+```
+
+After the `**If cv.md has content:** Proceed.` line, add:
+```
+- **Note:** If the user has an old career-scout instance with reports, story bank,
+  or pipeline data they haven't imported yet, mention it once:
+  > "I can see your CV is ready. If you also have an old career-scout folder
+  >  with evaluation reports or a story bank, type 'port' now to bring that
+  >  data over before we continue. Otherwise, let's proceed."
+  Only show this note once — if the user continues with setup, don't repeat.
+```
+
+#### SKILL.md — move port in discovery menu
+
+Move the three port command lines from their current position (after batch) to
+immediately after the setup line:
+```
+  /career-scout setup              → Set up your profile ...
+
+  /career-scout port              → Upgrading? Import your profile from a previous career-scout instance
+  /career-scout port --dry-run    → Preview what would be imported (nothing is written)
+  /career-scout port --groups 1,2 → Port only specific groups (core, pipeline, reports, etc.)
+```
+
+#### README.md — three targeted additions
+
+1. **File structure `scripts/` block** — add:
+   `├── port-profile.mjs              # Profile porting engine (Phase 6)`
+
+2. **File structure `modes/` block** — add:
+   `│   └── port.md                   # Profile porting guided UX (Phase 6)`
+
+3. **File structure `config/` block** — add:
+   `│   └── port-manifest.yml         # Porting manifest — which files to port and how`
+
+4. **Troubleshooting table** — add row:
+   `| Have data in an old career-scout instance | Run \`port\` — imports CV, reports, story bank, pipeline automatically |`
+
+5. **Upgrading section** — add after "After porting, commit your data..." paragraph:
+   ```
+   **Cleaning up after port:** The script creates timestamped backup files
+   (e.g., `cv.md.20260525-143000.bak`) before overwriting anything. Once
+   you've verified the ported files look correct, you can delete these — they
+   are gitignored and won't appear in commits.
+   ```
+
+#### modes/port.md — two small additions
+
+**Step 0:** Change "run `npm install` first" to:
+```
+If not: open a terminal in this folder and run:
+   npm install
+```
+
+**Step 6:** After the rollback block, add:
+```
+> **Cleaning up .bak files:** The port created timestamped backups
+> (e.g., `cv.md.20260525-143000.bak`) before overwriting. Once you've
+> verified everything looks correct and committed, these are safe to delete.
+> They are gitignored and won't affect your git history.
+```
+
+### Verification
+
+1. Open a fresh session with empty profile → AI should immediately ask "new or upgrading?" without waiting
+2. Type "setup" with empty profile → Step 1 should offer port escape hatch
+3. Type "setup" with cv.md present but empty profile → Step 1 should mention port once
+4. Open discovery menu (no args) → port should appear after setup, not at the bottom
+5. Run port on a real old instance → .bak files appear; Step 6 explains what they are

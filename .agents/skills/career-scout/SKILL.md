@@ -71,6 +71,10 @@ career-scout — Command Center
   /career-scout interview-prep --debrief <company>  → Post-interview capture — what was asked, what worked, lessons
   /career-scout deep <company>                      → Strategic company research — direction, culture, candidate angle
 
+  /career-scout port              → Upgrading? Import CV, reports, story bank from a previous instance
+  /career-scout port --dry-run    → Preview what would be imported (nothing is written)
+  /career-scout port --groups 1,2 → Port only specific groups (core, pipeline, reports, etc.)
+
   /career-scout auto <url>          → Full hands-off pipeline: evaluate + CV + tracker update + pipeline move
   /career-scout auto <url> --docx  → Same, also generate DOCX
   /career-scout batch              → Process all pending jobs via parallel subagents
@@ -80,10 +84,6 @@ career-scout — Command Center
   /career-scout batch --retry-failed → Re-run only jobs that errored (not un-started pending jobs)
 
 Drop job URLs in data/inbox.txt → run /career-scout scan → /career-scout pipeline to review
-
-  /career-scout port              → Import your profile from a previous career-scout instance
-  /career-scout port --dry-run    → Preview what would be imported (nothing is written)
-  /career-scout port --groups 1,2 → Port only specific groups (core, pipeline, reports, etc.)
 ```
 
 ---

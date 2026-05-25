@@ -30,7 +30,11 @@ Before starting, verify:
 
 1. Have you run `npm install` in this new folder?
    Check: does `node_modules/` exist here?
-   If not: run `npm install` first — the porting script needs it.
+   If not: open a terminal in this folder and run:
+   ```
+   npm install
+   ```
+   The porting script requires it.
 
 2. Do you have your old career-scout folder path handy?
 
@@ -150,6 +154,12 @@ If the script reports schema migrations (injected new keys into profile.yml):
 > (Gemini's .gemini/ folder, Claude Code's .claude/ folder) is tied
 > to the directory path. If you had project-specific notes or memories
 > in your old instance's CLI, copy those folders manually.
+>
+> **Cleaning up .bak files:** The port created timestamped backups
+> (e.g., `cv.md.20260525-143000.bak`) before overwriting any existing
+> content. Once you've verified the ported files look correct and
+> committed, these are safe to delete — they are gitignored and won't
+> appear in git history.
 
 ---
 

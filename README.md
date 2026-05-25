@@ -70,6 +70,8 @@ git add . && git commit -m "Port profile from old instance"
 
 **What does NOT get ported:** System files (modes, scripts, default templates). System files in the new version contain improvements you want.
 
+**Cleaning up after port:** The script creates timestamped backup files (e.g., `cv.md.20260525-143000.bak`) before overwriting anything. Once you've verified the ported files look correct and committed, these are safe to delete — they are gitignored and won't appear in commits.
+
 ---
 
 ## Prerequisites
@@ -329,12 +331,14 @@ career-scout/
 │   ├── pipeline-triage.md        # Pipeline inbox processing
 │   ├── auto-pipeline.md          # Hands-off end-to-end orchestrator (Phase 5)
 │   ├── batch.md                  # Parallel batch orchestrator (Phase 5)
-│   └── setup.md                  # Guided profile creation
+│   ├── setup.md                  # Guided profile creation
+│   └── port.md                   # Profile porting guided UX (Phase 6)
 │
 ├── config/
 │   ├── profile.yml               # YOUR identity, targets, comp, market (USER layer)
 │   ├── portals.yml               # YOUR tracked companies + title/location filters (USER layer)
-│   └── portals.example.yml       # Example with 50+ pre-configured companies
+│   ├── portals.example.yml       # Example with 50+ pre-configured companies
+│   └── port-manifest.yml         # Porting manifest — which files to port and how (Phase 6)
 │
 ├── data/
 │   ├── pipeline.md               # Scout ↔ Evaluator contract (Pending + Evaluated)
@@ -357,7 +361,8 @@ career-scout/
 │   ├── liveness-core.mjs         # Job posting expiry/zombie detection
 │   ├── check-liveness.mjs        # CLI liveness checker
 │   ├── merge-tracker.mjs         # Merge batch results → applications.md + pipeline.md (Phase 5)
-│   └── verify-pipeline.mjs       # Pipeline + tracker integrity checker (Phase 5)
+│   ├── verify-pipeline.mjs       # Pipeline + tracker integrity checker (Phase 5)
+│   └── port-profile.mjs          # Profile porting engine (Phase 6)
 │
 ├── templates/
 │   ├── domain-packs/
@@ -539,6 +544,7 @@ Your `cv.md`, `reports/`, `data/`, and `interview-prep/story-bank.md` are **not*
 | LinkedIn URL fails | LinkedIn requires login — paste the JD text instead |
 | Score feels too high/low | Re-run `setup` and redo the Golden Examples calibration |
 | `.bak` files appearing | Setup backed up your profile before writing — safe to delete after verifying new content |
+| Have data in an old career-scout instance | Run `port` — imports CV, reports, story bank, and pipeline automatically |
 
 ---
 

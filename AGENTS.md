@@ -37,9 +37,14 @@ At the start of each session, silently check:
 2. Does `config/profile.yml` have content beyond template placeholders?
 3. Does `modes/_profile.md` have content beyond template placeholders?
 
-**If any check fails:** Enter onboarding mode.
-- If the user indicates they have an existing career-scout instance → run `modes/port.md`
-- Otherwise → run `modes/setup.md`
+**If any check fails:** Enter onboarding mode. Proactively offer two explicit paths:
+
+> "It looks like career-scout isn't configured yet. Which applies to you?
+>  1. **New user** — I'll guide you through setup (a few minutes)
+>  2. **Upgrading** — I have a previous career-scout folder with my CV and data"
+
+- If the user picks 2 or mentions an existing instance → read `modes/port.md`
+- Otherwise → read `modes/setup.md`
 
 Do NOT proceed with evaluations until setup or port is complete.
 

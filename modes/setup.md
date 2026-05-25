@@ -43,11 +43,19 @@ Check if `cv.md` has content (more than just headers):
   > 1. Paste your CV text here and I'll format it
   > 2. Describe your experience and I'll draft a CV
   >
+  > (If you have an old career-scout folder with your CV and data already,
+  >  type 'port' to import it instead of starting from scratch.)
+  >
   > Which do you prefer?"
-  
+
   Create or populate `cv.md` from what the user provides. Format as clean markdown with sections: Professional Summary, Work Experience, Projects, Education, Skills.
 
-- **If cv.md has content:** Proceed.
+- **If cv.md has content:** Mention port once, then proceed:
+  > "I can see your CV is ready. If you also have an old career-scout folder
+  >  with evaluation reports, a story bank, or pipeline data, type 'port' now
+  >  to bring that over before we continue. Otherwise, let's proceed with setup."
+
+  If the user continues with setup, do not repeat this offer.
 
 ---
 

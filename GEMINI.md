@@ -73,9 +73,14 @@ At the start of every session, silently verify:
 2. `config/profile.yml` has real values (not just template placeholders)
 3. `modes/_profile.md` has an archetype table defined
 
-If any check fails:
-- If the user indicates they have an existing career-scout instance → run `modes/port.md`
-- Otherwise → tell the user which file is missing and offer to run `setup`
+If any check fails, proactively offer two explicit paths:
+
+> "career-scout isn't configured yet. Which applies to you?
+>  1. **New user** — I'll guide you through setup (type 'setup')
+>  2. **Upgrading** — I have a previous career-scout folder with my data (type 'port')"
+
+- If the user picks 2 or mentions an existing instance → run `modes/port.md`
+- Otherwise → run `modes/setup.md`
 
 Do NOT proceed with evaluations until setup or port is complete.
 
