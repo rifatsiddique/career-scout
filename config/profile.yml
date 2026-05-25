@@ -42,3 +42,15 @@ cv:
   template_overrides: {}                    # Map archetype → template, e.g. {academic: "academic-research"}
   target_pages: 2                           # Target CV length: 1 or 2. Set to 1 for early-career candidates. Hard stop overrides this if cv.md has < 10 total bullets.
   diff_threshold: 0.5                       # Jaccard similarity threshold for cv-compare.mjs bullet matching (0.0-1.0). 0.5 = bullets sharing ≥50% of tokens are treated as rewrites of each other.
+
+auto:
+  min_cv_score: 80                          # Minimum composite score (0-100) to generate a CV in auto mode.
+                                            # 80 = GOOD_FIT+ — the proven "apply" bar (calibrated across 740+ evaluations).
+                                            # Below this: auto skips CV and explains why. Run  cv {slug}  to override one-off.
+                                            # Recommended range: 65 (include PARTIAL_MATCH) to 90 (PERFECT_MATCH only).
+
+batch:
+  sequential_checkpoint: 3                  # Max jobs to process per invocation in the sequential fallback (no-subagent CLIs).
+                                            # After this many jobs, batch saves state and pauses — keeps context small and API cost predictable.
+                                            # Re-run  batch  to continue (completed jobs are skipped automatically).
+                                            # Ignored when subagents are available (Gemini CLI, Claude Code).

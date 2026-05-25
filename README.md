@@ -24,7 +24,7 @@ Human-in-the-loop: AI evaluates and drafts. You review and submit.
 | Phase 2: CV Generation | ✅ Complete | Multi-template PDF CVs + drafter-reviewer |
 | Phase 3: Scout | ✅ Complete | Portal API scanning, inbox drain, stale cleanup, --fast priority run |
 | Phase 4: Interview Prep | ✅ Complete | Company-specific prep docs, story bank mapping, Pre-Flight Cheatsheet, post-interview debrief |
-| Phase 5: Auto-Pipeline | Planned | One-command end-to-end + batch |
+| Phase 5: Auto-Pipeline + Batch | ✅ Complete | One-command end-to-end (`auto`) + parallel batch processing (`batch`) |
 
 ---
 
@@ -122,7 +122,54 @@ The cv mode:
 6. DOCX export (opt-in): `--docx` or `--docx-only` — high-fidelity Word version matching PDF design (accent color, margins, layout). Requires `npm install` in project root.
 7. Supports iterative changes after initial generation
 
-### 7. Discover new jobs
+### 7. Run the full pipeline hands-off (auto)
+
+After evaluating a job, skip the interactive review and let the system complete everything:
+
+```
+> auto https://boards.greenhouse.io/{company}/jobs/{id}
+```
+
+`auto` runs end-to-end: evaluate → score gate → tailored CV → tracker update → pipeline move.
+You review only the finished PDF. No intermediate pauses.
+
+**Score gate:** If the job scores below 80 (the GOOD_FIT bar), `auto` skips CV generation
+and explains why — protecting your time and API budget. You can override:
+```
+> cv {slug}           # generate the CV anyway for this job
+```
+Or lower the bar permanently in `config/profile.yml → auto.min_cv_score`.
+
+**Flags:**
+```
+> auto <url> --docx       # also generate a Word document
+> auto <url> --yes        # auto-confirm all write prompts (useful in scripts)
+```
+
+### 8. Process many jobs at once (batch)
+
+Add URLs to `data/pipeline.md` → Pending, then:
+
+```
+> batch
+```
+
+`batch` dispatches one fresh-context subagent per job (up to 3 in parallel by default),
+then merges all results into `applications.md` and `pipeline.md` in one step.
+
+**Flags:**
+```
+> batch --dry-run          # preview which jobs would run + assigned report numbers
+> batch --limit 5          # process only the first 5 pending jobs
+> batch --parallel 5       # run 5 workers concurrently (if you have the RAM/CPU)
+> batch --retry-failed     # re-run only jobs that previously errored
+> batch --min-score 75     # lower the CV-generation bar for this run
+```
+
+**Resume after interruption:** `batch` auto-skips completed jobs. If it stops mid-run,
+just run `batch` again — it picks up where it left off.
+
+### 9. Discover new jobs
 
 Run a full scan of all configured company portals:
 ```
@@ -236,6 +283,8 @@ career-scout/
 │   ├── cv.md                     # CV generation workflow (Phase 2)
 │   ├── scan.md                   # Job discovery workflow (Phase 3)
 │   ├── pipeline-triage.md        # Pipeline inbox processing
+│   ├── auto-pipeline.md          # Hands-off end-to-end orchestrator (Phase 5)
+│   ├── batch.md                  # Parallel batch orchestrator (Phase 5)
 │   └── setup.md                  # Guided profile creation
 │
 ├── config/
@@ -250,7 +299,11 @@ career-scout/
 │   ├── inbox.txt                 # Drop job URLs here — Scout drains on every run
 │   ├── archived.md               # Dead/stale links removed from pipeline (recoverable)
 │   ├── .scout-state.json         # Scan state (last run, dry spell counter)
-│   └── follow-ups.md             # Follow-up tracker
+│   ├── follow-ups.md             # Follow-up tracker
+│   └── batch/                    # Ephemeral batch state (gitignored contents)
+│       ├── batch-state.json      # Resume state: per-job status + assigned report numbers
+│       ├── results/              # Per-worker JSON results (archived after merge)
+│       └── results/processed/    # Archived result files
 │
 ├── scripts/
 │   ├── scan.mjs                  # Zero-token portal scanner (Greenhouse/Ashby/Lever)
@@ -258,7 +311,9 @@ career-scout/
 │   ├── generate-pdf.mjs          # Playwright HTML→PDF (Phase 2)
 │   ├── md-to-html.mjs            # Markdown → styled HTML viewer (Phase 4)
 │   ├── liveness-core.mjs         # Job posting expiry/zombie detection
-│   └── check-liveness.mjs        # CLI liveness checker
+│   ├── check-liveness.mjs        # CLI liveness checker
+│   ├── merge-tracker.mjs         # Merge batch results → applications.md + pipeline.md (Phase 5)
+│   └── verify-pipeline.mjs       # Pipeline + tracker integrity checker (Phase 5)
 │
 ├── templates/
 │   ├── domain-packs/
@@ -283,7 +338,7 @@ Two types of files. **Never mix them up.**
 `cv.md`, `config/profile.yml`, `config/portals.yml`, `modes/_profile.md`, `data/*`, `reports/*`, `output/*`, `interview-prep/story-bank.md`, `writing-samples/*`
 
 **System layer** — instructions and tooling, safe to update:
-`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `modes/_shared.md`, `modes/evaluate.md`, `modes/cv.md`, `modes/scan.md`, `modes/pipeline-triage.md`, `modes/setup.md`, `scripts/*`, `templates/*`, `config/portals.example.yml`
+`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `modes/_shared.md`, `modes/evaluate.md`, `modes/cv.md`, `modes/scan.md`, `modes/pipeline-triage.md`, `modes/setup.md`, `modes/auto-pipeline.md`, `modes/batch.md`, `scripts/*`, `templates/*`, `config/portals.example.yml`
 
 Full mapping: `docs/DATA_CONTRACT.md`
 

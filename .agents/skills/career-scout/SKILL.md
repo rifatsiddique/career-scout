@@ -23,8 +23,8 @@ Determine mode from `$mode`:
 | `scan` or `scout` | `scan` |
 | `interview-prep` | `interview-prep` |
 | `deep` | `deep` |
-| `auto` | `auto-pipeline` (Phase 5) |
-| `batch` | `batch` (Phase 5) |
+| `auto` | `auto-pipeline` |
+| `batch` | `batch` |
 | `followup` | `followup` (Phase 5) |
 
 **Auto-detection:** If `$mode` is not a known sub-command AND contains a job
@@ -70,9 +70,13 @@ career-scout — Command Center
   /career-scout interview-prep --debrief <company>  → Post-interview capture — what was asked, what worked, lessons
   /career-scout deep <company>                      → Strategic company research — direction, culture, candidate angle
 
-  Coming soon:
-  /career-scout auto               → Full pipeline: evaluate + CV + track (Phase 5)
-  /career-scout batch              → Parallel evaluation of multiple URLs (Phase 5)
+  /career-scout auto <url>          → Full hands-off pipeline: evaluate + CV + tracker update + pipeline move
+  /career-scout auto <url> --docx  → Same, also generate DOCX
+  /career-scout batch              → Process all pending jobs via parallel subagents
+  /career-scout batch --dry-run    → Preview what batch would process (nothing executed)
+  /career-scout batch --limit N    → Process only the first N pending jobs
+  /career-scout batch --parallel N → Set concurrent worker count (default: 3)
+  /career-scout batch --retry-failed → Re-run only jobs that errored (not un-started pending jobs)
 
 Drop job URLs in data/inbox.txt → run /career-scout scan → /career-scout pipeline to review
 ```
@@ -93,7 +97,7 @@ Read `modes/_shared.md` first, then `modes/{mode-file}`.
 | `pipeline-triage` | `modes/pipeline-triage.md` |
 | `cv` | `modes/cv.md` |
 | `scan` | `modes/scan.md` |
-| `auto-pipeline` | `modes/auto-pipeline.md` + `modes/evaluate.md` |
+| `auto-pipeline` | `modes/auto-pipeline.md` + `modes/evaluate.md` + `modes/cv.md` |
 | `batch` | `modes/batch.md` |
 
 ### Standalone modes (mode file only)
@@ -129,4 +133,4 @@ executing any mode. If either is missing or empty, prompt the user to run setup.
 | 2: CV Generation | **Active** | cv, cv --fast |
 | 3: Scout | **Active** | scan, scout |
 | 4: Interview Prep | **Active** | interview-prep, deep |
-| 5: Auto-Pipeline + Batch | Planned | auto, batch, followup |
+| 5: Auto-Pipeline + Batch | **Active** | auto, batch |

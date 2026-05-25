@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.19
-**Last Updated:** 2026-05-24 -- CV header polish (3 fixes): dropped headline line, premium underlined links + Google Scholar field, 2-page padding rule with early-career hard stop and target_pages config.
+**Version:** 1.20
+**Last Updated:** 2026-05-25 -- Phase 5 complete: auto-pipeline.md, batch.md, merge-tracker.mjs, verify-pipeline.mjs, config auto:/batch: blocks, routing + docs sweep. All 20 unit tests passing.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -416,8 +416,8 @@ project-root/
 │   ├── scan.md                         # Scout instructions
 │   ├── interview-prep.md               # STAR+R + company research
 │   ├── pipeline-triage.md              # Pipeline triage & management (renamed to avoid collision with data/pipeline.md)
-│   ├── auto-pipeline.md                # URL → eval + CV + track in one command
-│   ├── batch.md                        # Parallel evaluation
+│   ├── auto-pipeline.md                # Hands-off orchestrator: eval → CV → track (Phase 5) ✅
+│   ├── batch.md                        # Parallel subagent orchestrator (Phase 5) ✅
 │   ├── setup.md                        # Profile creation & calibration
 │   └── followup.md                     # Post-application follow-up
 │
@@ -445,7 +445,11 @@ project-root/
 │   ├── pipeline.md                     # The common Scout ↔ Evaluator contract
 │   ├── applications.md                 # Full application tracker
 │   ├── scan-history.tsv                # Scout deduplication log
-│   └── follow-ups.md                   # Follow-up tracking
+│   ├── follow-ups.md                   # Follow-up tracking
+│   └── batch/                          # Ephemeral batch state (gitignored contents) (Phase 5) ✅
+│       ├── batch-state.json            # Resume state: per-job status + report numbers
+│       ├── results/                    # Per-worker JSON results
+│       └── results/processed/          # Archived after merge
 │
 ├── cv.md                               # Your master CV (USER layer)
 ├── article-digest.md                   # Your proof points / project deep-dives (USER layer)
@@ -467,7 +471,8 @@ project-root/
 │   ├── generate-pdf.mjs                # HTML → PDF via Playwright (from career-ops)
 │   ├── scan.mjs                        # Portal scanner (from career-ops)
 │   ├── check-history.mjs               # TSV parser for scan-history.tsv (repost/evergreen detection)
-│   └── verify-pipeline.mjs             # Data integrity checks
+│   ├── merge-tracker.mjs               # Merge batch results → applications.md + pipeline.md (Phase 5) ✅
+│   └── verify-pipeline.mjs             # Pipeline + tracker integrity checker (Phase 5) ✅
 │
 ├── .agents/                            # Skill registration
 │   └── skills/
@@ -723,15 +728,44 @@ Tests (T1-T17, see plan §6e — workflow paths, schema edge cases, anti-fabrica
 - [x] `modes/cv.md` P3 nudge: already in place (composite ≥ 85 + not --docx)
 - [x] `docs/DATA_CONTRACT.md`: `.feature-hints.json` registered as system layer
 
-### Phase 5: Auto-Pipeline + Batch (Week 8)
+### Phase 5: Auto-Pipeline + Batch ✅ Complete (2026-05-25)
 
-**Goal:** One-command end-to-end workflow + parallel processing.
+**Goal:** One-command end-to-end workflow + parallel batch processing.
+**Spec:** `plan_rs/phase5-auto-batch.md` (v1.4 — 3 Gemini review rounds, profile-preflight gate, scope split for Phase 2 hardening)
 
-- [ ] Port `auto-pipeline.md` from career-ops
-- [ ] Port `batch.md` for parallel evaluation
-- [ ] Add `verify-pipeline.mjs` integrity checks
-- [ ] Integration test: paste URL → evaluation + CV + tracker update + interview prep in one flow
-- [ ] Test batch: feed 5 URLs → parallel evaluation with reports
+New modes:
+- [x] `modes/auto-pipeline.md` — hands-off orchestrator: evaluate → score gate → CV (non-interactive) → pipeline move → single summary. Decision A: no mid-run checkpoints, review only the final PDF. Contact audit hard-stops on exit 2 only; Review & Confirm non-blocking (flags collected for summary). `--batch` worker mode writes `data/batch/results/{id}.json` + echoes JSON. Report number from `--report-num` (pre-assigned by orchestrator, no race).
+- [x] `modes/batch.md` — parallel subagent orchestrator: profile preflight → gather URLs (inline / batch-input.tsv / pipeline.md Pending) → pre-assign report numbers → dispatch thin-prompt workers (`--parallel 3` default) → collect results (file primary, regex-extract fallback) → merge → verify → summary. Sequential fallback checkpoint (`batch.sequential_checkpoint: 3`) for no-subagent CLIs with per-job context isolation and `/clear` resume path.
+
+New scripts:
+- [x] `scripts/merge-tracker.mjs` — reads `data/batch/results/*.json`, upserts applications.md rows (company+role dedup, sequential renumber), idempotently moves pipeline.md Pending→Evaluated, archives consumed results to `results/processed/`. `.bak` written for both User layer files.
+- [x] `scripts/verify-pipeline.mjs` — 7 integrity checks (5 errors: dup `#`, dead report link, malformed score, unknown fit, URL in both sections; 2 warns: non-canonical status, PDF=✅ with no output file). `--strict` promotes warns. Exit 0/1.
+- [x] `scripts/_test-step3.mjs` — 20-fixture unit test runner for both scripts (M1-M6, V1-V7). All 20 pass. *(System layer; can be removed post-review.)*
+
+Config changes:
+- [x] `config/profile.yml` — added `auto: {min_cv_score: 80}` and `batch: {sequential_checkpoint: 3}` blocks with inline documentation.
+
+Gitignore + directory:
+- [x] `.gitignore` — added `data/batch/` runtime file patterns (contents ignored, directory structure tracked)
+- [x] `data/batch/results/processed/.gitkeep` — directory skeleton committed
+
+Routing + docs:
+- [x] `SKILL.md` — auto/batch promoted from "Coming soon" to active; Phase 5 → Active; flags documented
+- [x] `AGENTS.md` — auto routing row added; `data/batch/` entries added to files reference
+- [x] `README.md` — Phase 5 → ✅ Complete; §7 (`auto`) + §8 (`batch`) Quick Start added; file structure + system layer list updated
+- [x] `docs/DATA_CONTRACT.md` — `data/batch/` registered as ephemeral system layer (all 5 files documented); Rule 4 added (merge-tracker authorized write exception with `.bak`)
+
+Key architectural decisions locked in Phase 5:
+- **auto is hands-off**: no interactive gates; review only the finished PDF
+- **batch uses mode-driven subagents** (not bash runner): CLI-agnostic, works on Gemini + Claude Code
+- **JSON result artifacts** (not TSV): one `results/{id}.json` per worker — clean primary channel, regex-extract fallback
+- **Pre-assigned report numbers**: orchestrator blocks upfront, workers never scan reports/
+- **Idempotent pipeline moves**: URL-in-Evaluated → no-op in both auto and merge-tracker
+- **Profile preflight in batch** (user-originated): fail fast with `setup` nudge before any dispatch
+
+§10 deferred follow-up (separate commit, after Phase 5):
+- [ ] F1: `scripts/generate-pdf.mjs` Chromium launch-retry (one-shot retry on resource-lock)
+- [ ] F2: `modes/cv.md` Step 3a fuzzy edit-matching (locate core phrase in HTML, not literal paste)
 
 ---
 

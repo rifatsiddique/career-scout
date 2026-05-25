@@ -58,6 +58,8 @@ At the start of each session, silently check:
 | `data/archived.md` | Dead/stale links removed from pipeline (recoverable) |
 | `config/portals.example.yml` | Example portal scanner configuration (copy to portals.yml) |
 | `data/follow-ups.md` | Follow-up tracking |
+| `data/batch/batch-state.json` | Batch run state — resume tracking, report number assignments, per-job status |
+| `data/batch/results/*.json` | Per-worker result artifacts (ephemeral — archived after merge) |
 | `interview-prep/story-bank.md` | Accumulated STAR+R stories across evaluations |
 | `reports/` | Evaluation reports (`{###}-{company-slug}-{YYYY-MM-DD}.md`) |
 | `output/` | Generated CVs and cover letters |
@@ -88,7 +90,8 @@ loading rules per mode.
 | Types "scan" or "scout" | Read `modes/_shared.md` + `modes/scan.md` |
 | Types "interview-prep" | Read `modes/interview-prep.md` |
 | Types "deep" | Read `modes/deep.md` |
-| Types "batch" | Read `modes/_shared.md` + `modes/batch.md` (Phase 5) |
+| Types "auto" + URL | Read `modes/_shared.md` + `modes/evaluate.md` + `modes/cv.md` + `modes/auto-pipeline.md`, execute hands-off pipeline |
+| Types "batch" | Read `modes/_shared.md` + `modes/batch.md`, orchestrate subagents |
 | Types nothing / asks for help | Show `.agents/skills/career-scout/SKILL.md` discovery menu |
 
 ---

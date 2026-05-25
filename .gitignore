@@ -1,3 +1,9 @@
 node_modules/
 output/
 *.bak
+# data/batch/ — ephemeral runtime state (batch jobs, results, locks). Dirs tracked; contents ignored.
+data/batch/*.json
+data/batch/*.tsv
+data/batch/*.lock
+data/batch/results/*.json
+data/batch/results/processed/*.json

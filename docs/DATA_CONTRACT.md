@@ -25,6 +25,7 @@ They are created during setup and evolve as you use the system.
 | `data/inbox.txt` | Job inbox — drop URLs here, Scout drains on every run |
 | `data/archived.md` | Dead/stale links removed from pipeline (recoverable) |
 | `data/.scout-state.json` | Scout state (last_clean, last_scan, dry spell counter) |
+| `data/follow-ups.md` | Follow-up tracking |
 | `reports/*.md` | Your evaluation reports (generated, but yours) |
 | `reports/*.html` | Auto-generated HTML companions to `.md` reports — regenerated each eval run; safe to delete; `.md` is source of truth; do not edit directly |
 | `interview-prep/*.html` | Auto-generated HTML companions to prep and deep-research docs — same rules as reports/*.html |
@@ -54,6 +55,11 @@ They can be updated without affecting your data.
 | `templates/cv/manifest.yml` | Template registry |
 | `scripts/*` | Automation scripts (generate-pdf, scan, liveness, verify, cv-compare, generate-docx, audit-contact) |
 | `data/.feature-hints.json` | Auto-created system state: tracks which one-time hints have been shown; safe to delete (hint reappears) |
+| `data/batch/batch-state.json` | Ephemeral batch run state — per-job status, assigned report numbers, retry counts. Gitignored. Created on first `batch` run. |
+| `data/batch/results/*.json` | Per-worker result artifacts — written by workers, read + archived by `merge-tracker.mjs`. Gitignored. |
+| `data/batch/results/processed/*.json` | Archived result files after successful merge. Gitignored. |
+| `data/batch/.batch.lock` | Lock file preventing concurrent batch runs. Auto-deleted on clean completion. Gitignored. |
+| `data/batch/batch-input.tsv` | Optional manual job input for `batch` (url, company, role — tab-separated). |
 | `config/portals.example.yml` | Example portal scanner configuration |
 | `fonts/*` | Self-hosted fonts for PDF generation |
 | `docs/*` | Documentation |
@@ -64,3 +70,4 @@ They can be updated without affecting your data.
 1. System updates MUST NOT touch User layer files
 2. User layer files MUST NOT be committed to the shared repo (add to `.gitignore` if needed)
 3. When in doubt about a file's layer, treat it as User layer
+4. **Exception — `merge-tracker.mjs`:** This script writes to `data/applications.md` and `data/pipeline.md` (User layer) as part of the `batch` pipeline. It always writes a `.bak` backup first, and its writes are the direct consequence of a user-initiated `batch` command. This is the only authorized script-level write to User layer data files.
