@@ -6,7 +6,18 @@
       "PowerShell(Invoke-Item *)",
       "Bash(npm install *)",
       "Bash(not exist *)",
-      "Bash(node scripts/md-to-html.mjs README.md)"
+      "Bash(node scripts/md-to-html.mjs README.md)",
+      "Bash(node --check scripts/cv-compare.mjs)",
+      "Bash(node scripts/cv-compare.mjs)",
+      "Bash(node -e ' *)",
+      "Bash(node --check scripts/generate-pdf.mjs)",
+      "Bash(node -e \"import\\('docx'\\).then\\(m => console.log\\('docx ok, version:', Object.keys\\(m\\).length, 'exports'\\)\\)\")",
+      "Bash(node --check scripts/generate-docx.mjs)",
+      "Bash(node --check scripts/audit-contact.mjs)",
+      "Bash(node scripts/merge-tracker.mjs)",
+      "Bash(node scripts/verify-pipeline.mjs)",
+      "Bash(node scripts/_test-step3.mjs)",
+      "Bash(grep \"^\\\\\\\\*\\\\\\\\*Version\" plan_rs/CONSOLIDATION-PLAN.md)"
     ],
     "additionalDirectories": [
       "C:\\Work\\Local_GitClones"
