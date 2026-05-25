@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.18
-**Last Updated:** 2026-05-24 -- UX improvements v2 ALL COMMITS COMPLETE (A-E). script-emits-URI pattern, audit-contact.mjs, cv-compare.mjs, generate-docx.mjs, lib/normalize-text.mjs, warning-block CSS, first-time DOCX hint, P3 nudge (composite≥85), feature-hints.json tracking. All 6 improvements shipped.
+**Version:** 1.19
+**Last Updated:** 2026-05-24 -- CV header polish (3 fixes): dropped headline line, premium underlined links + Google Scholar field, 2-page padding rule with early-career hard stop and target_pages config.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -541,6 +541,13 @@ project-root/
 - [x] Test: Generac simulation — TOO_JUNIOR promotion framing, backtrack catch ("Led high volume manufacturing" reverted), Section I appended to report, PDF generated (1 page, 68.2 KB)
 
 **Spec:** `plan_rs/phase2-cv-generation.md` (v2.2 — 4 Gemini review rounds, 4 Claude architect fixes)
+
+#### Phase 2 post-launch polish v2 (2026-05-24)
+
+- [x] **CV header polish — 3 fixes** (`plan_rs/cv-header-fixes.md` v1.2, 2 Gemini review rounds):
+  - [x] **A: Drop headline line.** Removed `.header-headline` div + CSS from classic-professional.html. `narrative.headline` retained in profile.yml for evaluation context. `{{HEADLINE}}` removed from modes/cv.md placeholder table and fill logic.
+  - [x] **B: Visible links + Google Scholar.** `.contact-row a` CSS updated to `color: inherit; text-decoration: underline; text-decoration-color: #ccc; text-underline-offset: 2.5px; text-decoration-thickness: 1px` in both templates. `google_scholar` optional field added to profile.yml + both templates + audit-contact.mjs. Complete-tag-omission rule documented in modes/cv.md Step 1g.
+  - [x] **C: 2-page padding rule (Layer 0.5).** Added underflow expansion logic in modes/cv.md Step 1i. Gate 1: hard early-career stop (< 10 raw bullets in cv.md → target 1 page). Gate 2: `target_pages` config (1 or 2, default 2). Padding caps: 7/5/4 bullets per role. `target_pages: 2` field added to profile.yml cv block.
 
 #### Phase 2 post-launch polish (2026-05-22)
 

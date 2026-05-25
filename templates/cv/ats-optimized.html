@@ -117,8 +117,11 @@
   }
 
   .contact-row a {
-    color: #555;
-    text-decoration: none;
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: #ccc;
+    text-underline-offset: 2.5px;
+    text-decoration-thickness: 1px;
   }
 
   .contact-item + .contact-item::before {
@@ -374,6 +377,7 @@
       <span class="contact-item">{{PHONE}}</span>
       <span class="contact-item">{{EMAIL}}</span>
       <a class="contact-item" href="{{LINKEDIN_URL}}">{{LINKEDIN_DISPLAY}}</a>
+      <a class="contact-item" href="{{GOOGLE_SCHOLAR_URL}}">{{GOOGLE_SCHOLAR_DISPLAY}}</a>
       <a class="contact-item" href="{{PORTFOLIO_URL}}">{{PORTFOLIO_DISPLAY}}</a>
       <span class="contact-item">{{LOCATION}}</span>
       <span class="contact-item">{{WORK_AUTH}}</span>

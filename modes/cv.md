@@ -76,6 +76,7 @@ or note "JD not available in report — tailoring will rely on Block E only."
   ❌ Phone: not set — will be OMITTED from CV (not fabricated)
   ✅ Location: {location value}
   ❌ LinkedIn: not set — will be OMITTED from CV
+  ❌ Google Scholar: not set — will be OMITTED from CV
   ...
 ```
 
@@ -220,11 +221,20 @@ Contact placeholders are filled EXCLUSIVELY from `config/profile.yml → candida
 | `{{EMAIL}}` | `candidate.email` | Stop — email is required |
 | `{{PHONE}}` | `candidate.phone` | Omit the entire `<span class="contact-item">` for phone |
 | `{{LOCATION}}` | `candidate.location` | Omit the span |
-| `{{LINKEDIN_URL}}`, `{{LINKEDIN_DISPLAY}}` | `candidate.linkedin` | Omit the anchor + span |
-| `{{PORTFOLIO_URL}}`, `{{PORTFOLIO_DISPLAY}}` | `candidate.portfolio_url` | Omit the anchor + span |
+| `{{LINKEDIN_URL}}`, `{{LINKEDIN_DISPLAY}}` | `candidate.linkedin` | Omit the entire `<a>` anchor |
+| `{{GOOGLE_SCHOLAR_URL}}`, `{{GOOGLE_SCHOLAR_DISPLAY}}` | `candidate.google_scholar` | Omit the entire `<a>` anchor |
+| `{{PORTFOLIO_URL}}`, `{{PORTFOLIO_DISPLAY}}` | `candidate.portfolio_url` | Omit the entire `<a>` anchor |
 | `{{GITHUB}}` | `candidate.github` | Omit the span |
 | `{{WORK_AUTH}}` | `candidate.work_authorization` | Omit the span |
-| `{{HEADLINE}}` | `candidate.headline` if set; else derive from `cv.md` + `_profile.md` | Omit the element |
+
+**Complete-tag omission rule:** When any optional contact field is empty, delete the **entire HTML element** from the output — not just the placeholder text inside it. The contact row uses `.contact-item + .contact-item::before` to render `|` separators via CSS. An empty element still triggers the selector and produces a stray `|`. The element must be completely absent.
+
+```
+✅ Field empty → omit:  <a class="contact-item" href="...">...</a>  (entire tag removed)
+❌ Field empty → leave: <a class="contact-item" href=""></a>         (causes stray |)
+```
+
+**Short display URLs:** Use the display form of each link (e.g. `linkedin.com/in/name`, `scholar.google.com/citations?user=XXXXX`). If the contact line looks visually crowded, prompt the user to shorten their URLs before generating the PDF.
 
 **NEVER:**
 - Use `cv.md`, `article-digest.md`, the JD, or any other source for contact fields
@@ -236,9 +246,7 @@ For each `{{PLACEHOLDER}}` in the template, generate the content:
 
 **`{{NAME}}`** — candidate's full name from `profile.yml`
 
-**`{{HEADLINE}}`** — brief professional identity tagline (classic-professional template only). Fill from `profile.yml → narrative.headline` if set; otherwise derive from `cv.md` + `_profile.md` archetypes (e.g. "Senior AI Engineer · LLM Systems · Fintech"). Hard cap: 75 characters. If blank/unset, omit the element — do NOT output `{{HEADLINE}}` literally.
-
-**`{{PHONE}}`, `{{EMAIL}}`, `{{LINKEDIN_URL}}`, `{{LINKEDIN_DISPLAY}}`, `{{PORTFOLIO_URL}}`, `{{PORTFOLIO_DISPLAY}}`, `{{LOCATION}}`** — from `profile.yml`. Apply market date format to any date fields.
+**`{{PHONE}}`, `{{EMAIL}}`, `{{LINKEDIN_URL}}`, `{{LINKEDIN_DISPLAY}}`, `{{GOOGLE_SCHOLAR_URL}}`, `{{GOOGLE_SCHOLAR_DISPLAY}}`, `{{PORTFOLIO_URL}}`, `{{PORTFOLIO_DISPLAY}}`, `{{LOCATION}}`** — from `profile.yml`. Apply market date format to any date fields.
 
 **`{{WORK_AUTH}}`** — work authorization status from `profile.yml → candidate.work_authorization` (e.g. "Authorized to work in EU", "Requires H-1B sponsorship"). If blank/unset, omit — do NOT output `{{WORK_AUTH}}` literally.
 
@@ -342,7 +350,57 @@ Before rendering final HTML, apply these hard rules — UNLESS an item is protec
 | Remove GPA for degrees older than 5 years | Yes — if CV Rules say "always include GPA" |
 | Collapse coursework to one line | Yes — if CV Rules protect coursework |
 
-### 1i. Apply relevance-weighted cutting (Layer 2, if content exceeds 2 pages estimate)
+### 1i. Apply underflow expansion (Layer 0.5, if content is significantly under target)
+
+**Cutting and padding are mutually exclusive.** This step only runs if the content after
+Layer 1 is estimated to be *under* `profile.yml → cv.target_pages`. Skip entirely if content
+is already at or near the target — proceed directly to Layer 2 cutting.
+
+**Gate 1 — Hard early-career stop (checked first, always):**
+
+Count the total number of bullets across all roles in `cv.md` (before any cuts).
+If the raw total is **< 10 bullets**: do NOT pad. The candidate genuinely has a short career.
+Target 1 page instead — produce a dense, tight layout. Tell the reviewer:
+> *"Underflow: cv.md has < 10 total bullets — targeting 1 page (tight layout), not padding to 2."*
+
+This gate fires regardless of `target_pages`.
+
+**Gate 2 — target_pages check:**
+
+Read `profile.yml → cv.target_pages` (default: `2`).
+- If `target_pages: 1`: skip padding entirely. Produce the best 1-page layout.
+- If `target_pages: 2` AND Gate 1 did not fire: proceed to the padding trigger.
+
+**Padding trigger:**
+
+After Layer 1 cuts, estimate whether the remaining content fills < ~1.5 pages.
+Heuristic proxy: if total remaining bullet count across all roles is **< 12**, treat as underflow.
+
+If triggered, expand in this order until estimated 2-page fill is reached:
+1. **Recent role bullets** — be more verbose: add context, method, outcome, or scope that is
+   in `cv.md` but was condensed in the first pass. No fabrication.
+2. **Thin recent roles** (< 4 bullets after Layer 1) — add bullets from `cv.md` that were
+   not included due to low JD-relevance, but are real and accurate.
+3. **Project descriptions** — expand to 2–3 sentences rather than 1.
+4. **Professional summary** — allow up to 5–6 sentences rather than 3–4.
+5. **Skills and certifications** — include all qualifying items rather than a curated subset.
+
+Per-role bullet caps during padding (override Layer 1 caps):
+- Most recent role: up to **7 bullets** (Layer 1 cap: 5)
+- Second role: up to **5 bullets** (Layer 1 cap: 3)
+- Older roles: up to **4 bullets** (Layer 1 cap: 3) if space permits
+
+**Hard constraints on padding:**
+- All added content must trace to `cv.md` or `article-digest.md`. No fabrication.
+- CV Generation Rules (`_profile.md → ## CV Generation Rules`) take absolute precedence —
+  e.g. if rules say "max 5 bullets", that cap holds even during padding.
+- Stop at estimated 2 pages. The overflow fallback chain (Layers 1–3) remains as backstop.
+
+**Reviewer note:** When a padding pass ran, flag it in the reviewer prompt. The reviewer
+must apply the Substitution Test to all padded bullets — padding cannot introduce zombie
+bullets that sound generic.
+
+### 1j. Apply relevance-weighted cutting (Layer 2, if content exceeds target pages estimate)
 
 Estimate content length. If clearly overflowing (experienced engineers with 3+ roles and 20+ bullets often will):
 
@@ -353,9 +411,9 @@ Score each remaining (unprotected) line on:
 
 Cut the lowest-scoring lines. Relevance beats recency — an older-role bullet that matches JD keywords survives over a recent-role bullet that doesn't.
 
-### 1j. Apply interview backtrack test (skip if FAST_MODE)
+### 1k. Apply interview backtrack test (skip if FAST_MODE)
 
-**If FAST_MODE: skip this step entirely — proceed to 1j.**
+**If FAST_MODE: skip this step entirely — proceed to 1l.**
 
 For every generated bullet, classify:
 
@@ -368,7 +426,7 @@ For every generated bullet, classify:
 Collect all "Flag" items with their original wording for Step 4.
 Silently remove "Never" items and note them in the discard log.
 
-### 1k. Write draft to disk
+### 1l. Write draft to disk
 
 Write the filled, cut, and cleaned HTML to `output/draft-{company-slug}.html`.
 
@@ -718,7 +776,11 @@ No reviewer for iterative edits — the user IS the reviewer at this point.
 
 ---
 
-## Cutting Reference (Layers 1-3)
+## Cutting Reference (Layers 0.5, 1, 2, 3)
+
+### Layer 0.5: Underflow expansion (if content is under target — see Step 1i)
+Runs ONLY when content is under target. Mutually exclusive with Layer 2.
+Early-career hard stop: < 10 bullets in cv.md → target 1 page, no padding.
 
 ### Layer 1: Deterministic (always apply first)
 Hard rules, applied before any LLM scoring. Protected items exempt.
@@ -744,12 +806,13 @@ Apply all CSS changes at once — do not loop. Single regeneration.
 | Placeholder | Content | Notes |
 |-------------|---------|-------|
 | `{{NAME}}` | Full name | from profile.yml |
-| `{{HEADLINE}}` | Professional identity tagline | classic-professional only; max 75 chars; omit if blank |
 | `{{PHONE}}` | Phone number | stripped from reviewer prompt |
 | `{{EMAIL}}` | Email address | stripped from reviewer prompt |
-| `{{LINKEDIN_URL}}` | Full URL | |
+| `{{LINKEDIN_URL}}` | Full URL for href | omit entire `<a>` if blank |
 | `{{LINKEDIN_DISPLAY}}` | Display text | e.g., "linkedin.com/in/name" |
-| `{{PORTFOLIO_URL}}` | Portfolio/GitHub URL | |
+| `{{GOOGLE_SCHOLAR_URL}}` | Full URL for href | omit entire `<a>` if blank |
+| `{{GOOGLE_SCHOLAR_DISPLAY}}` | Display text | e.g., "scholar.google.com/citations?user=..." |
+| `{{PORTFOLIO_URL}}` | Portfolio URL for href | omit entire `<a>` if blank |
 | `{{PORTFOLIO_DISPLAY}}` | Display text | |
 | `{{LOCATION}}` | City, State/Country | |
 | `{{WORK_AUTH}}` | Work authorization status | omit if blank |
