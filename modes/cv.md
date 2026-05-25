@@ -529,6 +529,19 @@ For each Part A edit, apply it to `output/draft-{company-slug}.html` using the f
 Apply intelligence — don't literally copy the reviewer's text if it violates CV Generation Rules
 or the backtrack test. Note any edits you choose not to apply and the reason.
 
+**Locating the edit target (fuzzy match — required).** The reviewer quotes plain text; the HTML
+contains inline tags, entities, and whitespace that make a literal match fail. Do NOT use the
+reviewer's full quoted string as the search target. Instead:
+1. Extract 3–5 consecutive unique words from the core of the reviewer's "current text" quote
+   (avoid common words like "the", "and", "to"; pick words that uniquely identify the sentence).
+2. Search the HTML for that short phrase — it will be present even across tag boundaries.
+3. Identify the full surrounding sentence or bullet in the HTML.
+4. Apply the edit to that region.
+
+Example: reviewer quotes `"Led team to improve system performance"` → search for
+`"improve system performance"` → find the `<li>` containing it → replace the full bullet.
+This works even when the HTML reads `Led<span> team</span> to improve system performance`.
+
 **Merge reviewer flags:** The reviewer may have identified additional "Flag" items during its
 independent backtrack test. Merge these into the flag list from Step 1j. Present all flags
 together in Step 4 — do not show drafter flags and reviewer flags separately.

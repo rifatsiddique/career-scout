@@ -98,7 +98,15 @@ async function generatePDF() {
     console.log(`ATS normalization: ${totalReplacements} replacements (${breakdown})`);
   }
 
-  const browser = await chromium.launch({ headless: true });
+  // One-shot retry on transient launch failures (resource lock / socket conflict
+  // when multiple batch workers launch Chromium within milliseconds of each other).
+  let browser;
+  try {
+    browser = await chromium.launch({ headless: true });
+  } catch (launchErr) {
+    await new Promise(r => setTimeout(r, 1500));
+    browser = await chromium.launch({ headless: true }); // throws on genuine failure
+  }
   try {
     const page = await browser.newPage();
 
