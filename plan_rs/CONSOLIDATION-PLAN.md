@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.23
-**Last Updated:** 2026-05-26 -- Added port-profile file-tracking rule to planning guidelines (CLAUDE.md + GEMINI.md).
+**Version:** 1.26
+**Last Updated:** 2026-05-26 -- Phase 7 complete: added mock transcript scoring (7d), pipeline.md HTML view precursor (7c), Phase 4 T1-T17 test debt (7j); all deferred items now consolidated.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -804,6 +804,416 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 - [x] `README.md` — "Upgrading from a Previous Version" section
 
 **Spec:** `plan_rs/phase6-port-profile.md` (v1.4 — 4 Gemini review rounds, 10/10 final)
+
+### Phase 2b: Templates 3 & 4 (next up)
+
+**Goal:** Build Academic/Research and Technical/Engineering templates to complete the 4-template CV system.
+**Detailed plan:** `plan_rs/phase2b-cv-templates.md` (v1.0, ready for Gemini review)
+
+- [ ] Source and commit font woff2 files (EB Garamond, Source Sans Pro, JetBrains Mono, Inter)
+- [ ] Build `templates/cv/academic-research.html` — publications-forward, EB Garamond, no accent color, Education + Publications near top
+- [ ] Build `templates/cv/technical-engineering.html` — skills tag grid, JetBrains Mono accents, project cards, teal accent
+- [ ] Update `templates/cv/manifest.yml` — set status: ready, add font_files arrays
+- [ ] Update `modes/cv.md` — add template-conditional placeholders to fill-logic table ({{PUBLICATIONS}}, {{RESEARCH_INTERESTS}}, {{TECH_STACK}}, {{GITHUB_URL}}, etc.)
+- [ ] Update `config/profile.yml` — add orcid field
+- [ ] Test: all-4-templates comparison — same JD, all PDFs 1-2 pages, ATS extraction clean on all
+- [ ] Update CONSOLIDATION-PLAN.md Phase 2b ✅
+
+### Phase 7: Future Concepts (not scheduled — captured here to avoid losing them)
+
+**Goal:** Capture post-Phase-6 ideas with enough detail that they can be planned when the time comes.
+**Status:** Concept only. No implementation timeline. Items are independent — any can be prioritised without doing the others.
+**Priority order (top candidates first):** 7a → 7b → 7c → 7d → 7e → 7f → 7g → 7h → 7i
+**Detailed spec:** Phase 7 items each warrant their own plan file when scheduled.
+
+---
+
+#### 7a: Shadow CV / Per-Archetype Master CVs ⭐ TOP PRIORITY
+
+**What it is:** Some candidates genuinely have two different careers on one person — for example, a technical founder equally applying for CTO roles (leadership-heavy CV) and Staff Engineer roles (IC-heavy CV). A single `cv.md` forces a compromise; a shadow CV system lets them maintain separate master CVs per track.
+
+**How it works:**
+- `cv.md` remains the default master
+- Additional master CVs: `cv-pm.md`, `cv-hardware.md`, `cv-academic.md` (user-named)
+- Profile.yml maps archetypes to master CVs:
+  ```yaml
+  cv:
+    master: cv.md               # default
+    archetype_overrides:
+      pm: cv-pm.md
+      academic: cv-academic.md
+  ```
+- During CV generation: `cv` mode selects the master based on detected archetype before applying JD-specific tailoring
+- Per-evaluation override: `cv <url> --source=cv-pm.md`
+
+**Implementation scope:** Add `--source` flag to `modes/cv.md`. Update `config/port-manifest.yml` to port all `cv-*.md` files (glob pattern, not hardcoded list). Update the drafter to read the correct master file. Low-complexity addition.
+
+**Why deferred:** For most users, `cv.md` + good tailoring is sufficient. The complexity of maintaining multiple master CVs is only worth it for genuinely bifurcated career tracks. Rejected in Phase 2 (Item 29 in Gemini log) — revisit when a user requests it.
+
+---
+
+#### 7b: Advanced Scout — Playwright Scraping + LinkedIn ⭐ TOP PRIORITY
+
+**What it is:** Extending Scout beyond API portals to cover companies that don't offer Greenhouse/Ashby/Lever APIs. Three levels, each independently shippable:
+
+**Level 1 — Playwright scraping of custom career pages:**
+Companies like Apple, Boeing, Lockheed, many mid-size firms, and government contractors run their own careers pages (often Workday, Taleo, iCIMS, or fully custom). These can't be queried via an API but can be scraped.
+
+Playwright navigates to `careers.example.com`, clicks "Search Jobs", applies filters (location, keyword), extracts job titles and URLs, runs them through the same dedup/filter logic as API results, and writes matching jobs to `pipeline.md`.
+
+The challenge: these sites are rate-sensitive, login-walled (LinkedIn, most government portals), or heavily JavaScript-rendered. Playwright handles the JS rendering, but CAPTCHA and login walls require human intervention.
+
+**Level 2 — WebSearch broad discovery:**
+Use `profile.yml → target_roles.primary` to generate search queries and find jobs at companies not in `portals.yml`. Example: `"Senior ML Engineer" site:greenhouse.io OR site:lever.co`. Results are filtered by the same title/location rules, deduped, and added to pipeline.md. (Note: `scan --discover` already does company discovery — Level 2 targets job listings, not company portal URLs.)
+
+**Level 3 — LinkedIn integration:**
+A browser extension that watches the user's LinkedIn job search tab and writes matching job URLs to `data/inbox.txt` in real time. When the user runs `scan`, the inbox is drained first. No API key needed — the extension piggybacks on the user's authenticated session.
+
+**BrightData API (optional, paid):** Programmatic LinkedIn search via BrightData's proxy network. ~$2/1000 results. For users who want full LinkedIn coverage without the browser extension. Requires a BrightData account.
+
+**Why deferred:** Level 1 Playwright scraping requires site-specific selectors (each ATS has a different DOM structure — Workday alone has 3 variants). The `liveness-core.mjs` script shipped in Phase 3 is the foundation. Level 3 browser extension is a separate engineering project entirely.
+
+---
+
+#### 7c: TUI Dashboard ⭐ TOP PRIORITY
+
+**What it is:** A terminal user interface (TUI) for managing the pipeline without opening markdown files manually. A read-only management view baked into the CLI — navigate jobs, see stats, open reports, all from the terminal.
+
+**What it would show:**
+- Pipeline.md: pending jobs as a scrollable list with company/role/score/fit/status columns
+- Applications.md: submitted applications with follow-up due dates highlighted
+- Summary stats: X pending, Y evaluated this week, Z applied this month, average composite score
+- Quick filters: `t` for GOOD_FIT+, `r` for "awaiting response", `f` for "follow-up due"
+- Navigation: arrow keys to browse, `enter` to open the HTML report for a row in the browser, `q` to quit
+
+**Architecture concept:** A Node.js TUI using the `blessed` library (terminal box drawing) or `ink` (React-like, terminal-native). A single script `scripts/tui.mjs` — reads `data/pipeline.md` and `data/applications.md`, parses the markdown tables, renders the dashboard. Read-only — no writes from the TUI. All modifications still happen through agent modes.
+
+**Trigger:** `npm run tui` or a `tui` slash command alias.
+
+**Smaller precursor — pipeline.md HTML view (scan.md improvement 3, explicitly deferred):** Before a full TUI, a simpler win is running `md-to-html.mjs` on `data/pipeline.md` after each Scout run and surfacing the HTML link in the terminal. The infrastructure already exists (`md-to-html.mjs` + `viewer.html` from Phase 4). This is a one-liner addition to `modes/scan.md` Step 9 — can ship independently of the full TUI and satisfies most of the browsability need without the blessed/ink complexity.
+
+**Why deferred:** Quality-of-life feature, not a core workflow enabler. The existing `pipeline` mode handles all the same information through natural language. A TUI adds developer complexity (blessed/ink dependencies, terminal compatibility testing across Windows/Mac/Linux) for convenience that the current system doesn't lack. High "cool factor," moderate utility gain.
+
+---
+
+#### 7d: Interview Practice / Roleplay Mode ⭐ TOP PRIORITY
+
+**What it is:** An interactive session where the AI plays the role of an interviewer and the user practices answering questions. Builds on the story-bank and company research from Phase 4.
+
+**How it works:**
+1. User types `interview-prep --practice <company>` after running full interview-prep
+2. The AI loads: the company research doc, the story bank, the evaluation report's Block F STAR+R stories
+3. AI plays the interviewer: asks behavioural questions ("Tell me about a time you..."), technical questions drawn from the JD, and company-specific questions from the research doc
+4. User answers in natural language (typed)
+5. AI gives structured feedback per answer: what landed well, what lacked specificity, which story bank entry fits better, whether the answer drifted from STAR+R structure
+6. After 4-5 questions, AI shows a coaching summary: patterns observed, recommended story bank additions, suggested stronger framing for weak answers
+
+**Why this is valuable:** Reading STAR+R stories and actually rehearsing them in dialogue are different skills. The practice loop closes the gap between prepared and delivered. The AI can catch "I helped with..." when the story bank says "I led...". It surfaces stock answers that sound rehearsed vs. ones that land naturally.
+
+**Mock transcript scoring (Phase 4b add-on):** After a practice session, the AI scores the full conversation transcript: STAR+R structure adherence per answer, specificity score (1-5), confidence signals (hedging language count, passive voice ratio), and an overall session grade. The scoring summary is appended to the company prep doc as `## Practice Session Debrief`. This turns a qualitative practice loop into measurable progress over repeated sessions.
+
+**Why deferred:** Requires a robust multi-turn session state machine — the AI must remember previous answers within the session to catch repetition and give meaningful cumulative feedback. The current mode architecture is request-response, not multi-turn. This is a meaningful architectural addition. Likely Phase 4b.
+
+---
+
+#### 7e: Offer Letter Analysis ⭐ TOP PRIORITY
+
+**What it is:** A new mode (`offer`) where the user pastes an offer letter or compensation details and gets a structured analysis and negotiation plan.
+
+**What it produces:**
+- **Total comp breakdown:** base + target bonus (target % vs. actual payout history if known) + equity (4-year value at current valuation + vesting schedule) + benefits (401k match, PTO days, health premium) = real annual comp number
+- **Market comparison:** WebSearch of Levels.fyi / Glassdoor / Blind for the role, level, and location — positioned against market P25/P50/P75
+- **Red flag detection:** Non-compete scope and enforceability, IP assignment breadth ("all inventions" clauses), clawback provisions, vesting cliff, garden leave, at-will employment nuances for the jurisdiction
+- **Negotiation script:** 3 specific asks with exact framing, ordered by negotiation strength (highest-leverage first). Includes "BATNA anchor" — what to say if they push back
+- **Accept/decline recommendation:** Compared to `profile.yml → compensation.minimum` and `compensation.target_range`
+
+**Why this is valuable:** Candidates often accept offers without understanding total comp, without identifying negotiable elements, or without realising a clause limits future employment. The system already does comp analysis in Block D (evaluate mode) — offer analysis is Block D applied to an actual offer rather than a posted range.
+
+**Why deferred:** Offer letter parsing is complex (PDFs, scanned documents, inconsistent formats across companies and countries). Requires real-time market data (WebSearch at time of offer). Legal clause detection needs careful calibration to avoid false confidence ("this clause is probably fine" when it isn't). Worth building carefully — needs its own design phase. Phase 8 candidate.
+
+---
+
+#### 7f: Protected System Files — Guardrails ⭐ HIGH PRIORITY
+
+**What it is:** A mechanism to prevent the AI agent from accidentally modifying system-critical files during normal operation — `modes/_shared.md`, `modes/evaluate.md`, `AGENTS.md`, `templates/cv/manifest.yml`, and the scoring rubric. Currently these files are protected only by convention (the Data Contract rule). A hard technical guardrail would catch cases where an AI agent, confused about context, attempts to "update" a system file when it should only be touching user-layer files.
+
+**Why this matters:** The scoring system, A-G block definitions, and fit category labels in `_shared.md` and `evaluate.md` are the integrity core of the whole system. If an AI agent silently rewrites them during a session (e.g., while "fixing" something it misidentified as broken), evaluations from that point forward produce inconsistent results — and the user may not notice until they've applied to 10 jobs with a corrupted scoring baseline.
+
+**Layered approach (three levels, independently useful):**
+
+**Layer 1 — OS read-only flags (strongest, immediate):**
+After initial setup, mark critical system files as read-only at the OS level:
+```
+# Windows (run once after cloning):
+attrib +R modes\_shared.md modes\evaluate.md AGENTS.md templates\cv\manifest.yml
+
+# Mac/Linux:
+chmod 444 modes/_shared.md modes/evaluate.md AGENTS.md templates/cv/manifest.yml
+```
+The AI agent gets an immediate write error if it attempts to touch these files. Cannot silently overwrite. Can be reversed with `attrib -R` / `chmod 644` when a legitimate version update is being made.
+
+**Layer 2 — Protected file registry in AGENTS.md:**
+Add a `## Protected System Files` section to `AGENTS.md` (and `CLAUDE.md`) that lists files the agent must NEVER write during a session. Any plan that modifies one of these files must explicitly call it out as a deliberate system-layer change, not a session edit. This is the documentation layer — the AI reads it and respects it by convention.
+
+**Layer 3 — Git pre-commit hook (audit trail):**
+A `scripts/check-protected.mjs` that runs as a git pre-commit hook. It does not block the commit, but prints a prominent warning if any protected file is in the staged changes:
+```
+⚠️  WARNING: Protected system file(s) in this commit:
+   - modes/_shared.md
+   - modes/evaluate.md
+   These files define core evaluation logic. Verify this change is intentional.
+   Proceed? [y/N]
+```
+This catches legitimate version-release changes (good to review) and catches accidental modifications before they enter git history.
+
+**Implementation scope:**
+- `scripts/check-protected.mjs` — ~40 lines, reads a hardcoded list of protected files, checks `git diff --cached --name-only`, prints warning + prompts
+- `.git/hooks/pre-commit` — shell script that calls `node scripts/check-protected.mjs`
+- `AGENTS.md` — add `## Protected System Files` section with the registry
+- `CLAUDE.md` — same registry section
+- `docs/DATA_CONTRACT.md` — note the OS read-only recommendation and the protected file list
+- `README.md` — add a "Setup: protecting system files" step in the getting-started section
+
+**Port-manifest note:** The `.git/hooks/pre-commit` hook is not ported (it's regenerated from `scripts/check-protected.mjs` after a fresh clone). Add a setup step to `modes/setup.md` Step 0 that installs the hook automatically.
+
+**Why deferred from earlier phases:** The Data Contract + AGENTS.md conventions have been sufficient so far. This becomes more important as the project gains more users who may be less familiar with the file architecture. Low implementation cost, high protection value.
+
+---
+
+#### 7g: Self-Learning Memory
+
+**What it is:** The system accumulates knowledge from past application cycles and applies it automatically in future sessions. Think of it as the system getting smarter the more you use it.
+
+**Concrete examples of what it would learn:**
+- "Workday application forms always ask for a salary expectation on page 3 — have your number ready before starting"
+- "When you interview at companies using Greenhouse, the hiring manager typically receives your Block F story bank summary — make sure the stories are tight before applying"
+- "Your last 3 rejections came from roles where Block D flagged a comp mismatch — consider adjusting your floor or filtering harder on comp"
+- "The phrase 'distributed systems at scale' in a JD has correlated with GOOD_FIT for you 80% of the time — treat it as a strong positive signal"
+
+**Architecture concept (from LangHire):** A `data/memory.json` file that stores procedural observations as key-value entries. Each entry has: `type` (ats_tip, pattern, company_note), `content` (the observation), `confidence` (0.0–1.0), `evidence_count` (how many times observed), `last_updated`. Confidence decays if contradicting evidence accumulates.
+
+**Integration points:** The evaluate mode reads relevant memories before producing Block G and the recommendation. The cv mode reads ATS-specific memories before generating. The debrief command (interview-prep --debrief) writes new memories from the post-interview reflection.
+
+**Why deferred:** Requires persistent state management. The current system is stateless per session (intentional — avoids stale context). Self-learning memory is a fundamental architecture shift, not an add-on. Warrants its own design phase.
+
+---
+
+#### 7h: Community Domain Packs
+
+**What it is:** Beyond the AI/ML domain pack that ships with career-scout, a library of starter kits for other professional domains. Each pack is a YAML file in `templates/domain-packs/` that pre-populates `_profile.md` archetypes, suggests scoring calibration examples, and recommends CV template defaults.
+
+**Planned packs and their archetypes:**
+
+| Pack | Archetypes (examples) | Notes |
+|------|-----------------------|-------|
+| `ee-power.yml` | Power Electronics IC, Power Systems Architect, Hardware Systems Engineer, EMC/Signal Integrity | EE-specific: gate competencies (magnetics, simulation tools like LTspice/ANSYS), comp benchmarked to hardware market |
+| `biotech-lifesci.yml` | Research Scientist, Bioinformatics Engineer, Medical Science Liaison, Regulatory Affairs | Publications-heavy; Academic template default; emphasis on wet lab vs computational split |
+| `pm-product.yml` | Technical PM, AI/ML PM, Platform PM, Consumer PM | Outcome-framing: ARR, DAU, NPS; no patents/publications; narrative-heavy |
+| `swe-backend.yml` | Backend Engineer, Distributed Systems, Platform/Infra, Security Engineer | Stack-depth signals; system design stories; open source contributions |
+| `finance-quant.yml` | Quantitative Analyst, Algorithmic Trader, Risk Model Developer | Sharpe ratios, alpha generation; regulatory knowledge (FCA/SEC) as gate |
+
+**How users access packs:** During `setup`, the system asks "Which domain best describes your work?" and offers the pack list. The selected pack's archetypes are injected into `_profile.md` as editable starting material. Users can mix packs (e.g., someone who crosses EE and ML).
+
+**Why deferred:** Each pack needs domain expertise to calibrate correctly. An EE pack with wrong archetype signals is worse than no pack at all. This is a community-contribution model — the infrastructure exists (setup.md + domain-packs/ directory), but the packs themselves need domain-expert authors.
+
+---
+
+#### 7j: Phase 4 Test Suite — T1-T17 (Quality Debt)
+
+**What it is:** 17 manual tests for the interview-prep mode documented in `plan_rs/phase4-interview-prep.md §6e` that were never executed after Phase 4 shipped. These are not unit tests — they require actually running the mode with real or seeded data and verifying the output shape, citation behaviour, and safety guards.
+
+**Why it's debt, not deferred:** The implementation is complete. These tests validate that what was built actually matches the spec. Running them now would catch any spec-vs-reality gaps before Phase 2b and before a new user onboards.
+
+**Test inventory (full descriptions in phase4-interview-prep.md §6e):**
+
+| Test | What it checks | Data needed |
+|------|---------------|-------------|
+| T1 | Cold start — fresh bank, one story, public company | 1 story in story-bank.md, real company URL |
+| T2 | Mapping accuracy — best story selected, not random | 5+ stories in bank |
+| T3 | Citation honesty — obscure startup, thin web data | Any obscure company URL |
+| T4 | Bank curation — `--bank-review` detects overlapping stories | 2 planted overlapping stories |
+| T5 | Debrief loop — `--debrief` appends, doesn't overwrite | Existing prep doc |
+| T6 | CLI parity — same output structure on Gemini + Claude Code | Both CLIs available |
+| T7 | Block F migration — evaluate produces new story schema | Fresh evaluate run |
+| T8 | `--tldr` prints to terminal, no file write | Any company |
+| T9 | Comp skip path — block omitted when profile.yml comp fields empty | Blank comp fields |
+| T10 | UX P1+P2 — `file://` path + Next Steps block present | Any run |
+| T11 | Cross-mode nudge — pipeline-triage surfaces missing prep doc | `Interview` status row in applications.md with no prep file |
+| T12 | Subagent path — Agent tool spawned on Claude Code; inline fallback on no-subagent CLI | Claude Code (Agent available) |
+| T13 | Jaccard dedup — `--bank-review` hits ≥0.55 pairs, misses <0.55 | 4 stories with known overlap levels |
+| T14 | Legacy schema co-existence — old + new stories handled by both modes | Mixed-format story-bank.md |
+| T15 | Citation lint sweep — unverified question flagged, file still written | Manually planted unverified question |
+| T16 | Lessons from Last Time — debrief injection appears/disappears correctly | 1 debrief file, then deleted |
+| T17 | P6 default-N safety — enter with no input writes nothing | Any User Layer write prompt |
+
+**Approach when scheduling:** Run T1, T3, T8, T10, T17 first (no synthetic data needed, highest risk coverage). Then set up seeded data for T4, T13, T14. T6 and T12 require both CLIs — can split across sessions.
+
+**Why deferred from Phase 4:** Phase 4 shipped under momentum and the tests were left as a TODO. They remain valid and the mode hasn't changed since shipping.
+
+---
+
+#### 7i: Cross-Interview Pattern Detection
+
+**What it is:** After 3 or more `--debrief` sessions, the system analyses all debriefs together to surface patterns the user can't see in individual sessions.
+
+**What patterns it detects:**
+- **Consistent weak spots:** "In 4 of your last 5 interviews, you were asked about conflict resolution and rated it as 'could have been stronger.' Your story bank has 2 conflict stories — consider preparing a 3rd with a cleaner resolution arc."
+- **Winning patterns:** "Roles where you led with the IEEE award story in your intro have moved to next rounds 80% of the time. Roles where you led with the startup story have not."
+- **ATS-interviewer divergence:** "Your CV scores well on system design keywords, but interviewers at 3 companies asked system design questions that your story bank doesn't cover. Consider adding a distributed systems STAR+R."
+- **Company culture patterns:** "You consistently rate culture fit as 'uncertain' at companies >5000 employees. Consider filtering harder on company size."
+
+**Integration:** A new `interview-prep --patterns` command that reads all debrief files from `interview-prep/` and applies the analysis. Output is a coaching memo appended to `interview-prep/story-bank.md`.
+
+**Why deferred:** Requires enough historical data to be meaningful (3+ debriefs). Also requires a reliable parsing strategy across multiple debrief files. Phase 4b.
+
+---
+
+## 12. Key Design Decisions
+
+**What it is:** The system accumulates knowledge from past application cycles and applies it automatically in future sessions. Think of it as the system getting smarter the more you use it.
+
+**Concrete examples of what it would learn:**
+- "Workday application forms always ask for a salary expectation on page 3 — have your number ready before starting"
+- "When you interview at companies using Greenhouse, the hiring manager typically receives your Block F story bank summary — make sure the stories are tight before applying"
+- "Your last 3 rejections came from roles where Block D flagged a comp mismatch — consider adjusting your floor or filtering harder on comp"
+- "The phrase 'distributed systems at scale' in a JD has correlated with GOOD_FIT for you 80% of the time — treat it as a strong positive signal"
+
+**Architecture concept (from LangHire):** A `data/memory.json` file that stores procedural observations as key-value entries. Each entry has: `type` (ats_tip, pattern, company_note), `content` (the observation), `confidence` (0.0–1.0), `evidence_count` (how many times observed), `last_updated`. Confidence decays if contradicting evidence accumulates.
+
+**Integration points:** The evaluate mode reads relevant memories before producing Block G (posting legitimacy) and the recommendation. The cv mode reads ATS-specific memories before generating. The debrief command (interview-prep --debrief) writes new memories from the post-interview reflection.
+
+**Why deferred:** Requires persistent state management. The current system is stateless per session (intentional — avoids stale context). Self-learning memory is a fundamental architecture shift, not an add-on. Warrants its own design phase.
+
+---
+
+#### 7b: Community Domain Packs
+
+**What it is:** Beyond the AI/ML domain pack that ships with career-scout, a library of starter kits for other professional domains. Each pack is a YAML file in `templates/domain-packs/` that pre-populates `_profile.md` archetypes, suggests scoring calibration examples, and recommends CV template defaults.
+
+**Planned packs and their archetypes:**
+
+| Pack | Archetypes (examples) | Notes |
+|------|-----------------------|-------|
+| `ee-power.yml` | Power Electronics IC, Power Systems Architect, Hardware Systems Engineer, EMC/Signal Integrity | EE-specific: gate competencies (magnetics, simulation tools like LTspice/ANSYS), comp benchmarked to hardware market |
+| `biotech-lifesci.yml` | Research Scientist, Bioinformatics Engineer, Medical Science Liaison, Regulatory Affairs | Publications-heavy; Academic template default; emphasis on wet lab vs computational split |
+| `pm-product.yml` | Technical PM, AI/ML PM, Platform PM, Consumer PM | Outcome-framing: ARR, DAU, NPS; no patents/publications; narrative-heavy |
+| `swe-backend.yml` | Backend Engineer, Distributed Systems, Platform/Infra, Security Engineer | Stack-depth signals; system design stories; open source contributions |
+| `finance-quant.yml` | Quantitative Analyst, Algorithmic Trader, Risk Model Developer | Sharpe ratios, alpha generation; regulatory knowledge (FCA/SEC) as gate |
+
+**How users access packs:** During `setup`, the system asks "Which domain best describes your work?" and offers the pack list. The selected pack's archetypes are injected into `_profile.md` as editable starting material. Users can mix packs (e.g., someone who crosses EE and ML).
+
+**Why deferred:** Each pack needs domain expertise to calibrate correctly. An EE pack with wrong archetype signals is worse than no pack at all. Contributions should come from practitioners, not be invented. This is a community-contribution model — the infrastructure exists (setup.md + domain-packs/ directory), but the packs themselves need domain-expert authors.
+
+---
+
+#### 7c: TUI Dashboard
+
+**What it is:** A terminal user interface (TUI) for managing the pipeline without opening markdown files manually. Think of it as a read-only management view baked into the CLI.
+
+**What it would show:**
+- Pipeline.md: pending jobs as a scrollable list with company/role/score/fit/status columns
+- Applications.md: submitted applications with follow-up due dates highlighted
+- Summary stats: X pending, Y evaluated this week, Z applied this month, average composite score
+- Quick filters: `t` for GOOD_FIT+, `r` for "awaiting response", `f` for "follow-up due"
+- Navigation: arrow keys to browse, `enter` to open the report for a row, `q` to quit
+
+**Architecture concept:** A Node.js TUI using the `blessed` library (terminal box drawing) or `ink` (React-like, terminal-native). A single script `scripts/tui.mjs` that reads `data/pipeline.md` and `data/applications.md`, parses the markdown tables, and renders the dashboard. Read-only — no writes from the TUI. All modifications still happen through agent modes.
+
+**Why deferred:** It's a quality-of-life feature, not a core workflow enabler. The existing `pipeline` mode handles all the same information through natural language. A TUI adds developer complexity (blessed/ink dependencies, terminal compatibility) for convenience that the current system doesn't lack. High "cool factor," moderate utility.
+
+---
+
+#### 7d: Advanced Scout — Playwright Scraping + LinkedIn
+
+**What it is:** Extending Scout beyond API portals to cover companies that don't offer Greenhouse/Ashby/Lever APIs. Two levels:
+
+**Level 1 — Playwright scraping of custom career pages:**
+Companies like Apple, Boeing, Lockheed, many mid-size firms, and government contractors run their own careers pages (often Workday, Taleo, iCIMS, or fully custom). These can't be queried via an API but can be scraped.
+
+Playwright navigates to `careers.example.com`, clicks "Search Jobs", applies filters (location, keyword), extracts job titles and URLs, runs them through the same dedup/filter logic as API results, and writes matching jobs to `pipeline.md`.
+
+The challenge: these sites are rate-sensitive, login-walled (LinkedIn, most government portals), or heavily JavaScript-rendered. Playwright handles the JS rendering, but CAPTCHA and login walls require human intervention.
+
+**Level 2 — WebSearch broad discovery:**
+Use `profile.yml → target_roles.primary` to generate search queries and find jobs at companies not in `portals.yml`. Example: `"Senior ML Engineer" site:greenhouse.io OR site:lever.co`. Results are filtered by the same title/location rules, deduped, and added to pipeline.md.
+
+**Level 3 — LinkedIn integration:**
+A browser extension that watches the user's LinkedIn job search tab and writes matching job URLs to `data/inbox.txt` in real time. When the user runs `scan`, the inbox is drained first. No API key needed — the extension piggybacks on the user's authenticated session.
+
+**BrightData API (optional, paid):** Programmatic LinkedIn search via BrightData's proxy network. ~$2/1000 results. For users who want full LinkedIn coverage without the browser extension. Requires a BrightData account.
+
+**Why deferred:** Level 1 Playwright scraping requires site-specific selectors (each ATS has a different DOM structure). The `liveness-core.mjs` script shipped in Phase 3 is the foundation. Level 2 WebSearch discovery is in `scan --discover` already. Level 3 browser extension is a separate engineering project. Each level is independently shippable.
+
+---
+
+#### 7e: Interview Practice / Roleplay Mode
+
+**What it is:** An interactive session where the AI plays the role of an interviewer and the user practices answering questions out loud (typed). Builds on the story-bank and company research from Phase 4.
+
+**How it works:**
+1. User types `interview-prep --practice <company>` after running full interview-prep
+2. The AI loads: the company research doc, the story bank, the evaluation report's Block F STAR+R stories
+3. AI plays the interviewer: asks behavioural questions ("Tell me about a time you..."), technical questions drawn from the JD, and company-specific questions from the research doc
+4. User answers in natural language
+5. AI gives structured feedback: what landed well, what lacked specificity, which story bank entry fits better
+6. After 4-5 questions, AI shows a coaching summary: patterns observed, recommended story bank additions, suggested stronger framing for weak answers
+
+**Why this is valuable:** Reading STAR+R stories and actually saying them out loud are different. The practice loop closes the gap between prepared and delivered. The AI can catch "I helped with..." when the story bank says "I led...".
+
+**Why deferred:** Requires a robust session state machine (multi-turn roleplay with memory of previous answers within the session). The current mode architecture is request-response, not multi-turn roleplay. This is a meaningful architectural addition. Phase 4b.
+
+---
+
+#### 7f: Cross-Interview Pattern Detection
+
+**What it is:** After 3 or more `--debrief` sessions, the system analyses all debriefs together to surface patterns the user can't see in individual sessions.
+
+**What patterns it detects:**
+- **Consistent weak spots:** "In 4 of your last 5 interviews, you were asked about conflict resolution and rated it as 'could have been stronger.' Your story bank has 2 conflict stories — consider preparing a 3rd with a cleaner resolution arc."
+- **Winning patterns:** "Roles where you led with the IEEE award story in your intro have moved to next rounds 80% of the time. Roles where you led with the startup story have not."
+- **ATS-interviewer divergence:** "Your CV scores well on system design keywords, but interviewers at 3 companies asked system design questions that your story bank doesn't cover. Consider adding a distributed systems STAR+R."
+- **Company culture patterns:** "You consistently rate culture fit as 'uncertain' at companies >5000 employees. Consider filtering harder on company size."
+
+**Integration:** A new `interview-prep --patterns` command that reads all debrief files from `interview-prep/` and applies the analysis. Output is a coaching memo appended to `interview-prep/story-bank.md`.
+
+**Why deferred:** Requires enough historical data to be meaningful (3+ debriefs). Currently the user may not have that volume. Also requires a reliable parsing strategy across multiple debrief files — not trivial. Phase 4b.
+
+---
+
+#### 7g: Shadow CV / Per-Archetype Master CVs
+
+**What it is:** Some candidates genuinely have two different careers on one person — for example, a technical founder who is equally applying for CTO roles (leadership-heavy CV) and Staff Engineer roles (IC-heavy CV). A single `cv.md` forces a compromise; a shadow CV system lets them maintain separate master CVs per track.
+
+**How it works:**
+- `cv.md` remains the default master
+- Additional master CVs: `cv-pm.md`, `cv-hardware.md`, `cv-academic.md` (user-named)
+- Profile.yml maps archetypes to master CVs:
+  ```yaml
+  cv:
+    master: cv.md               # default
+    archetype_overrides:
+      pm: cv-pm.md
+      academic: cv-academic.md
+  ```
+- During CV generation: `cv` mode selects the master based on detected archetype before applying JD-specific tailoring
+- Per-evaluation override: `cv <url> --source=cv-pm.md`
+
+**Why deferred:** For most users, `cv.md` + good tailoring is sufficient. The complexity of maintaining multiple master CVs is only worth it for genuinely bifurcated career tracks. Implementing this requires adding `--source` flag to `modes/cv.md`, updating port-manifest.yml to port all `cv-*.md` files, and updating the drafter to read the correct master. Low-complexity addition but low-priority for most users. Rejected in Phase 2 (Item 29 in Gemini log) — revisit when a user requests it.
+
+---
+
+#### 7h: Offer Letter Analysis
+
+**What it is:** A new mode (`offer`) where the user pastes an offer letter or compensation details and gets:
+- Market comparison: base vs. Levels.fyi / Glassdoor / Blind for the role, level, and location
+- Total comp breakdown: base + bonus (target vs. actual) + equity (4-year value at current valuation) + benefits
+- Red flag detection: non-compete clauses, IP assignment scope, clawback provisions, vesting cliff, at-will employment nuances
+- Negotiation script: 3 specific asks with framing, ordered by negotiation strength (highest-leverage first)
+- Accept/decline recommendation based on profile.yml compensation targets
+
+**Why this is valuable:** Candidates often accept offers without understanding total comp or without identifying negotiable elements. The system already does comp analysis in Block D (evaluate mode) — offer analysis is Block D applied to an actual offer rather than a posted range.
+
+**Why deferred:** Offer letter parsing is complex (PDFs, scanned documents, inconsistent formats). Requires real-time market data (WebSearch of Levels.fyi at time of offer). Legal clause detection needs careful calibration to avoid false confidence ("this clause is fine" when it isn't). Worth building — but needs its own careful plan. Phase 8 candidate.
 
 ---
 
