@@ -1,7 +1,7 @@
 # Plan: Phase 4 — Interview Prep + Story Bank
 
-**Version:** 1.2
-**Last Updated:** 2026-05-22 -- v1.2: Incorporated Gemini review round 2 — Q2-Q10 resolved, UX Pattern P6 (User Layer Write Confirmation), research subagent with fallback, dedup heuristic specified (Jaccard), post-check lint, debrief-history injection into cheatsheet.
+**Version:** 1.3
+**Last Updated:** 2026-05-26 -- v1.3: Group A tests (T1,T3,T8,T9,T10,T17) and Group B tests (T4,T13,T14) all ✅. Group C tests (T2,T5,T6,T7,T11,T12,T15,T16) marked TBD with prerequisite notes.
 **Parent Plan:** CONSOLIDATION-PLAN.md, Section 11, Phase 4
 **Depends on:** Phase 1 (evaluate mode — Block F already drafts STAR+R stories), Phase 2 (cv mode — reuses _profile.md, archetype detection)
 
@@ -738,21 +738,21 @@ If the user's target is significantly above Block D's market range, the mode not
 ### 6e. Tests
 
 - [x] **T1: Cold start.** ✅ 2026-05-26 — Vicor Corp (Claude Code). Prep doc written. Story mapping: 1 strong + 2 partial + 3 none. All questions cited [Glassdoor 2025], [JD], or [inferred from JD]. Cheatsheet at top of file. Sparse-intel warning fired correctly.
-- [ ] **T2: Mapping accuracy.** With 5+ stories in bank, run `interview-prep`. Verify mapping table picks the best story per question, not random.
+- [ ] **T2: Mapping accuracy.** TBD — Prerequisite: run 3+ full evaluate sessions to accumulate 5+ distinct stories in story-bank.md, then re-run interview-prep and verify the mapping table selects by theme relevance, not insertion order.
 - [x] **T3: Citation honesty.** ✅ 2026-05-26 — Vicor Corp --tldr (sparse Glassdoor data). Zero Blind/LeetCode hits acknowledged. All inferred questions tagged [inferred from JD]. No fabricated Glassdoor quotes. Sparse-intel warning fired.
 - [x] **T4: Bank curation.** ✅ 2026-05-26 — Planted T-01/T-02 (high-overlap ripple stories). --bank-review flagged the pair with side-by-side snippet and merge/keep/supersede prompt. P6 shown before any write.
-- [ ] **T5: Debrief loop.** Generate a prep doc, then run `--debrief`. Verify append (not overwrite), verify story Reflection update offer.
-- [ ] **T6: CLI parity.** Run the whole flow on Gemini CLI AND Claude Code. Verify same output structure (citations, sections, file naming).
-- [ ] **T7: Block F migration.** Run an evaluate on a fresh report. Verify the appended story matches the new schema, not the old one.
+- [ ] **T5: Debrief loop.** TBD — Prerequisite: complete a real interview with a company that has a prep doc; run --debrief after. Manual interactive test — hard to simulate without a real interview transcript.
+- [ ] **T6: CLI parity.** TBD — Prerequisite: run the full interview-prep flow on Gemini CLI (primary runtime). Requires Gemini CLI environment. Compare output structure side-by-side with Claude Code run.
+- [ ] **T7: Block F migration.** TBD — Prerequisite: run `evaluate` on a new JD and confirm the story appended by Block F uses the new schema (table-header format) rather than the legacy heading-only format. Can be run at next evaluate session.
 - [x] **T8: --tldr terminal output.** ✅ 2026-05-26 — Vicor Corp --tldr. Cheatsheet-only output to terminal. No file written. Footer "For the full prep doc, run: interview-prep..." present. Lessons block correctly omitted (no debrief history).
 - [x] **T9: Compensation skip path.** ✅ 2026-05-26 — Natural pass: profile.yml comp fields empty throughout all test runs. Comp block omitted; cheatsheet showed "set compensation.target_range in profile.yml" hint instead.
 - [x] **T10: UX P1+P2.** ✅ 2026-05-26 — Full Vicor run. md-to-html.mjs emitted "📂 Open: file:///..." line relayed verbatim. Next Steps block present with exactly 3 items.
-- [ ] **T11: Cross-mode nudge.** Plant a row in applications.md with status `Interview` for a company with no prep file. Run `pipeline-triage`. Verify single-line nudge appears.
-- [ ] **T12: Subagent path (Q2).** Run `interview-prep` on Claude Code (Agent tool available). Verify Step 1 spawns a research subagent. Then run on a CLI without subagent support (mocked) — verify inline fallback works with same output shape.
+- [ ] **T11: Cross-mode nudge.** TBD — Prerequisite: add a real or mock Interview-status row to applications.md (requires populated applications.md). Run pipeline-triage and verify the single-line nudge fires.
+- [ ] **T12: Subagent path (Q2).** TBD — Prerequisite: Gemini CLI environment. Verify Step 1 spawns a subagent on Gemini; run inline fallback on Claude Code (no subagent for this mode); compare output shape.
 - [x] **T13: Jaccard dedup (Q4).** ✅ 2026-05-26 — Planted 4 stories: T-01/T-02 (ripple, high overlap ~0.55) and T-03/T-04 (supplier vs. test fixture, overlap ~0.06). --bank-review flagged exactly T-01×T-02. T-03×T-04 not flagged.
 - [x] **T14: Legacy schema co-existence (Q5).** ✅ 2026-05-26 — Planted 4 new-schema + 1 legacy-schema story. interview-prep Story Bank Mapping showed all 5 normalised identically. --bank-review detected T-05 as legacy and offered upgrade with P6 prompt (default N held).
-- [ ] **T15: Citation lint sweep (Q7).** Manually plant an unverified question line in the in-memory draft. Verify the soft warning lists it before file write, AND the file is still written.
-- [ ] **T16: Lessons from Last Time (Q10).** Generate one debrief file for Company A. Run `interview-prep` on Company B with same archetype. Verify the cheatsheet "Lessons from Last Time" block appears with Company A's data. Then delete the debrief, re-run — verify block disappears.
+- [ ] **T15: Citation lint sweep (Q7).** TBD — Prerequisite: plant an uncited question line in an in-progress draft. Verify soft warning fires before file write but write still completes. Requires a controlled in-session test; do not commit the planted data.
+- [ ] **T16: Lessons from Last Time (Q10).** TBD — Prerequisite: have at least one completed debrief file in interview-prep/. Generate a prep doc for a second company with the same archetype and verify the "Lessons from Last Time" block populates from the first debrief.
 - [ ] **T17: P6 confirmation default.** ✅ 2026-05-26 — Story gap prompt shown as [y/N] (capital N = default N). Enter with no input produced no write to story-bank.md. Mode file explicitly states "Default N."
 
 ---

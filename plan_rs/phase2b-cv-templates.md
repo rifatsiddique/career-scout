@@ -1,7 +1,7 @@
 # Phase 2b: CV Templates 3 & 4 (Academic/Research + Technical/Engineering)
 
-**Version:** 1.0
-**Last Updated:** 2026-05-26 -- Initial plan, ready for Gemini review
+**Version:** 1.1
+**Last Updated:** 2026-05-26 -- v1.1: Incorporated Gemini review — Q1-Q7 resolved, domain-specific skill splits added (EE/SWE/Biotech), work auth placement strategy, interactive template selector, dynamic education placement, fonts/user/ directory, 4-page cap for Template 3
 **Parent Plan:** CONSOLIDATION-PLAN.md §11 Phase 2 (deferred items)
 **Depends on:** Phase 2 complete — `modes/cv.md`, `scripts/generate-pdf.mjs`, `templates/cv/manifest.yml`, and the two existing templates are all in place. No infrastructure changes needed.
 
@@ -229,9 +229,12 @@ The skills tag section is the highest ATS risk. If tags render as a CSS grid, co
 | `fonts/jetbrains-mono-latin-700.woff2` | **Add** | Template 4 |
 | `fonts/inter-latin-400.woff2` | **Add** | Template 4 |
 | `fonts/inter-latin-600.woff2` | **Add** | Template 4 |
-| `templates/cv/manifest.yml` | **Update** | Set `status: ready` for both; add `font_files` arrays; add placeholder notes |
-| `modes/cv.md` | **Update** | Add new template-conditional placeholders to fill-logic table (§ placeholder map); add orcid/google_scholar contact fields to Step 0 contact audit section |
-| `config/profile.yml` | **Update** | Add `orcid: ""` field under candidate; confirm `google_scholar` and `github` and `portfolio_url` already present |
+| `templates/cv/manifest.yml` | **Update** | Set `status: ready` for both; add `font_files` arrays; add `max_pages: 4` for Template 3; add placeholder notes |
+| `modes/cv.md` | **Update** | Add new template-conditional placeholders to fill-logic table (§ placeholder map); add orcid/google_scholar/work_auth contact fields to Step 0 contact audit; add interactive template selector (Step 0a); add page-count conditional for Template 3; add reviewer scope boundary for publications |
+| `config/profile.yml` | **Update** | Add `orcid: ""` and `work_authorization: ""` fields under candidate; confirm `google_scholar`, `github`, `portfolio_url` already present |
+| `fonts/user/.gitkeep` | **Create** | Empty placeholder so the user/ subdirectory exists in the repo |
+| `config/port-manifest.yml` | **Update** | Add `fonts/user/` as a portable path with a note explaining user-added fonts live here |
+| `modes/port.md` | **Update** | Mention `fonts/user/` in the file migration checklist |
 | `CONSOLIDATION-PLAN.md` | **Update** | Phase 2b checklist, mark ✅ |
 
 ---
@@ -329,23 +332,78 @@ Using a single evaluation report, generate CVs in all 4 templates for the same J
 
 ---
 
-## 6. Open Questions for Gemini Review
+## 6. Gemini Review — Resolved Questions
 
-These are genuine design decisions — not rhetorical. Please investigate and give a recommendation with reasoning.
+All Q1-Q7 resolved. Implementation decisions locked.
 
-**Q1 — Publication entry format:** Should `{{PUBLICATIONS}}` be a structured format (the drafter builds each entry from parsed citation fields: authors / title / venue / year / DOI) or free-form markdown (drafter copies the candidate's publication list from cv.md and reformats lightly)? Structured gives richer HTML; free-form is simpler and less likely to introduce drafter hallucinations on citation details.
+**Q1 ✅ — Publication entry format:** Use **hybrid format**: the drafter receives free-form publication text from cv.md and reformats it into the `<div class="pub-entry">` HTML structure without parsing individual citation fields. This avoids hallucination risk on author names, years, and DOIs — the drafter copies, not constructs. The reviewer checks internal consistency only (Q6 answer).
 
-**Q2 — Skills grid layout for Template 4:** CSS flexbox wrap vs. CSS multi-column for skill tags. Flexbox wraps naturally and produces correct left-to-right paste order. CSS columns are simpler CSS but produce column-by-column paste order in many PDF viewers. Is there a CSS approach that gets the visual layout of columns with the paste order of flexbox?
+**Q2 ✅ — Skills grid layout:** **Flexbox wrap confirmed** — `display: flex; flex-wrap: wrap` on the container. No CSS columns. Left-to-right paste order is guaranteed. Each `<span class="skill-tag">` is a self-contained flex item. Already reflected in §3.5.
 
-**Q3 — Education placement in Template 4:** For senior IC engineers (10+ YOE), Education is low-signal — it belongs at the bottom. For early-career engineers (0-5 YOE), it belongs near the top. Should the template have a fixed order, or should `modes/cv.md` instruct the drafter to move Education based on the candidate's experience level?
+**Q3 ✅ — Education placement in Template 4:** **Dynamic placement by experience level.** `modes/cv.md` instructs the drafter:
+- 0-4 YOE (inferred from graduation year and experience entries): place Education after Skills and Projects but before Experience
+- 5+ YOE: place Education after Experience (near bottom)
+The template HTML will have an `<!-- EDUCATION_BLOCK -->` comment as a placeholder; the drafter fills it at the correct position.
 
-**Q4 — Font fallback chain for Template 3:** If `eb-garamond-latin-400.woff2` is missing or fails to load, Playwright will fall back to a system font. The fallback should be: EB Garamond → Georgia → Times New Roman. Is this acceptable, or should `generate-pdf.mjs` detect missing custom fonts and warn before PDF generation?
+**Q4 ✅ — Font fallback chain:** Fallback chain: `"EB Garamond", "Georgia", "Times New Roman", serif`. Additionally, `generate-pdf.mjs` logs a warning (not error) when a woff2 file is not found at the expected path before launching Playwright. Generation continues but the operator knows the PDF may use fallback fonts.
 
-**Q5 — Port manifest:** Do the new woff2 font files belong in `config/port-manifest.yml`? They are system layer files (always re-cloned from the repo), so users should NOT need to port them. But if a user has customised font files (e.g., added a proprietary corporate font for their employer's brand), those should be portable. Recommendation: system fonts stay system layer; add a note in port-manifest.yml that `fonts/` is system layer but user-added fonts should be manually noted.
+**Q5 ✅ — Port manifest and fonts:** System-layer fonts (`fonts/*.woff2` committed to the repo) do NOT go in port-manifest.yml — they re-clone with the repo. Create a `fonts/user/` subdirectory for any fonts the user adds that are not part of the repo (e.g., proprietary employer branding fonts). Add `fonts/user/` to port-manifest.yml as a portable path. Update `modes/port.md` to mention `fonts/user/` with instructions.
 
-**Q6 — `{{PUBLICATIONS}}` and the reviewer:** The reviewer currently receives plain text content from the drafter. For publications, the reviewer can't verify DOI links or check whether citation details are accurate (that would require the reviewer to cross-reference external databases). Should the reviewer skip publication verification entirely, or add a specific instruction to "flag any publication entry where the author list, year, or venue looks inconsistent with the rest of the CV"?
+**Q6 ✅ — Reviewer and publications:** The reviewer does an **internal consistency audit only** — it checks that author names and institutions are consistent with the Experience section, that years are plausible, and that the venue name looks like a real journal/conference. The reviewer explicitly does NOT fetch DOIs or cross-reference external databases. Add this scope boundary to `modes/cv.md`.
 
-**Q7 — Template 3 page count:** Academic CVs are commonly 2-5 pages (unlike industry CVs which target 1-2). Should Template 3 have a different `target_pages` setting, or should it still cap at 2 pages by default? If we relax the page limit, the cutting logic in `modes/cv.md` needs a conditional.
+**Q7 ✅ — Template 3 page count:** Lift the cap to **4 pages** for Template 3. Add a `max_pages: 4` field to the manifest entry. Update the cutting logic in `modes/cv.md` with a conditional: `if template == "academic-research": target 2-4 pages; else: target 1-2 pages`. Anything beyond 4 pages still triggers a warning asking the user to review and trim.
+
+---
+
+## 6b. Additional Gemini Findings
+
+These were not in the original open questions but Gemini flagged them as high-value additions.
+
+### 6b.1 Domain-Specific Skill Splits for Template 4
+
+Generic "Skills" as a flat tag cloud loses signal for domain experts. Gemini recommends category groupings by domain:
+
+**Electrical / Hardware engineering:**
+- "Design & Simulation Tools" — SPICE, MATLAB/Simulink, Altium, KiCad, ANSYS
+- "Hardware & Lab Equipment" — oscilloscopes, power analyzers, bench power supplies, soldering
+- "Standards & Protocols" — IEC 61000, IEEE 802.3, MISRA C, ISO 26262
+
+**Software / ML engineering (existing):**
+- Languages → Frameworks → Tools/Platforms (existing order, keep)
+
+**Biotech / Life sciences:**
+- "Computational Tools" — Python, R, BioPython, Seurat, DESeq2
+- "Wet Lab Techniques" — PCR, FACS, CRISPR, cell culture
+- "Instruments" — flow cytometers, mass spectrometers, sequencers
+
+**Implementation:** `modes/cv.md` drafter instruction: "If the archetype is hardware/EE or biotech, split Skills into sub-groups using `<h4>` headings within the `{{TECH_STACK}}` block. If archetype is SWE/ML, use flat tags." The HTML template must support both — `{{TECH_STACK}}` can be either flat `<span>` tags or grouped `<h4>` + `<span>` blocks.
+
+### 6b.2 Work Authorization Placement
+
+Work auth is legally sensitive and easily triggers recruiter bias if placed prominently. Recommended approach:
+- Do NOT add a `{{WORK_AUTH}}` placeholder to the template header
+- If the user's profile.yml has `work_authorization: "US Citizen"` or similar: the drafter includes a single line at the bottom of the contact row — `"Authorization: US Citizen"` or `"Open to visa sponsorship"`
+- If `work_authorization` is blank/empty: omit the field entirely — no mention
+- Update `modes/cv.md` Step 0 contact audit to check for this field and apply the conditional
+
+### 6b.3 Interactive Template Selector
+
+When `cv` mode is run without a template override, present the user with a concise selection prompt before generating:
+
+```
+Which CV template?
+  1. ATS-Optimized      — keyword density, plain layout, beats Lever/Greenhouse parsers
+  2. Classic Professional — clean traditional layout, strong for consulting/finance roles
+  3. Academic/Research   — EB Garamond, publications + research focus, up to 4 pages
+  4. Technical/Engineering — skills grid + project cards, signals IC builder
+  [Default: profile.yml archetype-to-template mapping → Template 1]
+```
+
+If the user types a number, override the profile.yml default for this run only. If the user presses Enter, use the profile.yml default. Implement in `modes/cv.md` as a new Step 0a before the drafter starts.
+
+### 6b.4 Biotech Bridge Section (Template 3 Extension)
+
+For biotech researchers applying to industry roles, academic CVs often need an "Industry Translation" section that reframes academic accomplishments in business language. This is NOT a new placeholder — it's a drafter instruction in `modes/cv.md`: if archetype includes "biotech" or "life-sciences" and the target role is "industry" (not academic), the drafter adds a brief (2-3 sentence) bridge paragraph to the Research Interests section explaining how the research translates to industry impact.
 
 ---
 
@@ -363,4 +421,6 @@ To be explicit — the following are **in scope for Gemini to verify the plan do
 
 ## 8. Gemini Review Log
 
-_(to be filled after Gemini review)_
+| Date | Round | Summary |
+|------|-------|---------|
+| 2026-05-26 | Round 1 | All Q1-Q7 resolved. Added domain-specific skill splits (6b.1), work auth placement strategy (6b.2), interactive template selector (6b.3), biotech bridge section (6b.4). Plan updated to v1.1. |

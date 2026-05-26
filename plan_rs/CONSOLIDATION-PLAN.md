@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.27
-**Last Updated:** 2026-05-26 -- T1/T3/T4/T8/T9/T10/T13/T14/T17 passed (Group A+B). Remaining: T2/T5/T6/T7/T11/T12/T15/T16 (Group C — require Gemini CLI or special conditions).
+**Version:** 1.28
+**Last Updated:** 2026-05-26 -- Phase 4 Group C tests (T2,T5,T6,T7,T11,T12,T15,T16) marked TBD with prerequisites. Phase 2b Gemini review incorporated (Q1-Q7 resolved, domain skill splits, work auth strategy, interactive template selector, fonts/user/, 4-page cap for T3). Phase 2b v1.1 ready for implementation.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -808,15 +808,18 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 ### Phase 2b: Templates 3 & 4 (next up)
 
 **Goal:** Build Academic/Research and Technical/Engineering templates to complete the 4-template CV system.
-**Detailed plan:** `plan_rs/phase2b-cv-templates.md` (v1.0, ready for Gemini review)
+**Detailed plan:** `plan_rs/phase2b-cv-templates.md` (v1.1, Gemini review complete — ready for implementation)
 
 - [ ] Source and commit font woff2 files (EB Garamond, Source Sans Pro, JetBrains Mono, Inter)
 - [ ] Build `templates/cv/academic-research.html` — publications-forward, EB Garamond, no accent color, Education + Publications near top
 - [ ] Build `templates/cv/technical-engineering.html` — skills tag grid, JetBrains Mono accents, project cards, teal accent
 - [ ] Update `templates/cv/manifest.yml` — set status: ready, add font_files arrays
 - [ ] Update `modes/cv.md` — add template-conditional placeholders to fill-logic table ({{PUBLICATIONS}}, {{RESEARCH_INTERESTS}}, {{TECH_STACK}}, {{GITHUB_URL}}, etc.)
-- [ ] Update `config/profile.yml` — add orcid field
-- [ ] Test: all-4-templates comparison — same JD, all PDFs 1-2 pages, ATS extraction clean on all
+- [ ] Update `config/profile.yml` — add orcid and work_authorization fields
+- [ ] Create `fonts/user/.gitkeep` — user-added font subdirectory
+- [ ] Update `config/port-manifest.yml` + `modes/port.md` — add fonts/user/ as portable path
+- [ ] Update `modes/cv.md` — interactive template selector (Step 0a), work auth conditional, publication reviewer scope, page-count conditional for Template 3, domain skill split instructions
+- [ ] Test: all-4-templates comparison — same JD, Template 3 up to 4 pages, ATS extraction clean on all
 - [ ] Update CONSOLIDATION-PLAN.md Phase 2b ✅
 
 ### Phase 7: Future Concepts (not scheduled — captured here to avoid losing them)
