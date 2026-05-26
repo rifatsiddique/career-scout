@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.26
-**Last Updated:** 2026-05-26 -- Phase 7 complete: added mock transcript scoring (7d), pipeline.md HTML view precursor (7c), Phase 4 T1-T17 test debt (7j); all deferred items now consolidated.
+**Version:** 1.27
+**Last Updated:** 2026-05-26 -- T1/T3/T4/T8/T9/T10/T13/T14/T17 passed (Group A+B). Remaining: T2/T5/T6/T7/T11/T12/T15/T16 (Group C — require Gemini CLI or special conditions).
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
