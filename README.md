@@ -548,6 +548,7 @@ Your `cv.md`, `reports/`, `data/`, and `interview-prep/story-bank.md` are **not*
 
 ---
 
+
 ## Architecture Reference
 
 Full architecture, design decisions, and implementation phases: `plan_rs/CONSOLIDATION-PLAN.md`
