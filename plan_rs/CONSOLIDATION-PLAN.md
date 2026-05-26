@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.31
-**Last Updated:** 2026-05-26 -- Phase 2b implemented: fonts downloaded, academic-research.html + technical-engineering.html built (T4A/T4B sub-layouts via CSS body class), manifest.yml updated, generate-pdf.mjs --max-pages flag added, modes/cv.md updated with all new placeholders + archetype-aware template selector, profile.yml updated, fonts/user/ created, port-manifest.yml updated.
+**Version:** 1.32
+**Last Updated:** 2026-05-26 -- Phase 2b complete: modes/port.md updated (fonts/user/), all checklist items done except all-4-templates live test (deferred — requires populated cv.md). Previously: fonts downloaded, academic-research.html + technical-engineering.html built (T4A/T4B sub-layouts via CSS body class), manifest.yml updated, generate-pdf.mjs --max-pages flag added, modes/cv.md updated with all new placeholders + archetype-aware template selector, profile.yml updated, fonts/user/ created, port-manifest.yml updated.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -819,7 +819,7 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 - [x] Update `config/profile.yml` — add orcid and patent_url fields ✅ 2026-05-26
 - [x] Create `fonts/user/.gitkeep` ✅ 2026-05-26
 - [x] Update `config/port-manifest.yml` — add fonts/user/ as portable path ✅ 2026-05-26
-- [ ] Update `modes/port.md` — mention fonts/user/ in migration checklist (minor, can be done next session)
+- [x] Update `modes/port.md` — fonts/user/ noted in group [6] description and "What does NOT get ported" section ✅ 2026-05-26
 - [ ] Test: all-4-templates comparison — same JD, Template 3 up to 4 pages, ATS extraction clean on all (requires populated cv.md — run when user has real content)
 
 ### Phase 7: Future Concepts (not scheduled — captured here to avoid losing them)

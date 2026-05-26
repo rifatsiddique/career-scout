@@ -12,9 +12,12 @@ previous career-scout instance into this one.
 prep, story bank, pipeline tracker, scan history, custom templates. See
 `config/port-manifest.yml` for the full list and strategies.
 
-**What does NOT get ported:** System files (modes, scripts, default templates).
-If you modified system files directly in your old instance (e.g., tweaked a
-default template or a script), those changes stay behind — the new version's
+**What does NOT get ported:** System files (modes, scripts, default templates,
+and the built-in fonts in `fonts/*.woff2`). The system fonts re-clone with
+the repo — no need to copy them. If you added your own fonts to `fonts/user/`
+(e.g., a proprietary employer font), those ARE ported under the customizations
+group. If you modified system files directly in your old instance (e.g., tweaked
+a default template or a script), those changes stay behind — the new version's
 system files take precedence. This is intentional: system files contain bug
 fixes and improvements you want.
 
@@ -90,7 +93,7 @@ After showing the dry-run output, present the available groups:
 >  [3] reports     — Evaluation reports (N found)
 >  [4] interview   — Story bank + company prep docs
 >  [5] writing     — Writing samples
->  [6] customizations — Custom CV templates and domain packs
+>  [6] customizations — Custom CV templates, domain packs, and user-added fonts (fonts/user/)
 >  [7] output      — Generated PDFs, HTML drafts, DOCX exports
 >
 >  Type 'all' for everything, or enter group numbers separated by commas
