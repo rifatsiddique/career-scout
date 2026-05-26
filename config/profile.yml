@@ -11,8 +11,10 @@ candidate:
   location: ""                       # e.g. "San Francisco, CA"
   linkedin: ""                       # e.g. "linkedin.com/in/yourname" — leave blank to omit
   google_scholar: ""                 # (optional) e.g. "scholar.google.com/citations?user=XXXXX" — leave blank to omit
+  orcid: ""                          # (optional) ORCID identifier e.g. "0000-0001-2345-6789" — leave blank to omit (Template 3 only)
   portfolio_url: ""                  # (optional) full URL — leave blank to omit
   github: ""                         # (optional) e.g. "github.com/yourname" — leave blank to omit
+  patent_url: ""                     # (optional) Google Patents / USPTO profile URL — leave blank to omit (Template 4B only)
 
 target_roles:
   primary: []                        # e.g. ["Senior AI Engineer", "Staff ML Engineer"]

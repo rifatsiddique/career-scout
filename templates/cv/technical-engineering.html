@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="template-id" content="technical-engineering">
+<title>{{NAME}} — CV</title>
+<style id="user-tweaks">
+  /* ============================================================
+     CSS VARIABLES — override these for overflow control
+     --margins:        visual page padding (default: 0.45in)
+     --base-font-size: body text size (default: 10.5px)
+     --bullet-spacing: gap between bullets (default: 0.12em)
+
+     Sub-layouts: set <body class="layout-hardware-ee"> for Hardware EE variant.
+     Default (no class or "layout-software") = Software/ML layout.
+
+     To adjust margins manually: edit --margins value.
+     To fit overflow content: reduce --margins to 0.4in,
+     then --base-font-size to 10px, then --bullet-spacing to 0.08em.
+  ============================================================ */
+  :root {
+    --base-font-size: 10.5px;
+    --margins: 0.45in;
+    --bullet-spacing: 0.12em;
+    --accent: #0a7ea4;
+    --accent-muted: #5a9db5;
+    --accent-light: rgba(10, 126, 164, 0.08);
+    --mono-font: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  /* Hardware EE sub-layout: copper-bronze accent */
+  body.layout-hardware-ee {
+    --accent: #8c6239;
+    --accent-muted: #b08060;
+    --accent-light: rgba(140, 98, 57, 0.08);
+  }
+
+  @font-face {
+    font-family: 'Inter';
+    src: url('./fonts/inter-latin-400.woff2') format('woff2'),
+         local('Inter'), local('Arial');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Inter';
+    src: url('./fonts/inter-latin-600.woff2') format('woff2'),
+         local('Inter SemiBold');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url('./fonts/jetbrains-mono-latin-400.woff2') format('woff2'),
+         local('JetBrains Mono'), local('Courier New');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url('./fonts/jetbrains-mono-latin-700.woff2') format('woff2'),
+         local('JetBrains Mono Bold');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: var(--base-font-size);
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: #ffffff;
+  }
+
+  .page {
+    width: 100%;
+    padding: 0;
+  }
+
+  /* === HEADER === */
+  .header {
+    margin-bottom: 18px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 12px;
+  }
+
+  .header h1 {
+    font-family: var(--mono-font);
+    font-size: 24px;
+    font-weight: 700;
+    color: #111;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+    line-height: 1.1;
+  }
+
+  .contact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 0;
+    font-size: 10px;
+    color: #555;
+  }
+
+  .contact-row a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: #ccc;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+
+  .contact-item + .contact-item::before {
+    content: " | ";
+    color: #ccc;
+    margin: 0 6px;
+  }
+
+  /* GitHub / Portfolio styled links (T4A) */
+  .contact-item.contact-github,
+  .contact-item.contact-portfolio {
+    font-family: var(--mono-font);
+    font-size: 9.5px;
+    color: var(--accent);
+  }
+
+  /* Patent link (T4B) */
+  .contact-item.contact-patent {
+    font-family: var(--mono-font);
+    font-size: 9.5px;
+    color: var(--accent);
+  }
+
+  /* === SECTIONS === */
+  .section {
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: var(--mono-font);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    border-bottom: 1.5px solid var(--accent-muted);
+    padding-bottom: 3px;
+    margin-bottom: 10px;
+  }
+
+  /* === SKILLS (T4A — Software/ML) === */
+  /* Sub-layout hiding: hardware-only sections hidden in software layout */
+  body:not(.layout-hardware-ee) .hardware-only { display: none; }
+  body.layout-hardware-ee .software-only { display: none; }
+
+  .skills-tiers {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .skills-tier {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .skills-tier-label {
+    font-family: var(--mono-font);
+    font-size: 8.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-muted);
+    white-space: nowrap;
+    min-width: 88px;
+  }
+
+  .skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+  }
+
+  .skill-tag {
+    font-family: var(--mono-font);
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    color: #222;
+  }
+
+  /* Core/Production tier: solid border */
+  .skill-core {
+    border: 1px solid var(--accent);
+    background: var(--accent-light);
+  }
+
+  /* Exposure tier: dashed border, lighter */
+  .skill-exposure {
+    border: 1px dashed var(--accent-muted);
+    color: #555;
+  }
+
+  /* === SKILLS (T4B — Hardware EE: category matrix) === */
+  .skills-matrix {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .skill-category-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .skill-category-label {
+    font-family: var(--mono-font);
+    font-size: 8.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-muted);
+    white-space: nowrap;
+    min-width: 120px;
+  }
+
+  .skill-category-items {
+    font-size: 10px;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  /* === PROJECT CARDS === */
+  .project-card {
+    margin-bottom: 14px;
+    padding-left: 10px;
+    border-left: 2px solid var(--accent-muted);
+  }
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 3px;
+  }
+
+  .project-title {
+    font-family: var(--mono-font);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .project-stack {
+    font-size: 9.5px;
+    color: #666;
+    font-style: italic;
+    white-space: nowrap;
+  }
+
+  /* Physical specs line (T4B hardware only) */
+  .project-specs {
+    font-family: var(--mono-font);
+    font-size: 9px;
+    color: var(--accent-muted);
+    margin-bottom: 3px;
+  }
+
+  .project-problem {
+    font-size: 10px;
+    color: #444;
+    margin-bottom: 2px;
+    line-height: 1.5;
+  }
+
+  .project-problem::before {
+    content: "Problem: ";
+    font-weight: 600;
+    color: #333;
+  }
+
+  .project-choice {
+    font-size: 10px;
+    color: #444;
+    margin-bottom: 2px;
+    line-height: 1.5;
+  }
+
+  .project-choice::before {
+    content: "Decision: ";
+    font-weight: 600;
+    color: #333;
+  }
+
+  .project-metric {
+    font-size: 10px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 4px;
+    line-height: 1.5;
+  }
+
+  .project-metric::before {
+    content: "Result: ";
+    font-weight: 700;
+    color: #000;
+  }
+
+  .project-card ul {
+    padding-left: 14px;
+    margin-top: 4px;
+  }
+
+  .project-card li {
+    font-size: 10px;
+    line-height: 1.55;
+    color: #333;
+    margin-bottom: var(--bullet-spacing);
+  }
+
+  /* === WORK EXPERIENCE === */
+  .job {
+    margin-bottom: 14px;
+  }
+
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 2px;
+  }
+
+  .job-company {
+    font-family: var(--mono-font);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .job-period {
+    font-size: 10px;
+    color: #777;
+    white-space: nowrap;
+  }
+
+  .job-role {
+    font-size: var(--base-font-size);
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+  }
+
+  .job-location {
+    font-size: 9.5px;
+    color: #888;
+    font-weight: 400;
+  }
+
+  .job ul {
+    padding-left: 16px;
+    margin-top: 5px;
+  }
+
+  .job li {
+    font-size: 10.5px;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: var(--bullet-spacing);
+  }
+
+  /* === EDUCATION === */
+  .edu-item {
+    margin-bottom: 8px;
+  }
+
+  .edu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .edu-title {
+    font-weight: 600;
+    font-size: var(--base-font-size);
+    color: #222;
+  }
+
+  .edu-org {
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .edu-year {
+    font-size: 10px;
+    color: #777;
+    white-space: nowrap;
+  }
+
+  .edu-desc {
+    font-size: 10px;
+    color: #666;
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  /* === CERTIFICATIONS === */
+  .cert-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 5px;
+  }
+
+  .cert-title {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .cert-org {
+    color: var(--accent);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .cert-year {
+    font-size: 10px;
+    color: #777;
+    white-space: nowrap;
+  }
+
+  /* === PATENTS (T4B) === */
+  .patent-item {
+    margin-bottom: 8px;
+  }
+
+  .patent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .patent-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .patent-number {
+    font-family: var(--mono-font);
+    font-size: 9.5px;
+    color: var(--accent-muted);
+    white-space: nowrap;
+  }
+
+  .patent-year {
+    font-size: 10px;
+    color: #777;
+    white-space: nowrap;
+  }
+
+  /* === PRINT === */
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+
+  /* === PAGE BREAK CONTROL === */
+  .avoid-break,
+  .job,
+  .project-card,
+  .edu-item,
+  .cert-item,
+  .patent-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+</style>
+</head>
+<body class="{{SUBLAYOUT}}">
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header avoid-break">
+    <h1>{{NAME}}</h1>
+    <div class="contact-row">
+      <span class="contact-item">{{EMAIL}}</span>
+      {{#if PHONE}}<span class="contact-item">{{PHONE}}</span>{{/if}}
+      {{#if LOCATION}}<span class="contact-item">{{LOCATION}}</span>{{/if}}
+      {{#if LINKEDIN_URL}}<a class="contact-item" href="{{LINKEDIN_URL}}">{{LINKEDIN_DISPLAY}}</a>{{/if}}
+      <!-- T4A only: GitHub and Portfolio -->
+      {{#if GITHUB_URL}}<a class="contact-item contact-github software-only" href="{{GITHUB_URL}}">{{GITHUB_DISPLAY}}</a>{{/if}}
+      {{#if PORTFOLIO_URL}}<a class="contact-item contact-portfolio software-only" href="{{PORTFOLIO_URL}}">{{PORTFOLIO_DISPLAY}}</a>{{/if}}
+      <!-- T4B only: Patent profile link -->
+      {{#if PATENT_URL}}<a class="contact-item contact-patent hardware-only" href="{{PATENT_URL}}">Patents</a>{{/if}}
+      {{#if WORK_AUTH}}<span class="contact-item">{{WORK_AUTH}}</span>{{/if}}
+    </div>
+  </div>
+
+  <!-- SKILLS: T4A (Software/ML) — tiered tag cloud -->
+  <div class="section software-only avoid-break">
+    <div class="section-title">{{SECTION_SKILLS}}</div>
+    {{TECH_STACK}}
+  </div>
+
+  <!-- SKILLS: T4B (Hardware EE) — category matrix -->
+  <div class="section hardware-only avoid-break">
+    <div class="section-title">{{SECTION_SKILLS}}</div>
+    {{TECH_STACK_HARDWARE}}
+  </div>
+
+  <!-- PROJECTS: T4A (Software/ML) -->
+  {{#if PROJECTS}}
+  <div class="section software-only">
+    <div class="section-title">{{SECTION_PROJECTS}}</div>
+    {{PROJECTS}}
+  </div>
+  {{/if}}
+
+  <!-- PROJECTS: T4B (Hardware EE) — tape-outs, board designs, shipped products -->
+  {{#if HARDWARE_PROJECTS}}
+  <div class="section hardware-only">
+    <div class="section-title">{{SECTION_HARDWARE_PROJECTS}}</div>
+    {{HARDWARE_PROJECTS}}
+  </div>
+  {{/if}}
+
+  <!-- WORK EXPERIENCE -->
+  <div class="section">
+    <div class="section-title">{{SECTION_EXPERIENCE}}</div>
+    {{EXPERIENCE}}
+  </div>
+
+  <!-- EDUCATION (position controlled by drafter: top for 0-4 YOE, bottom for 5+ YOE) -->
+  <!-- EDUCATION_BLOCK -->
+  <div class="section avoid-break" id="education-section">
+    <div class="section-title">{{SECTION_EDUCATION}}</div>
+    {{EDUCATION}}
+  </div>
+
+  <!-- CERTIFICATIONS -->
+  {{#if CERTIFICATIONS}}
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_CERTIFICATIONS}}</div>
+    {{CERTIFICATIONS}}
+  </div>
+  {{/if}}
+
+  <!-- PATENTS (T4B only) -->
+  {{#if PATENT_LIST}}
+  <div class="section hardware-only avoid-break">
+    <div class="section-title">{{SECTION_PATENTS}}</div>
+    {{PATENT_LIST}}
+  </div>
+  {{/if}}
+
+</div>
+</body>
+</html>

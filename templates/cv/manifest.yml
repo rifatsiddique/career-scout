@@ -27,15 +27,55 @@ templates:
   - id: "academic-research"
     name: "Academic / Research"
     file: "academic-research.html"
-    description: "Publications-forward layout, research sections prominent, education near top."
-    best_for: "Research, academic, R&D, lab positions"
+    description: "EB Garamond serif, publications-forward layout. Research Interests → Education → Publications → Research Experience → Industry Experience → Skills → Grants & Awards. No accent color. Up to 4 pages."
+    best_for: "Academic, research, R&D lab, postdoc, PhD, pharmaceutical research, national labs"
     fonts: ["EB Garamond", "Source Sans Pro"]
-    status: "planned"
+    font_files: ["eb-garamond-latin-400.woff2", "eb-garamond-latin-700.woff2", "source-sans-pro-latin-400.woff2", "source-sans-pro-latin-600.woff2"]
+    accent_color: "#000000"    # no color — all black/grey per academic convention
+    max_pages: 4               # academic CVs allow 2-4 pages; >4 triggers a warning
+    sub_layouts:
+      - id: "layout-academic"
+        name: "Pure Academia / Postdoc"
+        description: "Full publication list, flexible pages, education featured near top"
+      - id: "layout-biotech-industry"
+        name: "Biotech R&D / Lab Scientist"
+        description: "Experience-first, 2-page cap, patents before selected publications"
+    status: "ready"
+    conditional_placeholders:
+      - "{{RESEARCH_INTERESTS}}: forward-looking scientific thesis — required"
+      - "{{PUBLICATIONS}}: pub list from cv.md; omit section if empty"
+      - "{{EDUCATION_FEATURED}}: full degree + thesis + advisor; required"
+      - "{{GRANTS_AWARDS}}: awards/fellowships from cv.md; omit section if empty"
+      - "{{GOOGLE_SCHOLAR_URL}} + {{GOOGLE_SCHOLAR_DISPLAY}}: from profile.yml; omit if empty"
+      - "{{ORCID}}: from profile.yml; omit if empty"
+      - "{{AFFILIATION}}: current institution from cv.md; omit if empty"
+      - "{{RESEARCH_EXPERIENCE}}: lab/research roles from cv.md"
+      - "{{INDUSTRY_EXPERIENCE}}: industry roles from cv.md; omit section if empty"
 
   - id: "technical-engineering"
     name: "Technical / Engineering"
     file: "technical-engineering.html"
-    description: "Monospace accents, project-forward, competency grid prominent."
-    best_for: "IC engineering roles — software, ML, hardware, systems"
+    description: "JetBrains Mono + Inter. Skills-forward with tiered Core/Exposure tag cloud. Problem→Decision→Result project cards. Sub-layout T4B switches to copper-bronze accent, hardware skills matrix, and tape-out project cards."
+    best_for: "IC engineering — software, ML, hardware, embedded, systems"
     fonts: ["JetBrains Mono", "Inter"]
-    status: "planned"
+    font_files: ["jetbrains-mono-latin-400.woff2", "jetbrains-mono-latin-700.woff2", "inter-latin-400.woff2", "inter-latin-600.woff2"]
+    accent_color: "#0a7ea4"    # teal (T4A). T4B uses #8c6239 (copper-bronze) via body class
+    max_pages: 2
+    sub_layouts:
+      - id: "layout-software"
+        name: "Software & ML Engineer"
+        description: "Teal accent, GitHub/portfolio links, tiered skill tag cloud, software project cards"
+      - id: "layout-hardware-ee"
+        name: "Hardware & Systems EE"
+        description: "Copper-bronze accent, patent link, 4-category hardware skills matrix, tape-out project cards with physical specs"
+    status: "ready"
+    conditional_placeholders:
+      - "{{SUBLAYOUT}}: body class — 'layout-software' (default) or 'layout-hardware-ee'"
+      - "{{TECH_STACK}}: T4A only — tiered tag cloud; Core (≤10) + Exposure (≤8) tiers"
+      - "{{TECH_STACK_HARDWARE}}: T4B only — 4-category matrix (Design/Lab/Debug/Standards)"
+      - "{{PROJECTS}}: T4A only — software/ML project cards with Problem/Decision/Result"
+      - "{{HARDWARE_PROJECTS}}: T4B only — tape-outs, board designs with physical specs"
+      - "{{GITHUB_URL}} + {{GITHUB_DISPLAY}}: T4A only; from profile.yml; omit if empty"
+      - "{{PORTFOLIO_URL}} + {{PORTFOLIO_DISPLAY}}: T4A only; from profile.yml; omit if empty"
+      - "{{PATENT_URL}}: T4B only; from profile.yml; omit if empty"
+      - "{{PATENT_LIST}}: T4B only; curated patents from cv.md; omit section if empty"

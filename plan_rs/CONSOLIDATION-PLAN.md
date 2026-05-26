@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.30
-**Last Updated:** 2026-05-26 -- Phase 2b Gemini review round 3 (HM perspective) incorporated: tech stack proficiency split, Problem→Choice→Result project cards, Lab & Debugging subsection for T4B, physical specs in hardware cards, patents-first in biotech layouts. Plan v1.3 — 3 Gemini review rounds complete, ready for implementation.
+**Version:** 1.31
+**Last Updated:** 2026-05-26 -- Phase 2b implemented: fonts downloaded, academic-research.html + technical-engineering.html built (T4A/T4B sub-layouts via CSS body class), manifest.yml updated, generate-pdf.mjs --max-pages flag added, modes/cv.md updated with all new placeholders + archetype-aware template selector, profile.yml updated, fonts/user/ created, port-manifest.yml updated.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -810,17 +810,17 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 **Goal:** Build Academic/Research and Technical/Engineering templates to complete the 4-template CV system.
 **Detailed plan:** `plan_rs/phase2b-cv-templates.md` (v1.3, 3 Gemini review rounds complete — ready for implementation)
 
-- [ ] Source and commit font woff2 files (EB Garamond, Source Sans Pro, JetBrains Mono, Inter)
-- [ ] Build `templates/cv/academic-research.html` — publications-forward, EB Garamond, no accent color, Education + Publications near top
-- [ ] Build `templates/cv/technical-engineering.html` — skills tag grid, JetBrains Mono accents, project cards, teal accent
-- [ ] Update `templates/cv/manifest.yml` — set status: ready, add font_files arrays
-- [ ] Update `modes/cv.md` — add template-conditional placeholders to fill-logic table ({{PUBLICATIONS}}, {{RESEARCH_INTERESTS}}, {{TECH_STACK}}, {{GITHUB_URL}}, etc.)
-- [ ] Update `config/profile.yml` — add orcid and work_authorization fields
-- [ ] Create `fonts/user/.gitkeep` — user-added font subdirectory
-- [ ] Update `config/port-manifest.yml` + `modes/port.md` — add fonts/user/ as portable path
-- [ ] Update `modes/cv.md` — interactive template selector (Step 0a), work auth conditional, publication reviewer scope, page-count conditional for Template 3, domain skill split instructions
-- [ ] Test: all-4-templates comparison — same JD, Template 3 up to 4 pages, ATS extraction clean on all
-- [ ] Update CONSOLIDATION-PLAN.md Phase 2b ✅
+- [x] Source and commit font woff2 files (EB Garamond, Source Sans Pro, JetBrains Mono, Inter) ✅ 2026-05-26
+- [x] Build `templates/cv/academic-research.html` — EB Garamond, no accent, Research Interests → Education → Publications → Research/Industry Experience → Skills → Grants & Awards ✅ 2026-05-26
+- [x] Build `templates/cv/technical-engineering.html` — JetBrains Mono + Inter, T4A (software, teal) + T4B (hardware, copper-bronze) via CSS body class; Problem→Decision→Result project cards; hardware skills matrix ✅ 2026-05-26
+- [x] Update `templates/cv/manifest.yml` — status: ready, font_files arrays, max_pages:4 for T3, sub_layouts, conditional_placeholders ✅ 2026-05-26
+- [x] Add `--max-pages` flag to `scripts/generate-pdf.mjs` — allows T3 up to 4 pages ✅ 2026-05-26
+- [x] Update `modes/cv.md` — archetype-aware template selector (Step 0e), all new T3/T4 placeholders, publication reviewer scope boundary, sub-layout drafter instructions ✅ 2026-05-26
+- [x] Update `config/profile.yml` — add orcid and patent_url fields ✅ 2026-05-26
+- [x] Create `fonts/user/.gitkeep` ✅ 2026-05-26
+- [x] Update `config/port-manifest.yml` — add fonts/user/ as portable path ✅ 2026-05-26
+- [ ] Update `modes/port.md` — mention fonts/user/ in migration checklist (minor, can be done next session)
+- [ ] Test: all-4-templates comparison — same JD, Template 3 up to 4 pages, ATS extraction clean on all (requires populated cv.md — run when user has real content)
 
 ### Phase 7: Future Concepts (not scheduled — captured here to avoid losing them)
 

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="template-id" content="academic-research">
+<title>{{NAME}} — CV</title>
+<style id="user-tweaks">
+  /* ============================================================
+     CSS VARIABLES — override these for overflow control
+     --margins:        visual page padding (default: 0.6in)
+     --base-font-size: body text size (default: 11px)
+     --bullet-spacing: gap between bullets (default: 0.2em)
+
+     Academic CVs allow up to 4 pages (--max-pages: 4 in manifest).
+     To tighten: reduce --margins to 0.5in, then --base-font-size to 10px.
+  ============================================================ */
+  :root {
+    --base-font-size: 11px;
+    --margins: 0.6in;
+    --bullet-spacing: 0.2em;
+    --accent: #000000;
+    --accent-muted: #555555;
+  }
+
+  @font-face {
+    font-family: 'EB Garamond';
+    src: url('./fonts/eb-garamond-latin-400.woff2') format('woff2'),
+         local('EB Garamond'), local('Georgia');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'EB Garamond';
+    src: url('./fonts/eb-garamond-latin-700.woff2') format('woff2'),
+         local('EB Garamond Bold');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Source Sans Pro';
+    src: url('./fonts/source-sans-pro-latin-400.woff2') format('woff2'),
+         local('Source Sans 3'), local('Arial');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Source Sans Pro';
+    src: url('./fonts/source-sans-pro-latin-600.woff2') format('woff2'),
+         local('Source Sans 3 SemiBold');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    font-family: 'Source Sans Pro', Arial, sans-serif;
+    font-size: var(--base-font-size);
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #ffffff;
+  }
+
+  .page {
+    width: 100%;
+    padding: 0;
+  }
+
+  /* === HEADER === */
+  .header {
+    margin-bottom: 22px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 14px;
+  }
+
+  .header h1 {
+    font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #000;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+    line-height: 1.15;
+  }
+
+  .header-affiliation {
+    font-family: 'Source Sans Pro', Arial, sans-serif;
+    font-size: 11px;
+    color: #555;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  .contact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 0;
+    font-size: 10px;
+    color: #444;
+  }
+
+  .contact-row a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: #bbb;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+
+  .contact-item + .contact-item::before {
+    content: " | ";
+    color: #bbb;
+    margin: 0 6px;
+  }
+
+  /* === SECTIONS === */
+  .section {
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid #999;
+    padding-bottom: 3px;
+    margin-bottom: 12px;
+  }
+
+  /* === RESEARCH INTERESTS === */
+  .research-interests-text {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 12px;
+    line-height: 1.75;
+    color: #1a1a1a;
+    font-style: italic;
+  }
+
+  /* === EDUCATION (featured, near top) === */
+  .edu-item {
+    margin-bottom: 12px;
+  }
+
+  .edu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .edu-degree {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .edu-institution {
+    font-weight: 400;
+    font-style: italic;
+    color: #333;
+  }
+
+  .edu-year {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+  }
+
+  .edu-details {
+    font-size: 10.5px;
+    color: #444;
+    margin-top: 3px;
+    line-height: 1.55;
+  }
+
+  .edu-thesis {
+    font-size: 10.5px;
+    color: #333;
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  .edu-thesis em {
+    font-style: italic;
+  }
+
+  /* === PUBLICATIONS === */
+  .pub-entry {
+    margin-bottom: 10px;
+    padding-left: 16px;
+    position: relative;
+    font-size: 10.5px;
+    line-height: 1.6;
+    color: #222;
+  }
+
+  .pub-entry::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 6px;
+    height: 1px;
+    background: #666;
+  }
+
+  .pub-authors {
+    color: #444;
+  }
+
+  .pub-title {
+    font-weight: 600;
+    color: #000;
+  }
+
+  .pub-venue {
+    font-style: italic;
+    color: #444;
+  }
+
+  .pub-doi {
+    color: #333;
+    text-decoration: underline;
+    text-decoration-color: #ccc;
+    font-size: 10px;
+  }
+
+  /* === RESEARCH EXPERIENCE === */
+  .job {
+    margin-bottom: 16px;
+  }
+
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 2px;
+  }
+
+  .job-company {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .job-period {
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+  }
+
+  .job-role {
+    font-size: var(--base-font-size);
+    font-weight: 600;
+    color: #444;
+    font-style: italic;
+    margin-bottom: 6px;
+  }
+
+  .job-location {
+    font-size: 10px;
+    color: #777;
+    font-style: normal;
+  }
+
+  .job ul {
+    padding-left: 16px;
+    margin-top: 6px;
+  }
+
+  .job li {
+    font-size: 10.5px;
+    line-height: 1.65;
+    color: #2a2a2a;
+    margin-bottom: var(--bullet-spacing);
+  }
+
+  /* === SKILLS === */
+  .skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+  }
+
+  .skill-item {
+    font-size: 10.5px;
+    color: #333;
+  }
+
+  .skill-category {
+    font-weight: 700;
+    color: #000;
+    font-size: 10.5px;
+    font-family: 'EB Garamond', Georgia, serif;
+  }
+
+  /* === GRANTS & AWARDS === */
+  .award-item {
+    margin-bottom: 8px;
+  }
+
+  .award-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .award-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .award-org {
+    font-style: italic;
+    font-weight: 400;
+    color: #555;
+  }
+
+  .award-year {
+    font-size: 10px;
+    color: #777;
+    white-space: nowrap;
+  }
+
+  .award-desc {
+    font-size: 10px;
+    color: #555;
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  /* === PRINT === */
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+
+  /* === PAGE BREAK CONTROL === */
+  .avoid-break,
+  .job,
+  .pub-entry,
+  .edu-item,
+  .award-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header avoid-break">
+    <h1>{{NAME}}</h1>
+    {{#if AFFILIATION}}<div class="header-affiliation">{{AFFILIATION}}</div>{{/if}}
+    <div class="contact-row">
+      <span class="contact-item">{{EMAIL}}</span>
+      {{#if PHONE}}<span class="contact-item">{{PHONE}}</span>{{/if}}
+      {{#if LOCATION}}<span class="contact-item">{{LOCATION}}</span>{{/if}}
+      {{#if GOOGLE_SCHOLAR_URL}}<a class="contact-item" href="{{GOOGLE_SCHOLAR_URL}}">{{GOOGLE_SCHOLAR_DISPLAY}}</a>{{/if}}
+      {{#if ORCID}}<span class="contact-item">ORCID: {{ORCID}}</span>{{/if}}
+      {{#if LINKEDIN_URL}}<a class="contact-item" href="{{LINKEDIN_URL}}">{{LINKEDIN_DISPLAY}}</a>{{/if}}
+      {{#if WORK_AUTH}}<span class="contact-item">{{WORK_AUTH}}</span>{{/if}}
+    </div>
+  </div>
+
+  <!-- RESEARCH INTERESTS -->
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_RESEARCH_INTERESTS}}</div>
+    <div class="research-interests-text">{{RESEARCH_INTERESTS}}</div>
+  </div>
+
+  <!-- EDUCATION (featured near top) -->
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_EDUCATION}}</div>
+    {{EDUCATION_FEATURED}}
+  </div>
+
+  <!-- PUBLICATIONS -->
+  {{#if PUBLICATIONS}}
+  <div class="section">
+    <div class="section-title">{{SECTION_PUBLICATIONS}}</div>
+    {{PUBLICATIONS}}
+  </div>
+  {{/if}}
+
+  <!-- RESEARCH EXPERIENCE -->
+  <div class="section">
+    <div class="section-title">{{SECTION_RESEARCH_EXPERIENCE}}</div>
+    {{RESEARCH_EXPERIENCE}}
+  </div>
+
+  <!-- INDUSTRY EXPERIENCE -->
+  {{#if INDUSTRY_EXPERIENCE}}
+  <div class="section">
+    <div class="section-title">{{SECTION_INDUSTRY_EXPERIENCE}}</div>
+    {{INDUSTRY_EXPERIENCE}}
+  </div>
+  {{/if}}
+
+  <!-- SKILLS -->
+  {{#if SKILLS}}
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_SKILLS}}</div>
+    {{SKILLS}}
+  </div>
+  {{/if}}
+
+  <!-- GRANTS & AWARDS -->
+  {{#if GRANTS_AWARDS}}
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_GRANTS_AWARDS}}</div>
+    {{GRANTS_AWARDS}}
+  </div>
+  {{/if}}
+
+</div>
+</body>
+</html>

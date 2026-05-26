@@ -76,9 +76,16 @@ or note "JD not available in report — tailoring will rely on Block E only."
   ❌ Phone: not set — will be OMITTED from CV (not fabricated)
   ✅ Location: {location value}
   ❌ LinkedIn: not set — will be OMITTED from CV
-  ❌ Google Scholar: not set — will be OMITTED from CV
+  ❌ Google Scholar: not set — will be OMITTED (Template 3 contact row)
+  ❌ ORCID: not set — will be OMITTED (Template 3 contact row)
+  ❌ GitHub: not set — will be OMITTED (Template 4A contact row)
+  ❌ Portfolio URL: not set — will be OMITTED (Template 4A contact row)
+  ❌ Patent URL: not set — will be OMITTED (Template 4B contact row)
+  ❌ Work Authorization: not set — will be OMITTED from CV
   ...
 ```
+
+Only show the fields relevant to the selected template. Template 3: show Google Scholar + ORCID. Template 4A: show GitHub + Portfolio. Template 4B: show Patent URL. Always show: Name, Email, Phone, Location, LinkedIn, Work Auth.
 
 Print ✅ for any field that has a non-empty value; ❌ for any field that is empty.
 If ANY contact field is empty, ask the user:
@@ -89,18 +96,55 @@ If ANY contact field is empty, ask the user:
 If all fields are populated: skip the prompt and continue silently.
 If user responds "pause": exit and let them fill in profile.yml before re-running.
 
-### 0e. Determine template
+### 0e. Determine template and sub-layout
 
+**Step 1 — Resolve template:**
 ```
-1. If user specified a template override (e.g., "use ats-optimized") → use that
+1. If user explicitly named a template (e.g., "use academic-research" or "use T4B") → use that
 2. Check profile.yml → cv.template_overrides for a mapping matching the detected archetype
 3. Fall back to profile.yml → cv.default_template (default: "classic-professional")
 ```
 
-Read `templates/cv/manifest.yml` to validate the selected template file exists and has status "ready".
+Read `templates/cv/manifest.yml` to validate the selected template file exists and has `status: "ready"`.
 If status is "planned": tell user this template is not yet implemented, fall back to "classic-professional".
 
-Store: `TEMPLATE_ID`, `TEMPLATE_FILE` path (e.g., `templates/cv/classic-professional.html`).
+**Step 2 — Determine sub-layout** (Templates 3 and 4 only):
+
+For Template 3 (`academic-research`):
+- Default sub-layout: `layout-academic` (Pure Academia)
+- Override to `layout-biotech-industry` if archetype includes "biotech" or "life-sciences" AND the target role appears to be industry (not academic). Apply automatically if the JD mentions GMP/GLP, pipeline, IND, or clinical. Confirm with user if ambiguous.
+
+For Template 4 (`technical-engineering`):
+- Default sub-layout: `layout-software` → set `{{SUBLAYOUT}}` to `layout-software`
+- Override to `layout-hardware-ee` → set `{{SUBLAYOUT}}` to `layout-hardware-ee` if archetype includes "hardware", "EE", "electrical", "embedded", "RF", or "semiconductor"
+
+**Step 3 — Show archetype-aware recommendation prompt** (only if template not explicitly specified by user):
+
+```
+📐 Recommended template (based on your archetype):
+  🎯 {Template Name} — {Sub-layout Name}
+     Why: {one sentence matching archetype to template strengths}
+
+  [Enter] Accept recommendation
+  [1]  T1: ATS-Optimized — General Corporate (keyword density, Lever/Greenhouse safe)
+  [1b] T1b: ATS-Optimized — PhD-to-Industry (dissertation promoted to Experience block)
+  [2]  T2: Classic Professional — Business & Leadership (consulting, finance, enterprise)
+  [2b] T2b: Classic Professional — Biotech Industry (patents + condensed pubs at bottom)
+  [3]  T3: Academic/Research — Pure Academia (EB Garamond, full pubs, up to 4 pages)
+  [3b] T3b: Academic/Research — Biotech R&D Industry (experience-first, 2-page cap)
+  [4]  T4: Technical/Engineering — Software & ML (teal, GitHub, tiered skill tags)
+  [4b] T4b: Technical/Engineering — Hardware & Systems EE (copper-bronze, hardware matrix)
+```
+
+**STOP. Wait for user input.** If the user presses Enter: use the recommendation. If the user types a number/letter: switch to that template and sub-layout. Store the result as `TEMPLATE_ID` and `SUBLAYOUT`.
+
+**Special sub-layout instructions triggered by SUBLAYOUT value:**
+
+- `T1b` (PhD-to-Industry): drafter must promote the candidate's PhD research entry from Education into the Experience section as "Graduate Researcher, [University], [dates]" with engineering-metric bullets. Education section is condensed to degree + year only. Skills section moved above Experience.
+- `T3b` (Biotech Industry): 2-page cap enforced (pass `--max-pages=2` to generate-pdf.mjs instead of `--max-pages=4`). Section order: Header → R&D Experience → Scientific Skills Matrix → Education → Patents → Selected Publications (max 3, condensed).
+- `T4b` (Hardware EE): set `{{SUBLAYOUT}}` = `layout-hardware-ee`. Use `{{TECH_STACK_HARDWARE}}` and `{{HARDWARE_PROJECTS}}` placeholders instead of `{{TECH_STACK}}` and `{{PROJECTS}}`. Include `{{PATENT_LIST}}` section.
+
+Store final: `TEMPLATE_ID`, `TEMPLATE_FILE`, `SUBLAYOUT`, `MAX_PAGES` (default 2; 4 for T3/T3a; 2 for T3b).
 
 ### 0f. Check Playwright prerequisite (skip if FAST_MODE)
 
@@ -338,6 +382,173 @@ Bullet ordering rules (apply BOTH together):
 
 Reorder skill categories so JD-matching categories appear first.
 
+---
+
+**Template 3 (Academic/Research) — additional placeholders:**
+
+**`{{RESEARCH_INTERESTS}}`** — Forward-looking scientific thesis statement (2-4 sentences). Must state what the candidate intends to study/solve and why it matters, NOT a backward-looking summary of past work. Source from cv.md research section. If cv.md only contains past work descriptions, ask the user: "What research direction are you actively pursuing?" before generating.
+
+**`{{PUBLICATIONS}}`** — Publication list. Drafter copies free-form citations from cv.md and reformats each entry into:
+```html
+<div class="pub-entry">
+  <span class="pub-authors">{Author list — copy verbatim from cv.md, do not construct}</span>
+  <span class="pub-title">"{Title}"</span>
+  <span class="pub-venue">{Journal/Conference, Year}</span>
+  <a class="pub-doi" href="https://doi.org/{DOI}">DOI</a>
+</div>
+```
+Copy author names and DOIs verbatim from cv.md — do NOT infer, reconstruct, or complete partial citations. If a field is missing from cv.md, omit that field (do not fabricate). Omit the entire section if cv.md has no publications. Order: newest first.
+
+**`{{EDUCATION_FEATURED}}`** — Full education block using the `edu-item` class:
+```html
+<div class="edu-item">
+  <div class="edu-header">
+    <span class="edu-degree">{Degree} — <span class="edu-institution">{Institution}</span></span>
+    <span class="edu-year">{Year or expected date}</span>
+  </div>
+  <div class="edu-details">Advisor: {Name} · GPA: {if relevant and recent}</div>
+  <div class="edu-thesis">Thesis: <em>{Title}</em></div>
+</div>
+```
+Omit `edu-details` or `edu-thesis` lines if the information is not in cv.md.
+
+**`{{GRANTS_AWARDS}}`** — Academic awards, fellowships, grants:
+```html
+<div class="award-item">
+  <div class="award-header">
+    <span class="award-title">{Award Name} — <span class="award-org">{Granting Body}</span></span>
+    <span class="award-year">{Year}</span>
+  </div>
+  <div class="award-desc">{Brief description, 1 line max — optional}</div>
+</div>
+```
+Omit the entire section if empty.
+
+**`{{AFFILIATION}}`** — Current institution or department (e.g., "Department of Chemistry, MIT"). From cv.md most recent role/affiliation. Omit if empty.
+
+**`{{RESEARCH_EXPERIENCE}}`** — Research roles and lab positions. Uses the same `job` / `job-header` HTML structure as `{{EXPERIENCE}}`.
+
+**`{{INDUSTRY_EXPERIENCE}}`** — Industry (non-academic) roles. Same `job` structure. Omit the entire section if the candidate has no industry experience.
+
+**Reviewer instruction for Template 3 publications:** The reviewer checks publications for internal consistency only — do author names appear elsewhere in cv.md consistently? Does the year range make sense? Does the venue name look like a real journal or conference? The reviewer does NOT fetch DOIs, verify author lists against external databases, or cross-reference citation counts. Explicitly note this scope boundary in the reviewer prompt.
+
+---
+
+**Template 4 (Technical/Engineering) — additional placeholders:**
+
+**`{{TECH_STACK}}`** — T4A (Software/ML) only. Two-tier tag cloud:
+```html
+<div class="skills-tiers">
+  <div class="skills-tier">
+    <span class="skills-tier-label">Core / Production</span>
+    <div class="skills-grid">
+      <span class="skill-tag skill-core">Python</span>
+      <span class="skill-tag skill-core">PyTorch</span>
+    </div>
+  </div>
+  <div class="skills-tier">
+    <span class="skills-tier-label">Tools / Exposure</span>
+    <div class="skills-grid">
+      <span class="skill-tag skill-exposure">Go</span>
+      <span class="skill-tag skill-exposure">Terraform</span>
+    </div>
+  </div>
+</div>
+```
+"Core / Production": daily-use tools present in shipped work. Cap at 10. "Tools / Exposure": side projects, learning, occasional scripts. Cap at 8. Order: languages first, then frameworks, then tools/platforms. If the distinction cannot be inferred from cv.md, ask the user: "Which of these tools do you use daily in production vs. occasionally?" before generating. Prioritise JD-matching tools for Core tier.
+
+**`{{TECH_STACK_HARDWARE}}`** — T4B (Hardware EE) only. 4-category matrix:
+```html
+<div class="skills-matrix">
+  <div class="skill-category-row">
+    <span class="skill-category-label">Design & Simulation</span>
+    <span class="skill-category-items">Altium, Cadence Allegro, LTspice, ANSYS Maxwell, MATLAB/Simulink</span>
+  </div>
+  <div class="skill-category-row">
+    <span class="skill-category-label">Hardware & Lab</span>
+    <span class="skill-category-items">VNAs, oscilloscopes, power analyzers, bench supplies, soldering stations</span>
+  </div>
+  <div class="skill-category-row">
+    <span class="skill-category-label">Debug & Bring-Up</span>
+    <span class="skill-category-items">TDR oscilloscopes, spectrum analyzers, thermal cameras, JTAG debuggers, logic analyzers</span>
+  </div>
+  <div class="skill-category-row">
+    <span class="skill-category-label">Standards & Protocols</span>
+    <span class="skill-category-items">IEC 61000, PCIe Gen 4, DDR4, MISRA C, ISO 26262</span>
+  </div>
+</div>
+```
+Populate from cv.md skills section. Omit any category that has no matching items from cv.md.
+
+**`{{PROJECTS}}`** — T4A (Software/ML) only. Problem → Decision → Result project cards:
+```html
+<div class="project-card">
+  <div class="project-header">
+    <span class="project-title">{Project Name}</span>
+    <span class="project-stack">{Tech1} · {Tech2} · {Tech3}</span>
+  </div>
+  <div class="project-problem">{What was broken, slow, or missing — one line, factual}</div>
+  <div class="project-choice">{The architectural/technical decision made AND the alternative rejected — one line}</div>
+  <div class="project-metric">{Quantified outcome — must include a number}</div>
+  <ul>
+    <li>{Supporting detail}</li>
+  </ul>
+</div>
+```
+All three fields (problem, choice, metric) are required. If cv.md lacks the technical decision or the rejected alternative for a project, prompt the user: "For project [{name}]: what was the key technical decision you made, and what did you choose NOT to do?" before generating.
+
+**`{{HARDWARE_PROJECTS}}`** — T4B only. Same Problem → Decision → Result structure with added physical specs line:
+```html
+<div class="project-card">
+  <div class="project-header">
+    <span class="project-title">{Product/Design Name}</span>
+    <span class="project-stack">{Technology node · Layer count · Key standard}</span>
+  </div>
+  <div class="project-specs">{Power · Efficiency · Temperature range · Other physical params}</div>
+  <div class="project-problem">{What was broken, slow, or missing}</div>
+  <div class="project-choice">{Technical decision made and alternative rejected}</div>
+  <div class="project-metric">{Quantified outcome}</div>
+  <ul>
+    <li>{Supporting detail}</li>
+  </ul>
+</div>
+```
+`project-specs` is hardware-specific — omit if physical parameters are not in cv.md.
+
+**`{{GITHUB_URL}}`, `{{GITHUB_DISPLAY}}`** — T4A only. From `profile.yml → candidate.github`. Display: strip `https://` prefix. Omit entire element if empty.
+
+**`{{PORTFOLIO_URL}}`, `{{PORTFOLIO_DISPLAY}}`** — T4A only. From `profile.yml → candidate.portfolio_url`. Display: strip `https://` prefix. Omit entire element if empty.
+
+**`{{PATENT_URL}}`** — T4B only. From `profile.yml → candidate.patent_url`. Omit element if empty.
+
+**`{{PATENT_LIST}}`** — T4B and T2b only. Curated patent list (max 4 entries):
+```html
+<div class="patent-item">
+  <div class="patent-header">
+    <span class="patent-title">{Patent Title}</span>
+    <span class="patent-number">{Patent Number — e.g. US11234567B2}</span>
+  </div>
+  <span class="patent-year">{Filing or grant year}</span>
+</div>
+```
+Copy patent numbers and titles verbatim from cv.md. Do NOT infer or construct patent numbers. Omit section if cv.md has no patents. Order: most recent first.
+
+**`{{SECTION_HARDWARE_PROJECTS}}`** — Localized heading for T4B projects section: "Tape-outs, Board Designs & Shipped Products"
+
+**`{{SECTION_PATENTS}}`** — "Patents" (T4B) or "Selected Patents" (T2b/T3b)
+
+**`{{SECTION_RESEARCH_INTERESTS}}`** — "Research Interests" (T3)
+
+**`{{SECTION_PUBLICATIONS}}`** — "Publications" (T3)
+
+**`{{SECTION_RESEARCH_EXPERIENCE}}`** — "Research Experience" (T3)
+
+**`{{SECTION_INDUSTRY_EXPERIENCE}}`** — "Industry Experience" (T3 — only used if section is present)
+
+**`{{SECTION_GRANTS_AWARDS}}`** — "Grants & Awards" (T3)
+
+---
+
 ### 1h. Apply deterministic cuts (Layer 1)
 
 Before rendering final HTML, apply these hard rules — UNLESS an item is protected by CV Generation Rules:
@@ -433,7 +644,7 @@ Write the filled, cut, and cleaned HTML to `output/draft-{company-slug}.html`.
 **If FAST_MODE is set:** Tell the user:
 > "Draft written to `output/draft-{company-slug}.html`. --fast mode: no reviewer, no PDF generated.
 > Edit the file, then run:
-> `node scripts/generate-pdf.mjs output/draft-{company-slug}.html output/cv-{lastname}-{company-slug}-{YYYY-MM-DD}.pdf`"
+> `node scripts/generate-pdf.mjs output/draft-{company-slug}.html output/cv-{lastname}-{company-slug}-{YYYY-MM-DD}.pdf --max-pages={MAX_PAGES}`"
 
 **STOP. Do not proceed to Step 2.**
 
@@ -654,7 +865,7 @@ The script prints a contact summary and exits with:
 Run the PDF generation script. Suppress stderr to avoid Playwright/Chromium noise in the terminal:
 
 ```
-node scripts/generate-pdf.mjs output/draft-{company-slug}.html output/cv-{lastname}-{company-slug}-{YYYY-MM-DD}.pdf 2>/dev/null
+node scripts/generate-pdf.mjs output/draft-{company-slug}.html output/cv-{lastname}-{company-slug}-{YYYY-MM-DD}.pdf --max-pages={MAX_PAGES} 2>/dev/null
 ```
 
 Capture stdout and exit code from generate-pdf.mjs. The script prints: `Pages: {N}`, `Size: {N} KB`, `OVERFLOW: ...` if applicable, and the canonical URI lines:

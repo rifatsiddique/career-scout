@@ -36,11 +36,13 @@ mkdirSync(resolve(projectRoot, 'output'), { recursive: true });
 async function generatePDF() {
   const args = process.argv.slice(2);
 
-  let inputPath, outputPath, format = 'letter';
+  let inputPath, outputPath, format = 'letter', maxPages = 2;
 
   for (const arg of args) {
     if (arg.startsWith('--format=')) {
       format = arg.split('=')[1].toLowerCase();
+    } else if (arg.startsWith('--max-pages=')) {
+      maxPages = parseInt(arg.split('=')[1], 10);
     } else if (!inputPath) {
       inputPath = arg;
     } else if (!outputPath) {
@@ -154,9 +156,10 @@ async function generatePDF() {
     console.log(`   Path: ${relPath}`);
 
     // Exit code encodes page count for overflow detection by the calling agent
-    // 0 = success (≤2 pages), 2 = overflow (>2 pages), 1 = error
-    if (pageCount > 2) {
-      console.warn(`OVERFLOW: ${pageCount} pages (target: 2)`);
+    // 0 = success (≤maxPages), 2 = overflow (>maxPages), 1 = error
+    // --max-pages defaults to 2; academic-research template passes --max-pages=4
+    if (pageCount > maxPages) {
+      console.warn(`OVERFLOW: ${pageCount} pages (target: ${maxPages})`);
       process.exit(2);
     }
 

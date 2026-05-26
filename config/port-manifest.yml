@@ -139,8 +139,8 @@ groups:
         description: "Writing samples used by setup to calibrate your voice"
 
   - id: customizations
-    name: "Custom Templates"
-    description: "User-created CV templates and domain packs (system defaults are not overwritten)"
+    name: "Custom Templates & Fonts"
+    description: "User-created CV templates, domain packs, and custom fonts (system defaults are not overwritten)"
     files:
       - path: "templates/cv/*.html"
         strategy: copy-missing
@@ -153,6 +153,12 @@ groups:
         glob: true
         required: false
         description: "Custom domain packs (e.g., product-management.yml, biotech.yml)"
+
+      - path: "fonts/user/*"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "User-added custom fonts (e.g., proprietary employer fonts). System-shipped fonts in fonts/*.woff2 are NOT ported — they re-clone with the repo. Only fonts you added manually to fonts/user/ need porting."
 
   - id: output
     name: "Output"
