@@ -11,6 +11,8 @@ Designed for human-in-the-loop: AI evaluates, drafts, and coaches. The user revi
 
 **Primary runtime:** Gemini CLI. Also compatible with Claude Code, Copilot, OpenCode, and any CLI following the open agent skill standard.
 
+> **Repo note:** This folder is developed inside a monorepo and auto-synced to a standalone `career-scout` repo on push. Commit changes here as normal — the sync is automatic. Do not push directly to the standalone repo.
+
 ---
 
 ## Data Contract (CRITICAL)
