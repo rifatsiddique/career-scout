@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.28
-**Last Updated:** 2026-05-26 -- Phase 4 Group C tests (T2,T5,T6,T7,T11,T12,T15,T16) marked TBD with prerequisites. Phase 2b Gemini review incorporated (Q1-Q7 resolved, domain skill splits, work auth strategy, interactive template selector, fonts/user/, 4-page cap for T3). Phase 2b v1.1 ready for implementation.
+**Version:** 1.30
+**Last Updated:** 2026-05-26 -- Phase 2b Gemini review round 3 (HM perspective) incorporated: tech stack proficiency split, Problem→Choice→Result project cards, Lab & Debugging subsection for T4B, physical specs in hardware cards, patents-first in biotech layouts. Plan v1.3 — 3 Gemini review rounds complete, ready for implementation.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -808,7 +808,7 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 ### Phase 2b: Templates 3 & 4 (next up)
 
 **Goal:** Build Academic/Research and Technical/Engineering templates to complete the 4-template CV system.
-**Detailed plan:** `plan_rs/phase2b-cv-templates.md` (v1.1, Gemini review complete — ready for implementation)
+**Detailed plan:** `plan_rs/phase2b-cv-templates.md` (v1.3, 3 Gemini review rounds complete — ready for implementation)
 
 - [ ] Source and commit font woff2 files (EB Garamond, Source Sans Pro, JetBrains Mono, Inter)
 - [ ] Build `templates/cv/academic-research.html` — publications-forward, EB Garamond, no accent color, Education + Publications near top

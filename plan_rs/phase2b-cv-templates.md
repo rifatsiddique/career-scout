@@ -1,7 +1,7 @@
 # Phase 2b: CV Templates 3 & 4 (Academic/Research + Technical/Engineering)
 
-**Version:** 1.1
-**Last Updated:** 2026-05-26 -- v1.1: Incorporated Gemini review — Q1-Q7 resolved, domain-specific skill splits added (EE/SWE/Biotech), work auth placement strategy, interactive template selector, dynamic education placement, fonts/user/ directory, 4-page cap for Template 3
+**Version:** 1.3
+**Last Updated:** 2026-05-26 -- v1.3: Incorporated Gemini review round 3 (HM perspective) — tech stack proficiency split (Core/Production vs Tools/Exposure), Problem→Technical Choice→Result project card structure, Lab & Debugging subsection for T4B, physical metrics in hardware cards, patents-first ordering in biotech layouts
 **Parent Plan:** CONSOLIDATION-PLAN.md §11 Phase 2 (deferred items)
 **Depends on:** Phase 2 complete — `modes/cv.md`, `scripts/generate-pdf.mjs`, `templates/cv/manifest.yml`, and the two existing templates are all in place. No infrastructure changes needed.
 
@@ -230,8 +230,8 @@ The skills tag section is the highest ATS risk. If tags render as a CSS grid, co
 | `fonts/inter-latin-400.woff2` | **Add** | Template 4 |
 | `fonts/inter-latin-600.woff2` | **Add** | Template 4 |
 | `templates/cv/manifest.yml` | **Update** | Set `status: ready` for both; add `font_files` arrays; add `max_pages: 4` for Template 3; add placeholder notes |
-| `modes/cv.md` | **Update** | Add new template-conditional placeholders to fill-logic table (§ placeholder map); add orcid/google_scholar/work_auth contact fields to Step 0 contact audit; add interactive template selector (Step 0a); add page-count conditional for Template 3; add reviewer scope boundary for publications |
-| `config/profile.yml` | **Update** | Add `orcid: ""` and `work_authorization: ""` fields under candidate; confirm `google_scholar`, `github`, `portfolio_url` already present |
+| `modes/cv.md` | **Update** | Add new template-conditional placeholders to fill-logic table; add orcid/google_scholar/work_auth/patent_url contact fields to Step 0 contact audit; add archetype-aware template selector (Step 0a) with sub-layout recommendation; add page-count conditional for Template 3; add reviewer scope boundary for publications; add T4B hardware sub-layout drafter instructions; add T3B biotech sub-layout drafter instructions; add T1B PhD-transition drafter instructions |
+| `config/profile.yml` | **Update** | Add `orcid: ""`, `work_authorization: ""`, `patent_url: ""` fields under candidate; confirm `google_scholar`, `github`, `portfolio_url` already present |
 | `fonts/user/.gitkeep` | **Create** | Empty placeholder so the user/ subdirectory exists in the repo |
 | `config/port-manifest.yml` | **Update** | Add `fonts/user/` as a portable path with a note explaining user-added fonts live here |
 | `modes/port.md` | **Update** | Mention `fonts/user/` in the file migration checklist |
@@ -304,29 +304,35 @@ In `modes/cv.md`, find the placeholder map table (Step 1 of the drafter workflow
 - `{{GRANTS_AWARDS}}` — Template 3 only; from cv.md; omit section if empty
 - `{{GOOGLE_SCHOLAR_URL}}` — Template 3 only; from profile.yml
 - `{{ORCID}}` — Template 3 only; from profile.yml
-- `{{TECH_STACK}}` — Template 4 only; 12-18 JD-relevant skills from cv.md skills section
-- `{{GITHUB_URL}}` — Template 4 only; from profile.yml
-- `{{PORTFOLIO_URL}}` — Template 4 only; from profile.yml
+- `{{TECH_STACK}}` — Template 4A only; 12-18 JD-relevant skills from cv.md skills section
+- `{{GITHUB_URL}}` — Template 4A only; from profile.yml
+- `{{PORTFOLIO_URL}}` — Template 4A only; from profile.yml
+- `{{HARDWARE_PROJECTS}}` — Template 4B only; tape-outs, board designs, shipped products from cv.md
+- `{{PATENT_URL}}` — Template 4B, 2B only; from profile.yml (omit if empty)
+- `{{PATENT_LIST}}` — Template 4B, 2B only; curated patent entries from cv.md; omit section if empty
 
-Also: add `orcid` to the contact audit step (Step 0d) so `scripts/audit-contact.mjs` knows it exists.
+Also: add `orcid`, `patent_url` to the contact audit step (Step 0d).
 
-**Verify:** Read the placeholder table in `modes/cv.md`. All 9 new entries present with correct template scope labels.
+**Verify:** Read the placeholder table in `modes/cv.md`. All 12 new entries present with correct template scope labels.
 
 ### Step 6: Update config/profile.yml
 
-Add `orcid: ""` field under `candidate:` with an inline comment (leave blank to omit from CV). Confirm `google_scholar`, `github`, and `portfolio_url` are already present from Phase 2 polish.
+Add `orcid: ""`, `work_authorization: ""`, and `patent_url: ""` fields under `candidate:` with inline comments (leave blank to omit from CV). Confirm `google_scholar`, `github`, and `portfolio_url` are already present from Phase 2 polish.
 
 **Verify:** Read `config/profile.yml`. All contact fields present. No duplicate keys.
 
-### Step 7: All-4-templates comparison test
+### Step 7: All-4-templates + sub-layout comparison test
 
-Using a single evaluation report, generate CVs in all 4 templates for the same JD. Compare:
-- Content is the same (same bullets, same keywords) — only layout differs
-- All 4 PDFs are 1-2 pages
-- ATS text extraction works for all 4
-- Each template's visual design clearly matches its intended audience
-- Template 3: publications section renders correctly with mock DOI data
-- Template 4: skills tags render as flat text in ATS extraction, not garbled
+Using a single evaluation report, generate CVs in all 4 templates for the same JD. Also generate T4B (hardware) and T3B (biotech industry) with domain-appropriate mock data. Compare:
+- Content is the same across T1A/T2A/T3A/T4A — only layout differs
+- T3A: up to 4 pages; all others 1-2 pages
+- ATS text extraction works for all templates — no garbled skills, no column-order issues
+- T4A: teal accent, flat software tags, GitHub link visible
+- T4B: copper-bronze accent, 3-category hardware matrix, no GitHub, patent link visible
+- T3A: EB Garamond, education above experience, full publication list
+- T3B: 2-page cap enforced, experience above education, condensed pubs at bottom
+- T1B: PhD dissertation rendered as an Experience entry, not under Education
+- Template selector shows archetype-aware recommendation with correct sub-layout detected
 
 **Final gate:** If all 7 steps pass, update `CONSOLIDATION-PLAN.md` Phase 2b checklist to ✅.
 
@@ -407,6 +413,270 @@ For biotech researchers applying to industry roles, academic CVs often need an "
 
 ---
 
+## 6c. Gemini Review Round 2 — Sub-Layout Architecture
+
+### Findings accepted
+
+**Core finding:** Template 4 is SWE-biased; Template 3 is academia-biased; neither serves the mid-senior EE or the PhD-to-industry transitioner well.
+
+**Gemini's recommendation:** A "polymorphic template" system — 4 base templates × 2 sub-layouts each via CSS body class + conditional sections. No new HTML files.
+
+**Our acceptance:** Yes, with one adjustment to Gemini's `{{#if}}` syntax — we don't have a Handlebars engine. Sub-layouts are implemented via:
+1. CSS `body.layout-X` class (the drafter injects this into the HTML)
+2. Drafter instructions in `modes/cv.md` specify which sections to include/omit/reorder per sub-layout
+3. The HTML templates include all sections; CSS hides unused ones via `body.layout-software .hardware-only { display: none; }` and vice versa
+
+### Sub-layout map (final decisions)
+
+| Template | Sub-layout A (default) | Sub-layout B (variant) |
+|----------|------------------------|------------------------|
+| T1: ATS-Optimized | General Corporate | PhD-to-Industry Transition |
+| T2: Classic Professional | Business & Leadership | Biotech Industry Specialist |
+| T3: Academic/Research | Pure Academia / Postdoc | Biotech R&D / Lab Scientist |
+| T4: Technical/Engineering | Software & ML Engineer | Hardware & Systems EE |
+
+### 6c.1 T4B — Hardware & Systems EE sub-layout
+
+**Body class:** `<body class="layout-hardware-ee">`
+
+**Changes from T4A (Software/ML):**
+- Accent color: `#8c6239` (copper-bronze) instead of teal `#0a7ea4`
+- Contact row: LinkedIn link + `{{PATENT_URL}}` (if set) instead of GitHub + portfolio
+- Skills section: 3-category hardware matrix (see §6b.1) instead of flat tag cloud
+- Projects section renamed to "Tape-outs, Board Designs & Shipped Products" — uses new placeholder `{{HARDWARE_PROJECTS}}`
+- No GitHub or portfolio links
+
+**New placeholders for T4B:**
+
+| Placeholder | Description | Source | Required? |
+|-------------|-------------|--------|-----------|
+| `{{HARDWARE_PROJECTS}}` | Tape-outs, board designs, shipped products — each with: product name, technology node / layer count, key metric (yield, EMC class, production volume) | cv.md projects/products section | Yes for T4B; omit for T4A |
+| `{{PATENT_URL}}` | Link to Google Patents or USPTO profile | `config/profile.yml → candidate.patent_url` | Optional — omit if empty |
+| `{{PATENT_LIST}}` | Curated patent list (1-4 entries): number, title, filing year | cv.md patents section | Optional — section omitted if empty |
+
+**Hardware project card format:**
+```html
+<div class="project-card">
+  <div class="project-header">
+    <span class="project-title">48V-to-1V Intermediate Bus Converter ASIC</span>
+    <span class="project-stack">TSMC 28nm · 12-layer PCB · DDR4 routing</span>
+  </div>
+  <div class="project-metric">Taped out Q3 2023 — 94% first-silicon yield; production at 50k units/yr</div>
+  <ul class="project-bullets">
+    <li>...</li>
+  </ul>
+</div>
+```
+
+**CSS hiding strategy:**
+```css
+body.layout-software .hardware-only { display: none; }
+body.layout-hardware-ee .software-only { display: none; }
+```
+
+All hardware-specific sections/elements get `class="hardware-only"`. All software-specific sections get `class="software-only"`. The drafter picks the body class; the CSS hides the rest.
+
+### 6c.2 T3B — Biotech R&D / Lab Scientist sub-layout
+
+**Body class:** `<body class="layout-biotech-industry">`
+
+**Changes from T3A (Pure Academia):**
+- Page cap: **2 pages** (not 4) — industry biotech hiring managers reject long academic CVs
+- Section order: Header → R&D & Pipeline Experience → Scientific Skills Matrix → Education → Selected Patents & Publications (condensed, 3 entries max) → Grants & Awards
+- Research Interests section replaced by a Pipeline Impact statement (2-3 sentences, pipeline progression framing)
+- Publications: moved to bottom, max 3 entries, condensed format (no full author list — just "Smith J. et al.")
+
+**Drafter instruction addition to `modes/cv.md`:** If archetype includes "biotech" or "life-sciences" AND target role is "industry" (not "academic"), suggest T3B by default instead of T3A. Show this in the template selector with a justification line.
+
+### 6c.3 T1B — PhD-to-Industry Transition sub-layout
+
+**Body class:** `<body class="layout-phd-transition">`
+
+**Changes from T1A (General Corporate):**
+- Dissertation promoted to Experience section: rendered as a work experience entry ("Graduate Researcher, [University], [start]–[end]") with engineering-metric bullets, not a sub-bullet under Education
+- Education section: condensed to degree + year only (thesis title moved to the Experience entry)
+- Skills section elevated above Experience — PhD candidates need skills visibility since Experience looks thin
+
+**Drafter instruction:** If candidate has `education.degree` containing "PhD" or "Doctorate" AND `work_experience` has ≤1 entry (0-2 YOE industry), default to T1B and note this in the template selector.
+
+**No new placeholders needed** — uses existing `{{EDUCATION}}` and `{{EXPERIENCE}}` with a different drafter composition rule.
+
+### 6c.4 T2B — Biotech Industry Specialist sub-layout
+
+**Body class:** `<body class="layout-biotech-business">`
+
+**Changes from T2A (Business & Leadership):**
+- Bottom section: "Selected Patents & Publications" (condensed, using `{{PATENT_LIST}}`)
+- Scientific credibility line added to Summary/Profile section (e.g., "Inventor on 3 US patents; senior author on Nature Methods paper")
+- Uses `{{PATENT_LIST}}` placeholder (shared with T4B)
+
+### 6c.5 Updated template selector (replaces §6b.3)
+
+The selector now recommends a specific sub-layout based on archetype detection, not just a numbered list:
+
+```
+Recommended template (based on your archetype):
+  🎯 Template 4 — Hardware & Systems EE layout
+     Why: Hardware EE archetype detected. This layout uses a copper-bronze theme,
+     suppresses GitHub links, and renders your skills as a lab/simulation matrix
+     instead of a software tag cloud.
+
+  [Enter] Accept recommendation
+  [1]  T1A: ATS-Optimized — General Corporate
+  [1b] T1B: ATS-Optimized — PhD-to-Industry (promotes dissertation to Experience)
+  [2]  T2A: Classic Professional — Business & Leadership
+  [2b] T2B: Classic Professional — Biotech Industry Specialist
+  [3]  T3A: Academic/Research — Pure Academia / Postdoc (up to 4 pages)
+  [3b] T3B: Academic/Research — Biotech R&D Industry (2-page cap, experience-first)
+  [4]  T4A: Technical/Engineering — Software & ML Engineer
+  [4b] T4B: Technical/Engineering — Hardware & Systems EE
+```
+
+The recommendation is a single line added before the list. The user can always override by typing a number.
+
+### 6c.6 What was pushed back from Gemini round 2
+
+- `{{#if}}` Handlebars syntax: not implemented — we use CSS body-class hiding + drafter conditional instructions instead. Simpler, no new engine, same result.
+- "Massive library" of 8+ separate HTML files: not implemented — 2 HTML files with CSS sub-layouts.
+- Per-template accent colors are accepted (copper-bronze for T4B) but the exact hex is ours to set, not Gemini's.
+
+## 6d. Gemini Review Round 3 — Hiring Manager Perspective
+
+### Findings accepted
+
+**Source:** Gemini evaluated templates through 3 HM personas — SWE/ML, Electrical Engineering, and Biotech/Pharma R&D.
+
+---
+
+### 6d.1 Tech Stack Proficiency Split (T4A — SWE/ML)
+
+**Problem:** A flat tag cloud of 18 tools signals keyword-stuffing to a technical HM. They can't tell if the candidate uses Python in production or completed a weekend tutorial.
+
+**Fix:** Split `{{TECH_STACK}}` into two tiers instead of a flat list:
+
+```html
+<!-- {{TECH_STACK}} renders as two labeled rows: -->
+<div class="skills-section">
+  <div class="skills-tier">
+    <span class="skills-tier-label">Core / Production</span>
+    <div class="skills-grid">
+      <span class="skill-tag skill-core">Python</span>
+      <span class="skill-tag skill-core">PyTorch</span>
+      <span class="skill-tag skill-core">Kubernetes</span>
+    </div>
+  </div>
+  <div class="skills-tier">
+    <span class="skills-tier-label">Tools / Exposure</span>
+    <div class="skills-grid">
+      <span class="skill-tag skill-exposure">Go</span>
+      <span class="skill-tag skill-exposure">Terraform</span>
+    </div>
+  </div>
+</div>
+```
+
+**Drafter instruction (addition to `modes/cv.md`):** When filling `{{TECH_STACK}}` for T4A, split skills into two groups. "Core / Production": technologies used in the candidate's primary work (daily use, shipped code). "Tools / Exposure": technologies used in side projects, course work, or occasional scripts. Cap Core at 10 items, Exposure at 8 items. If the distinction can't be determined from cv.md, ask the user before generating.
+
+**CSS:** `skill-core` tags: solid teal border. `skill-exposure` tags: dashed teal border (visually lighter but still scannable).
+
+---
+
+### 6d.2 Project Card Structure Update (T4A and T4B)
+
+**Problem:** "Metric + bullets" is still too shallow for a technical HM. They want to know *why* the candidate made the choices they did — what tradeoffs were considered.
+
+**Updated project card format** (replaces §3.4 for T4A, and the hardware format in §6c.1 for T4B):
+
+```html
+<div class="project-card">
+  <div class="project-header">
+    <span class="project-title">Distributed Training Harness</span>
+    <span class="project-stack">PyTorch · NCCL · Kubernetes · AWS</span>
+  </div>
+  <div class="project-problem">Problem: single-GPU training bottleneck at 100M parameter models</div>
+  <div class="project-choice">Decision: NCCL ring-allreduce over parameter server — 3× better bandwidth at 8 GPUs</div>
+  <div class="project-metric">Result: training time reduced 40% across 8-GPU cluster</div>
+  <ul class="project-bullets">
+    <li>...</li>
+  </ul>
+</div>
+```
+
+**Fields:**
+- `project-problem` — one line: what was broken, slow, or missing (factual, no buzzwords)
+- `project-choice` — one line: the architectural or technical decision made and why (must name the alternative considered)
+- `project-metric` — one line: quantified outcome
+- `project-bullets` — 2-3 supporting details
+
+**Drafter rule:** All three primary fields (problem, choice, metric) are required. If cv.md doesn't have enough information to fill `project-choice`, prompt the user with a specific question: "For project [name]: what was the key technical decision you made, and what alternative did you reject?"
+
+**ATS note:** `project-problem`, `project-choice`, and `project-metric` are plain `<div>` with text content — safe for extraction.
+
+---
+
+### 6d.3 Lab & Debugging Capabilities Subsection (T4B — Hardware EE)
+
+**Problem:** Hardware HMs want to know the candidate can debug in the lab at 2am, not just design on paper. The T4B skills matrix (§6b.1) doesn't explicitly call out debugging tools.
+
+**Fix:** Add a fourth category to the hardware skills matrix:
+
+**Updated T4B skills matrix (4 categories, not 3):**
+- "Design & Simulation Tools" — Altium, Cadence, LTspice, ANSYS, MATLAB/Simulink
+- "Hardware & Lab Equipment" — oscilloscopes, power analyzers, bench supplies, VNAs, soldering stations
+- **"Debug & Bring-Up"** — TDR oscilloscopes, spectrum analyzers, thermal cameras, logic analyzers, signal integrity tools, JTAG debuggers
+- "Standards & Protocols" — IEC 61000, PCIe Gen 4, DDR4, MISRA C, ISO 26262
+
+This is a CSS/HTML addition within the existing `layout-hardware-ee` body class section. The drafter populates "Debug & Bring-Up" from cv.md tools/equipment mentions; if absent, the category is omitted (same rule as other optional sections).
+
+---
+
+### 6d.4 Physical Metrics in Hardware Project Cards (T4B)
+
+**Problem:** Hardware projects without physical specs look like student projects. A HM expects to see layer counts, power levels, and speed standards.
+
+**Updated hardware project card format** (extends §6c.1, applies §6d.2 problem/choice/result structure):
+
+```html
+<div class="project-card hardware-only">
+  <div class="project-header">
+    <span class="project-title">48V-to-1V Intermediate Bus Converter ASIC</span>
+    <span class="project-stack">TSMC 28nm · 12-layer PCB · DDR4/PCIe Gen 4</span>
+  </div>
+  <div class="project-specs">10W · 94% efficiency · −40°C to 125°C operating range</div>
+  <div class="project-problem">Problem: discrete solution exceeded board area budget by 40%</div>
+  <div class="project-choice">Decision: integrated ASIC over module — met thermal envelope without heatsink at production volume</div>
+  <div class="project-metric">Result: taped out Q3 2023; 94% first-silicon yield; 50k units/yr production</div>
+  <ul class="project-bullets"><li>...</li></ul>
+</div>
+```
+
+`project-specs` is a new line (physical parameters: power, efficiency, temperature, layer count, voltage rails). Required for T4B; omitted for T4A.
+
+---
+
+### 6d.5 Patents-First Ordering in Biotech Layouts (T3B and T2B)
+
+**Problem:** Publications are currently listed before patents in the T3B/T2B condensed bottom section. Biotech HMs at pharma/startup value patents higher — they represent commercial IP, not academic output.
+
+**Fix:** Section order in T3B and T2B biotech layouts: "Patents" subsection (styled with a distinct label) appears before "Selected Publications." If no patents exist, the subsection is omitted without affecting the Publications block.
+
+**Updated bottom-of-CV section structure (T3B and T2B):**
+```
+Patents (if any) — {{PATENT_LIST}}
+Selected Publications (max 3, condensed) — {{PUBLICATIONS}} (capped)
+```
+
+**`{{RESEARCH_INTERESTS}}` forward-looking instruction (T3A and T3B):** Add drafter rule to `modes/cv.md`: the Research Interests section must be written as a forward-looking scientific thesis statement — i.e., what problem the candidate intends to solve and why it matters commercially or scientifically. It must NOT be a backward-looking summary of past work (that belongs in Experience). Ask the user: "What research direction are you most actively pursuing?" if cv.md only describes completed work.
+
+---
+
+### 6d.6 What was pushed back from Gemini round 3
+
+- `templates/writing-rules.md` reference: Gemini invented this filename. Anti-slop rules live in `modes/_shared.md`. No new file needed.
+- General validation of Anti-Slop rules: confirmed, no plan change required.
+
+---
+
 ## 7. What Is NOT Changing
 
 To be explicit — the following are **in scope for Gemini to verify the plan does not accidentally break**:
@@ -424,3 +694,5 @@ To be explicit — the following are **in scope for Gemini to verify the plan do
 | Date | Round | Summary |
 |------|-------|---------|
 | 2026-05-26 | Round 1 | All Q1-Q7 resolved. Added domain-specific skill splits (6b.1), work auth placement strategy (6b.2), interactive template selector (6b.3), biotech bridge section (6b.4). Plan updated to v1.1. |
+| 2026-05-26 | Round 2 | Persona analysis (Mid-Senior EE, Biotech Specialist, PhD Transitioner). Sub-layout architecture adopted: T4B Hardware EE (copper-bronze, hardware projects, lab matrix), T3B Biotech Industry (2-page, experience-first, condensed pubs), T1B PhD-to-Industry (dissertation→Experience block), T2B Biotech Business (patent list at bottom). CSS body-class hiding strategy. `{{GITHUB_URL}}` syntax rejected for T4B. New placeholders: {{HARDWARE_PROJECTS}}, {{PATENT_URL}}, {{PATENT_LIST}}. Handlebars `{{#if}}` syntax rejected — drafter instructions + CSS used instead. Plan updated to v1.2. |
+| 2026-05-26 | Round 3 | HM perspective (SWE/ML HM, EE HM, Biotech/Pharma HM). Tech stack proficiency split: Core/Production vs Tools/Exposure tiers (§6d.1). Project card updated to Problem→Technical Choice→Result structure, drafter must name the alternative rejected (§6d.2). T4B: Lab & Debugging subsection added as 4th skills category (§6d.3). Hardware project cards get physical specs line (§6d.4). Biotech layouts: Patents subsection before Publications, {{RESEARCH_INTERESTS}} must be forward-looking not backward-looking (§6d.5). `templates/writing-rules.md` filename rejected — anti-slop lives in `modes/_shared.md`. Plan updated to v1.3. |
