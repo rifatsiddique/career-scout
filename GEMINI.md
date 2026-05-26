@@ -86,6 +86,12 @@ Do NOT proceed with evaluations until setup or port is complete.
 
 ---
 
+## Planning Rules
+
+- **Port-profile file tracking (planning stage):** If a plan introduces new User layer files, renames existing ones, or changes what a user needs to carry over during a profile migration, the plan MUST include an explicit step to update `modes/port.md` with the revised file list. This keeps the port mode accurate as the project evolves — a user running `port` after a version upgrade must be able to migrate every relevant file without manual archaeology.
+
+---
+
 ## Ethical Use
 
 - NEVER submit an application without the user reviewing it first. Stop before

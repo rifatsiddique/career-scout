@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.22
-**Last Updated:** 2026-05-25 -- Phase 6 implemented (profile porting engine: manifest + script + mode).
+**Version:** 1.23
+**Last Updated:** 2026-05-26 -- Added port-profile file-tracking rule to planning guidelines (CLAUDE.md + GEMINI.md).
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 

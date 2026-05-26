@@ -26,6 +26,7 @@
   2. How each step will be tested/verified before moving on
 - Save all plans to `plan_rs/` with descriptive filenames (e.g., `plan_rs/phase1-evaluation-modes.md`).
 - After every plan is finalized, review `plan_rs/CONSOLIDATION-PLAN.md` and update it if the plan introduces new roadmap items, changes to architecture, or scope additions.
+- **Port-profile file tracking (planning stage):** If a plan introduces new User layer files, renames existing ones, or changes what a user would need to carry over during a profile migration, the plan MUST include an explicit step to update `modes/port.md` with the revised file list. This keeps the port mode accurate as the project evolves — a user running `port` after a version upgrade must be able to migrate every relevant file without manual archaeology.
 
 ## Commit Discipline
 
