@@ -1,7 +1,7 @@
 # Plan: Phase 7B — Advanced Scout
 
-**Version:** 1.0
-**Last Updated:** 2026-05-26 -- Initial draft, ready for Gemini review
+**Version:** 1.1
+**Last Updated:** 2026-05-26 -- Gemini Round 1 incorporated: rigour levels (§5.3), pivot/exploration mode (§9.1), OR-consolidated query strategy (§4.2), niche board additions (§4.3), reject log rolling cap (§5.2), full-JD enrichment (§6.3), anti-bot fallback explicit (Step 5), idle nudge (§11.11)
 **Parent Plan:** CONSOLIDATION-PLAN.md §Phase 7, item 7b
 **Depends on:** Phase 3 (scan mode baseline — web search, inbox drain, portal scanner, scan-history.tsv dedup)
 
@@ -76,7 +76,14 @@ Auto-reject — I'll silently filter these out without showing them to you:
     ✗ Contract / C2C / freelance roles
     ✗ Roles requiring active security clearance
     ✗ Roles more than 1 level below your target (junior/mid when targeting senior)
-    ✗ Companies with < 20 employees (unless priority list)
+    ✗ Very small companies (fewer than 20 employees) — unless on your priority list
+
+Scout strictness — how many results do you want to see?
+  [1] Strict   — Only show me high-confidence matches (≥ 75). Less noise, fewer results.
+  [2] Moderate — Show strong matches (≥ 70) and flag borderline ones. (Default)
+  [3] Explorer — Show everything above 50, including uncertain matches. Maximum coverage.
+  (Priority companies always surface regardless of this setting.)
+  →
 ```
 
 All answers saved to `config/scout-preferences.yml`.
@@ -142,15 +149,18 @@ Queries are constructed dynamically from:
 - `scout-preferences.yml → auto_reject` (negative keywords appended)
 - `_profile.md` archetype keywords (adds domain-specific terms like "GaN", "LLC", "buck-boost")
 
-Run 3-5 queries per scan. Deduplicate results across queries before evaluation.
+**Multi-city strategy:** Run a consolidated OR query first — `"Target Role" ("City A" OR "City B" OR Remote)` — rather than separate queries per city. If the consolidated result set has fewer than 5 results, fall back to individual per-city queries. This avoids 4× API calls for the common case while preserving coverage when OR queries underperform.
+
+Run 3-5 queries per scan. Deduplicate results across queries before scoring.
 
 ### 4.3 Niche board selection (archetype-driven)
 
 | Archetype | Niche boards added |
 |-----------|-------------------|
-| Hardware / EE | EE Times Jobs, IEEE Job Site, EEWeb, EDN Jobs |
+| Hardware / EE | EE Times Jobs, IEEE Job Site, EEWeb, EDN Jobs, SemiWiki Jobs, Embedded.com Jobs |
+| Hardware / EE (cleared, opt-in) | ClearanceJobs — only included if `scout-preferences.yml → clearance: true` |
 | Software / ML | HackerNews "Who's Hiring", Stack Overflow Jobs, RemoteOK |
-| Biotech / Life Sciences | BioSpace, BioPharma Dive Jobs, Science Careers (AAAS) |
+| Biotech / Life Sciences | BioSpace, MassBio, FierceBiotech Jobs, BioPharma Dive Jobs, Science Careers (AAAS) |
 | Academic / Research | HigherEdJobs, Academic Positions, Nature Jobs |
 | General / PM | Built In (city-specific), Product Hunt Jobs |
 
@@ -195,6 +205,20 @@ auto_reject:
   excluded_companies: []     # companies the user has already rejected/burned bridges
 ```
 
+**Reject log cap:** `data/scout-reject-log.md` is capped at the most recent **200 entries** (rolling). When the limit is hit, the oldest entries are removed. This keeps the file auditable without growing unboundedly over months of scanning.
+
+### 5.3 Scout Rigour Levels
+
+Configurable via `scout-preferences.yml → rigour`. Controls how aggressively the quick-pass filter cuts borderline roles.
+
+| Level | Config value | General roles shown | Low-confidence (50-69) | Priority companies |
+|-------|-------------|--------------------|-----------------------|-------------------|
+| Strict | `high` | ≥ 75 only | Silently discarded | Always shown |
+| Moderate | `moderate` (default) | ≥ 70 | Shown with `[low-confidence]` tag | Always shown |
+| Explorer | `explorer` | ≥ 50 | Shown with `[low-confidence]` tag | Always shown |
+
+Priority companies **always bypass the rigour threshold** — a tier-1 priority company with a borderline match is always shown, regardless of rigour setting. The rigour level only filters general (non-priority) roles.
+
 ---
 
 ## 6. Fit Scoring (Quick Pass)
@@ -213,12 +237,26 @@ NOT a full A-G evaluation — that runs later when the user explicitly evaluates
 
 ### 6.2 Routing by quick score
 
-| Score | Action |
-|-------|--------|
-| ≥ 70 | Add to `data/pipeline.md` as `Pending` — shown in summary |
-| 50-69 | Add to pipeline with `[low-confidence]` tag — shown in summary with flag |
-| Priority company (any score) | Add to pipeline with `[priority-co]` tag — always shown |
-| < 50 (non-priority) | Silently discard — logged to `data/scout-reject-log.md` |
+Score thresholds are determined by `scout-preferences.yml → rigour` (see §5.3).
+
+| Score | Moderate (default) | High rigour | Explorer |
+|-------|--------------------|-------------|----------|
+| ≥ 75 | Add to pipeline | Add to pipeline | Add to pipeline |
+| 70-74 | Add to pipeline | Discard (logged) | Add to pipeline |
+| 50-69 | Pipeline, `[low-confidence]` tag | Discard (logged) | Pipeline, `[low-confidence]` tag |
+| < 50, non-priority | Discard (logged) | Discard (logged) | Discard (logged) |
+| Priority company (any score) | Always add, `[priority-co]` tag | Always add | Always add |
+
+### 6.3 Full JD enrichment (non-walled sources)
+
+For roles that pass the quick-pass threshold with a score ≥ 65, the scout attempts a second fetch to capture the full job description — enabling richer A-G evaluation when the user later runs `evaluate`.
+
+**Source constraints:**
+- **P0 (priority company career pages):** Always enriched — Playwright already fetched the full page.
+- **P1/P2 web search results pointing to non-walled pages** (company careers, Wellfound, Glassdoor with preview): Playwright enrichment attempted.
+- **LinkedIn/Indeed URLs:** Not enriched. Both sites require authenticated sessions that Playwright can't replicate. The snippet captured during web search is stored as-is; the user reads the full JD via the URL during evaluation.
+
+The enriched JD text is stored in the pipeline.md entry (or a sidecar file in `data/`) and passed to `evaluate` automatically when the user evaluates the role.
 
 ---
 
@@ -286,6 +324,9 @@ markets:
 remote_preference: "remote-friendly"   # "remote-first" | "remote-friendly" | "onsite-only"
 
 niche_boards: "auto"           # "auto" (archetype-driven) | list of board names | "none"
+clearance: false               # set true to include ClearanceJobs in HW/EE niche boards
+
+rigour: "moderate"             # "high" (≥75, strict) | "moderate" (≥70, default) | "explorer" (≥50, wide net)
 
 auto_reject:
   keywords: ["contract", "C2C", "corp-to-corp", "freelance", "1099", "clearance required", "active TS", "active Secret"]
@@ -294,11 +335,31 @@ auto_reject:
   excluded_companies: []       # companies to always skip (burned bridges, bad culture, etc.)
   max_level_drop: 1            # reject if role is more than N levels below target
 
+exploration_mode:              # Optional — for career pivoters targeting a new field
+  enabled: false
+  pivot_role: ""               # e.g. "Embedded Systems Engineer"
+  bridge_keywords: []          # e.g. ["C++", "RTOS", "microcontroller", "SPI", "I2C"]
+  score_tolerance: 15          # lower the pipeline threshold by this many points for pivot roles
+  # When enabled: a parallel query runs using pivot_role + bridge_keywords.
+  # Scoring for pivot results uses bridge_keywords instead of legacy archetype keywords.
+  # score_tolerance prevents bridge roles from being silently rejected by the keyword signal.
+
 drift_check:
   scan_count: 0                # increments each scan; resets when preferences updated
   alert_after_scans: 3         # trigger drift warning after this many scans without update
   alert_after_days: 14         # also trigger if > N days since last_reviewed
 ```
+
+### 9.1 Exploration Mode — How It Works
+
+When `exploration_mode.enabled: true`:
+
+1. **Parallel pivot query:** The query constructor generates an additional search using `pivot_role` + `bridge_keywords` (instead of archetype keywords from `_profile.md`).
+2. **Adjusted scoring:** Pivot-query results are scored against `bridge_keywords` for the keyword signal — not the candidate's legacy archetype keywords. This prevents a hardware EE's pivot to firmware roles from being knocked down by low C++/RTOS keyword coverage.
+3. **Score tolerance:** The pipeline threshold is lowered by `score_tolerance` points for pivot results only. With `score_tolerance: 15` and `rigour: moderate` (threshold 70), pivot roles are added at ≥ 55 instead of ≥ 70.
+4. **Labelling:** Pivot roles added to pipeline get a `[pivot]` tag in the summary so the user knows they came from the exploration query.
+
+**Implementation note:** This is an optional enhancement — implement after core 7B (Steps 1-10) is working and tested. The schema is defined now so the preference setup can ask about it without a code change later.
 
 ---
 
@@ -357,7 +418,9 @@ Function (in `modes/scan.md` as drafter instructions) that builds 3-5 web search
 
 For each company in `target-companies.yml`: run Playwright to fetch the careers page, extract role listings (title + location + URL), fuzzy-match against target_roles. Update `last_scraped` date.
 
-**Verify:** Given a company with a known open role, the scraper finds it. Given a company with no open roles, it returns empty cleanly (no crash). Playwright timeout handled gracefully (note "could not scrape" in summary, continue).
+**Anti-bot fallback:** If Playwright fails (timeout, CAPTCHA, JS-heavy ATS that blocks headless), automatically fall back to a targeted web search: `"{Company Name}" "{target_role}" careers 2026`. Parse the snippet results for matching roles. Note the fallback in the summary (`⚠️ Vicor: Playwright blocked → web search fallback`).
+
+**Verify:** Given a company with a known open role, the scraper finds it. Given a company with no open roles, it returns empty cleanly (no crash). Given a simulated Playwright failure, the fallback web search runs and its results appear in the summary with the fallback note.
 
 ### Step 6: Web search discovery + niche boards
 
@@ -387,6 +450,26 @@ Print the structured summary (§7). After writing to pipeline, update `scout-pre
 
 Add `config/scout-preferences.yml` and `config/target-companies.yml` to the core port group. Mark Phase 7B implemented in CONSOLIDATION-PLAN.md.
 
+### Step 11: Idle nudge + post-setup automation hint
+
+**11.1 Idle nudge:** At session start (when the user opens career-scout and runs any mode other than `scan`), silently check `scout-preferences.yml → last_scan`. If it is more than 4 days ago and scout-preferences.yml is populated, append a low-profile nudge at the end of the response:
+
+```
+💡 It's been X days since your last scout run. Type 'scan' to discover new openings.
+```
+
+This check runs at most once per session and only if scout is configured.
+
+**11.2 Post-setup automation hint:** After `scan --setup` completes, suggest that the user set up a recurring scan via their CLI's scheduling feature. Keep the language CLI-agnostic — describe the concept without naming a specific command:
+
+```
+💡 Tip: You can automate this scan to run on a schedule (e.g., every weekday morning)
+   so you never miss a fresh posting. Check your CLI's scheduling or cron support
+   to set it up — just point it at the 'scan' command.
+```
+
+This is informational only — career-scout does not set up cron jobs itself.
+
 ---
 
 ## 12. What Is NOT Changing
@@ -399,19 +482,9 @@ Add `config/scout-preferences.yml` and `config/target-companies.yml` to the core
 
 ---
 
-## 13. Open Questions for Gemini Review
+## 13. Open Questions
 
-**Q1 — Quick-pass scoring vs. keyword match only:** Is the 3-signal quick score (§6.1) the right heuristic, or should we simplify to just title match + location match? The keyword coverage signal requires reading archetype keywords from `_profile.md`, which adds latency but improves signal. Is the added complexity worth it?
-
-**Q2 — LinkedIn/Indeed web search approach:** Searching Google for `site:linkedin.com/jobs ...` returns job previews but not full JD text — only the snippet and title. Is the snippet enough for quick-pass scoring, or do we need a second Playwright pass to fetch the full JD? If so, how do we handle LinkedIn's login wall?
-
-**Q3 — Playwright anti-bot for company career pages:** Some large companies (Google, Apple, Nvidia) use JS-heavy career pages or Workday/Greenhouse/Lever ATS embeds that Playwright may struggle to scrape. Should we have a fallback: if Playwright fails on a priority company page, run a web search targeting that company's career page domain instead?
-
-**Q4 — Niche board list completeness:** The archetype-to-board mapping in §4.3 covers the main cases. Are there important boards missing for hardware EE specifically? (e.g., semiconductor-specific job boards, IEEE member job board, defense/aerospace job boards)
-
-**Q5 — scout-reject-log.md size:** The reject log could grow large over time (dozens of rejects per scan × many scans). Should we cap it (keep last 500 entries), or is it fine to let it grow? The user may want to audit it occasionally to verify the AI isn't over-filtering.
-
-**Q6 — Multi-city query strategy:** For a user with 4 target cities, do we run 1 query with all cities OR-ed together, or 4 separate queries per city? OR-ed queries are faster but may miss city-specific results that search engines don't surface well for OR queries.
+All 6 original questions resolved in Round 1 (2026-05-26). See §14 for Gemini's answers and the resolution applied.
 
 ---
 
@@ -419,4 +492,16 @@ Add `config/scout-preferences.yml` and `config/target-companies.yml` to the core
 
 | Date | Round | Summary |
 |------|-------|---------|
-| (pending) | Round 1 | — |
+| 2026-05-26 | Round 1 | 3 persona lenses (Busy/Efficiency, Pivot Seeker, Non-Technical). Q1-Q6 all answered. Incorporated: rigour levels (§5.3), pivot/exploration mode (§9.1, schema + how-it-works), OR-consolidated query strategy (§4.2), niche board additions (HW/EE: SemiWiki, Embedded.com, ClearanceJobs opt-in; Biotech: MassBio, FierceBiotech), reject log rolling 200-entry cap (§5.2), full-JD enrichment with login-wall caveat (§6.3), anti-bot fallback explicit in Step 5, idle nudge + post-setup automation hint (Step 11). |
+
+**Q1 resolution:** Keep 3-signal scoring. "Systems Engineer" title ambiguity makes keyword coverage essential; latency of reading `_profile.md` is negligible (cached in session).
+
+**Q2 resolution:** Enrich on score ≥ 65 for non-walled sources only. LinkedIn/Indeed URLs stay snippet-only — login wall prevents Playwright enrichment. Full JD available to user via URL during `evaluate`. See §6.3.
+
+**Q3 resolution:** Anti-bot fallback made explicit in Step 5: Playwright failure → targeted web search with `"{Company}" "{role}" careers {year}`. Noted in summary with ⚠️ tag.
+
+**Q4 resolution:** Added SemiWiki, Embedded.com, ClearanceJobs (opt-in via `clearance: true`) for HW/EE. Added MassBio, FierceBiotech for Biotech. See §4.3.
+
+**Q5 resolution:** Rolling 200-entry cap on `scout-reject-log.md`. Oldest entries dropped when limit hit. See §5.2.
+
+**Q6 resolution:** Consolidated OR query first; fall back to individual per-city queries if < 5 results. See §4.2.

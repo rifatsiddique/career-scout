@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.33
-**Last Updated:** 2026-05-26 -- Phase 7B plan drafted: plan_rs/phase7b-advanced-scout.md (v1.0) — 4-tier source strategy, priority company scraping, Option C (brief confirm) + Option B (AI filters), 3-signal quick-pass scoring, drift detection, new config files (scout-preferences.yml, target-companies.yml). 7A Shadow CV shelved (two installations cover the edge case). Previously: Phase 2b complete.
+**Version:** 1.34
+**Last Updated:** 2026-05-26 -- Phase 7B plan v1.1: Gemini Round 1 incorporated — rigour levels, pivot/exploration mode, OR-consolidated queries, niche board additions, reject log cap, full-JD enrichment (non-walled only), anti-bot fallback explicit, idle nudge. All 6 open questions resolved.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -859,8 +859,8 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 
 #### 7b: Advanced Scout — Playwright Scraping + LinkedIn ⭐ TOP PRIORITY
 
-**Plan:** `plan_rs/phase7b-advanced-scout.md` (v1.0, 2026-05-26) — detailed spec ready for Gemini review. 6 open questions (Q1-Q6) documented at end of plan.
-**Status:** Plan drafted, pending Gemini review and implementation scheduling.
+**Plan:** `plan_rs/phase7b-advanced-scout.md` (v1.1, 2026-05-26) — Gemini Round 1 incorporated. All 6 open questions resolved. Ready for implementation.
+**Status:** Plan finalized. Implementation not yet scheduled.
 
 **What it is:** Extending Scout beyond API portals to cover companies that don't offer Greenhouse/Ashby/Lever APIs. Three levels, each independently shippable:
 
