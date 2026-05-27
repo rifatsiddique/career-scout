@@ -692,11 +692,16 @@ Added to pipeline:
   + {Company} | {Title} | {source}
 
 🚫 Auto-rejected ({auto_rejected}): {breakdown by reason, e.g. "9 contract, 4 clearance-required, 3 below-level, 2 expired"}
-   Tip: run 'scan --rejected' to audit the last 15 discards and catch any false negatives.
 Duplicates skipped ({duplicates}): already in pipeline or scan history
 
+**If auto_rejected > 0:** Ask immediately (no flag needed):
+```
+Want to quickly check the {auto_rejected} I filtered out — make sure nothing slipped through? [y/n]
+```
+- **yes** → execute the `--rejected` handler (Step 6) inline; display the last {min(auto_rejected, 15)} discards
+- **no** → proceed
+
 Run 'pipeline' to triage the new entries.
-Run 'evaluate <url>' on any role to get the full A-G report.
 ```
 
 **No new roles variant:**

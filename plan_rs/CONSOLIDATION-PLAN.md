@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.40
-**Last Updated:** 2026-05-26 -- AI guidance/conversational improvements: warm invitation for unconfigured Advanced Scout (scan.md Step 0f), concrete 3-option empty-scan guidance (Step 4), post-setup first-scan offer (Step 0e), Phase 7B upgrade prompt for existing users (AGENTS.md), active GOOD_FIT+ CV offer in evaluate.md (Block E), conversational empty-pipeline routing in pipeline-triage.md, Phase 7 status row + scan --setup section in README.md.
+**Version:** 1.41
+**Last Updated:** 2026-05-27 -- Conversational UX pass 2 (18 changes across 7 files): AGENTS.md warm first-time greeting + returning-user dashboard + interview-scheduled/debrief session-start checks; setup.md writing-samples yes/no + post-setup "search now?" offer; evaluate.md PARTIAL_MATCH gap discussion + deep-research nudge + TOO_JUNIOR/OVERQUALIFIED strategy offer; cv.md per-bullet flagged-rewording yes/no + DOCX format-selection ask + post-PDF interview-prep offer; pipeline-triage.md smart curator + batch offer (≥4 rows) + post-triage CV offer; scan.md inline rejection audit offer; interview-prep.md 48h urgency check + post-debrief status update.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 

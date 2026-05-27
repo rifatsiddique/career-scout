@@ -166,11 +166,17 @@ If FAIL: state the contradiction explicitly. Do not calculate composite. Recomme
 - Acknowledge the gap directly — don't minimize it
 - Provide strategy IF user wants to pursue: evidence to build, how to negotiate title
 - Recommended action: skip unless strategic reason
+- Then ask: "This role is significantly above your current level. Is there a strategic reason you'd still like to pursue it — for example, a dream company or a stretch role? [y/n]"
+  - **yes** → give a concrete "how to close the gap" plan: which skills to demonstrate, how to frame the cover letter, whether to negotiate title or start at a lower level
+  - **no** → "Makes sense — I'll note it as a skip."
 
 **If OVERQUALIFIED (2+ levels down):**
 - Provide downlevel negotiation strategy if user wants to pursue
 - How to de-emphasize seniority signals in materials
 - Recommended action: skip unless specific reason (comp, lifestyle, pivot)
+- Then ask: "You're overqualified for this role. Sometimes that's intentional — lower stress, foot in the door, or a specific company. Worth pursuing anyway? [y/n]"
+  - **yes** → advise on how to de-emphasize seniority and frame the narrative so it doesn't look like a step down
+  - **no** → "Got it — noted as a skip."
 
 ---
 
@@ -517,10 +523,35 @@ If the HTML was not generated, show:
 📂 Report: reports/{REPORT_NUM}-{slug}-{date}.md
 ```
 
-What to do next:
-  1. Generate a tailored CV → cv
-  2. Quick editable draft first → cv --fast
-  3. [If composite ≥ 80 only] After submitting and landing an interview → interview-prep {company-slug}
+**Conversational follow-ups (print immediately after the summary — one block, no stacking):**
 
-💡 [P3 nudge — only if composite ≥ 80]: Once you submit and they schedule an interview, run:
-   interview-prep {company-slug}
+If fit = PARTIAL_MATCH (65–79):
+```
+This is borderline — there are real gaps but also real strengths. Want me to walk you
+through the specific gaps and whether any are closeable with your current experience? [y/n]
+```
+- **yes** → revisit Block B gap table; for each hard blocker, give a concrete mitigation plan (adjacent experience, framing strategy, or honest "this one's a hard blocker")
+- **no** → proceed to next steps
+
+If fit ≥ GOOD_FIT (≥80) AND composite ≥ 80 (already handled in Block E — skip here):
+*(GOOD_FIT+ already offers CV generation in Block E. Do not repeat here.)*
+
+If fit = HARD_MISMATCH or POOR_FIT (< 65):
+```
+This one's not a strong match. Want to know what role type would be a better fit given your background? [y/n]
+```
+- **yes** → based on the candidate's strongest dimensions from Block B, suggest 1-2 adjacent role types that would score higher
+- **no** → skip
+
+If fit ≥ PARTIAL_MATCH (≥ 65) — always add this after any fit-specific prompt above:
+```
+Want a deeper look at {Company}'s strategy and culture before deciding?
+I can research their roadmap, recent moves, and hiring signals. [y/n]
+```
+- **yes** → read `modes/deep.md` and execute for this company
+- **no** → proceed to next steps
+
+What to do next:
+  1. Generate a tailored CV → cv (or cv --fast for a quick editable draft)
+  2. Look deeper into the company → deep {company-slug}
+  3. After submitting and landing an interview → interview-prep {company-slug}

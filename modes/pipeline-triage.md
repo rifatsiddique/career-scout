@@ -25,6 +25,30 @@ Here's how to fill it:
 
 Then stop.
 
+### Step 1b: Smart Curation (fires before evaluation begins)
+
+Count the pending rows. Check whether any have a quick-pass score in their Notes column (format: `score:NN`).
+
+**If ≥ 4 pending rows:** Offer to batch-evaluate all at once:
+```
+You have {N} jobs queued. I can evaluate them all in one go — want me to process
+the full list now? [y/n]
+```
+- **yes** → read `modes/batch.md` and execute immediately
+- **no** → continue with the smart curation below
+
+**If 1–3 pending rows (or user said no to batch):** Sort by quick-pass score (Notes column) descending; rows without scores go last. Pitch the top match by name:
+```
+Your best queued match looks like {Company} — {Role} ({score}/100 quick-pass score).
+Want to start there? [y/n]
+```
+- **yes** → process that URL first (then continue with remaining rows below)
+- **no** → ask "Which one would you like to start with?" and let the user name one, OR proceed in queue order
+
+If no entries have a score: skip the pitch and proceed in queue order.
+
+---
+
 ### Step 2: For Each Pending URL
 
 Process sequentially (parallel processing is a Phase 5 enhancement):
@@ -92,11 +116,21 @@ For each missing prep doc (max 3 shown):
 If more than 3 are missing: add one line `... and {N} more Interview rows without prep docs.`
 If all Interview rows have prep docs: print nothing (no nudge).
 
+**Post-triage CV offer (fires when ≥ 1 GOOD_FIT+ result exists):**
+
+Find the highest-scoring GOOD_FIT+ result from the triage. Ask:
+```
+{Company} ({score}/100) looks like your best bet. Want me to generate a tailored CV
+for it right now? [y/n]
+```
+- **yes** → read `modes/cv.md` and execute for that company's report
+- **no** → show "What to do next" and stop
+
 ```
 What to do next:
-  1. Evaluate the top pending job → paste its URL
-  2. Generate a CV for a role you're moving forward on → cv
-  3. Update a status → tell me: "move {company} to {status}"
+  1. Generate a CV for a role you're moving forward on → just say "cv for {company}"
+  2. Tell me to update a status → "move {company} to Applied"
+  3. Prep for an interview → "interview prep for {company}"
 ```
 
 ---

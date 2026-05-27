@@ -21,7 +21,8 @@
       "Bash(Get-ChildItem 'C:\\\\Work\\\\Git-Python\\\\career-scout\\\\config\" | Select-Object Name *)",
       "Bash(Select-Object Name)",
       "Bash(Write-Host \"---\")",
-      "Bash(Get-ChildItem \"C:\\\\Work\\\\Git-Python\\\\career-scout\\\\modes\\\\\" | Select-Object Name)"
+      "Bash(Get-ChildItem \"C:\\\\Work\\\\Git-Python\\\\career-scout\\\\modes\\\\\" | Select-Object Name)",
+      "Bash(Get-ChildItem *)"
     ],
     "additionalDirectories": [
       "C:\\Work\\Local_GitClones"

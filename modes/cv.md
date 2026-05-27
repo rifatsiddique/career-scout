@@ -817,15 +817,24 @@ so the user can reply naturally (e.g., "1: keep, 2: change to exactly 'Led therm
 {list any items explicitly protected — "per your 'always include patent count' rule", etc.}
 {or: "(none — no CV Generation Rules are set)"}
 
-### Flagged rewording (needs your decision):
-{If flags exist:}
-1. [FLAG] '{reworded text}' — original: '{original cv.md text}'
-2. [FLAG] '{reworded text}' — original: '{original cv.md text}'
-
-For each flagged item: Keep | Soften | Drop
-Or provide exact text: '2: "exact replacement here"'
+### Flagged rewording (your sign-off needed):
 {If no flags:}
 (No flagged items — all rewording passed the backtrack test.)
+
+{If flags exist:}
+Go through each one — for each, just say y (keep the tailored version) or n (revert to your original wording):
+
+{For each flag, present individually:}
+  {N}. I changed:
+       Original: "{original cv.md text}"
+       Tailored: "{reworded text}"
+       Does the tailored version accurately reflect your experience? [y/n]
+
+  — y: keep tailored version
+  — n: revert to original
+  — or type exact replacement text to use something different
+
+(Collect all responses in one reply if you prefer — e.g. "1y 2n 3: 'exact text here'")
 
 **Draft HTML:** output/draft-{company-slug}.html — you can edit this file directly before I generate the PDF.
 
@@ -847,6 +856,20 @@ If user requests changes → re-read draft from disk, apply edits, then proceed 
 ---
 
 ## Step 5: Generate PDF + Verify
+
+### 5a-pre. Format Selection (ask once if user hasn't specified)
+
+**If `DOCX_MODE` is not `none` (user already passed `--docx` or `--docx-only`):** skip this question.
+
+**If `SHOW_DOCX_HINT` is true (first time generating, or user hasn't used DOCX before):** ask:
+
+> "Ready to generate your PDF. Many application portals also require a Word document
+>  for their ATS uploader. Would you like both a PDF and a Word (.docx) version? [y/n]"
+
+- **yes** → set `DOCX_MODE = pdf_and_docx`; write `{"hints": {"docx_export": true}}` to `data/.feature-hints.json`
+- **no** → set `DOCX_MODE = none`; write `{"hints": {"docx_export": true}}` to mark hint as shown
+
+**If `SHOW_DOCX_HINT` is false:** skip — do not ask again. User already knows about the option.
 
 ### 5a. Contact info audit (MANDATORY — runs before PDF)
 
@@ -960,26 +983,21 @@ Relay the script's `📂 Open:` and `   Path:` lines from stdout:
 ```
 {relay "📂 Open: file:///..." line from generate-pdf.mjs stdout}
 {relay "   Path: ..." line from generate-pdf.mjs stdout}
+```
 
+**Post-PDF interview-prep offer (ask once, only if composite ≥ 65):**
+
+> "Your CV is ready! While the job description is fresh, want me to also prep
+>  likely interview questions and map your stories to this role? [y/n]"
+
+- **yes** → read `modes/interview-prep.md` and execute for this company + role
+- **no** → show "What to do next" below and stop
+
+```
 What to do next:
   1. Open the PDF above and review before submitting
-  2. Submit your application — then update status → pipeline
-  3. Once they schedule an interview → interview-prep {company-slug}
-```
-
-[First-time hint — only if SHOW_DOCX_HINT is true]:
-```
-ℹ️  New: you can now generate a high-fidelity Word version with `cv --docx`.
-   (This message shows once — see README.md for full DOCX options.)
-```
-After printing this hint: write `{"hints": {"docx_export": true}}` to `data/.feature-hints.json`
-(create the file if it doesn't exist). This is a P6 User Layer write — no backup/confirmation needed
-(the file is system state, not user content).
-
-[P3 nudge — only if composite ≥ 85 AND user did NOT invoke --docx or --docx-only]:
-```
-💡 High-fit role — consider also generating a DOCX for ATS upload portals:
-   cv --docx-only   (creates output/cv-{slug}.docx alongside the PDF)
+  2. Submit your application — then tell me to update your status
+  3. When they schedule an interview → I can prep questions for you then
 ```
 
 ---

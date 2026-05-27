@@ -157,7 +157,10 @@ Store answers in `_profile.md` under `## Behavioral Profile`.
 **If `writing-samples/` contains files:** Read them and extract writing style markers per `_shared.md` guidelines. Cache in `_profile.md` under `## Writing Style`.
 
 **If no samples exist:**
-> "Adding a writing sample (past cover letter, LinkedIn About section, any professional writing) lets me match your voice. You can skip this and add samples later — just tell me when you do."
+> "Adding a writing sample (a past cover letter, LinkedIn About section, or any professional email) lets me match your voice in cover letters and application answers. Want to paste one now? [y/n]"
+
+- **yes** → ask the user to paste their sample text; save to `writing-samples/sample-1.md`; run style extraction per `_shared.md` guidelines; cache in `_profile.md`
+- **no** → "No problem — add samples to `writing-samples/` anytime. I'll pick them up automatically."
 
 ---
 
@@ -351,28 +354,26 @@ don't make them type a separate command. They're engaged now.
 
 ## Step 10: Confirm Ready
 
-> "Setup complete! Here's what's ready:
-> - **Job types you're targeting:** {archetype names}
-> - **Your market:** {market value}
-> - **Salary target:** {range}
-> - **Scoring calibrated** with {N} examples from your feedback
-> - **Company watch list:** {N} companies to search ({M} found via discovery)
-> 
-> You can now:
-> - Paste a job URL or description to get a full analysis
-> - Paste a job URL or description to evaluate it and start your story bank
-> - Type 'scan' to search your {N} companies for open roles
-> - Type 'scan --fast' to quickly check only your favorite companies
-> - Type 'pipeline' to review jobs you've already found
-> - Type 'setup' again anytime to update your profile
->
-> **Story bank:** As you evaluate jobs, Block F builds your interview story bank at
-> `interview-prep/story-bank.md` automatically. When you land an interview, run
-> `interview-prep {company}` to map your stories to that company's likely questions.
->
-> Tip: Add writing samples to `writing-samples/` for better-matched cover letters and application answers."
+Print a brief summary of what was configured, then offer a single clear next action:
 
-What to do next:
-  1. Discover companies in your domain → scan --discover
-  2. Or paste a job URL to start evaluating immediately
-  3. Type `setup` again anytime to update your profile, comp targets, or archetypes
+```
+✅ You're all set! Here's what I've configured:
+  🎯 Targeting: {archetype names}
+  📍 Market: {market value}
+  💰 Salary target: {range}
+  📊 Scoring calibrated with {N} examples
+  🏢 Company watch list: {N} companies
+
+As you evaluate jobs, I'll automatically build an interview story bank at
+interview-prep/story-bank.md — so by the time you land an interview, your prep is half done.
+```
+
+Then ask:
+
+> "Ready to go! Would you like to search for new roles right now? [y/n]"
+
+- **yes** → read `modes/scan.md` Step 0e and run `--setup` (if Advanced Scout not yet configured), or proceed directly to a scan run
+- **no** → "Got it. Whenever you're ready:
+  - Paste a job URL to evaluate it right now
+  - Say 'scan' to search for new roles
+  - Say 'setup' anytime to update your profile or targets"

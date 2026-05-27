@@ -41,6 +41,20 @@ If no company is provided, ask: "Which company and role are you prepping for?"
 - Else: scan `reports/` for slugs matching the company name. If multiple matches → ask which.
 - If none → ask: "Paste the JD text or URL and I'll use that in place of an evaluation report."
 
+### 0e-pre. Check interview urgency
+
+Read `data/applications.md` for an interview date matching this company + role (look for an Interview-status row or a date column entry). If an interview date is found:
+
+- **If interview is within 48 hours:** Ask before generating anything:
+  > "Your interview with {Company} is {today / tomorrow / in N hours}!
+  >  Want the quick 5-minute cheatsheet right now, or the full prep doc? [cheatsheet / full]"
+  - **cheatsheet** → set `--tldr` mode; generate cheatsheet only and print to terminal; skip file write
+  - **full** → proceed normally through all steps (mention the timeline in Step 7c priority block)
+
+- **If interview is 3–5 days away:** Proceed normally; Step 7c will generate the time-bracketed priority plan.
+
+- **No date found or date > 5 days out:** Proceed normally; Step 7c will be skipped.
+
 ### 0e. Read all inputs
 Read these files before generating any output:
 - `config/profile.yml` — candidate identity, comp targets, market
@@ -594,6 +608,18 @@ Apply P6 per story update.
 ### Step 5: Capture new stories
 "Did any questions come up with no matching story? Want to draft them now?"
 If yes: draft in STAR+R new schema format. Apply P6 before appending to story-bank.md.
+
+### Step 6: Application status update
+
+After the debrief is written, ask:
+
+> "Want me to update your application status for {Company}? [y/n]"
+
+- **yes** → ask: "What's the outcome so far — waiting to hear back, moving to next round, rejected, or got the offer?"
+  - Map response to: `Waiting` / `Final Round` / `Rejected` / `Offer`
+  - Update the Status column in `data/applications.md` for this company + role (P6 write confirmation)
+  - Print: "✅ Status updated to {status}."
+- **no** → "Got it — you can update it anytime by telling me 'move {company} to {status}'."
 
 ---
 
