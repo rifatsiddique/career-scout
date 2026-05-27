@@ -1,0 +1,33 @@
+# career-scout priority company list
+# Companies you'd seriously consider regardless of the specific role.
+# The scout checks these career pages every scan (subject to 24h cache).
+#
+# Add a company:  scan --add-company "Tesla"   (AI finds the careers URL)
+# Or edit here directly using the format below.
+#
+# Tiers:
+#   1 = Dream employer (always surface, even borderline matches)
+#   2 = Strong interest (always surface)
+#   3 = Open to (surface if match is reasonable)
+#
+# careers_url: direct link to the company's jobs/careers page (not a LinkedIn/Indeed page)
+# last_scraped: set automatically by the scout — do not edit manually
+
+companies: []
+
+# Example entry (uncomment and fill in):
+#
+# companies:
+#   - name: "Vicor Corporation"
+#     tier: 1
+#     careers_url: "https://www.vicorpower.com/careers"
+#     notes: "Prefer Andover MA office. Know 2 engineers there."
+#     added: ""
+#     last_scraped: ""
+#
+#   - name: "Analog Devices"
+#     tier: 1
+#     careers_url: "https://www.analog.com/en/about-adi/careers.html"
+#     notes: ""
+#     added: ""
+#     last_scraped: ""

@@ -1,0 +1,39 @@
+# career-scout Advanced Scout preferences
+# Run 'scan --setup' to configure interactively, or edit this file directly.
+# All fields are optional — scanner runs in portal-only mode until this is populated.
+
+version: 1
+last_reviewed: ""              # ISO date — set whenever preferences are touched; used for drift detection
+last_scan: ""                  # ISO datetime of last scan run
+auto_confirm: false            # true = skip the per-scan check-in prompt; drift detection still fires
+
+target_roles: []               # e.g. ["Senior Power Electronics Engineer", "Hardware Design Engineer"]
+
+markets:
+  active: []                   # e.g. ["Boston MA", "San Jose CA", "Austin TX", "Remote"]
+  international: "passive"     # "passive" (surface exceptional roles outside active markets) | "active"
+
+remote_preference: "remote-friendly"   # "remote-first" | "remote-friendly" | "onsite-only"
+
+niche_boards: "auto"           # "auto" (archetype-driven, see modes/scan.md §P2) | list of board names | "none"
+clearance: false               # true = include ClearanceJobs in HW/EE niche boards (cleared candidates only)
+
+rigour: "moderate"             # "high" (≥75 general threshold) | "moderate" (≥70, default) | "explorer" (≥50)
+                               # Priority companies always surface regardless of rigour level.
+
+auto_reject:
+  keywords: ["contract", "C2C", "corp-to-corp", "freelance", "1099", "clearance required", "active TS", "active Secret"]
+  min_company_size: 20         # estimated headcount; roles below this are silently rejected
+  max_posting_age_days: 60     # reject postings older than this (if date is extractable)
+  excluded_companies: []       # companies to always skip (burned bridges, bad culture fit, etc.)
+  max_level_drop: 1            # reject if role is more than N levels below your target seniority
+
+exploration_mode:              # Optional — career pivoters targeting a new field
+  enabled: false
+  pivot_role: ""               # e.g. "Embedded Systems Engineer"
+  bridge_keywords: []          # e.g. ["C++", "RTOS", "microcontroller", "SPI", "I2C"]
+  score_tolerance: 15          # lower pipeline threshold by this many points for pivot-query results
+
+drift_check:
+  alert_after_days: 14         # fire drift warning when > N days since last_reviewed (time-based only)
+  last_alerted: ""             # ISO date the drift warning last fired — prevents repeat alerts in same stale period

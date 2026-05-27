@@ -50,6 +50,16 @@ groups:
         required: false
         description: "Proof points and project deep-dives"
 
+      - path: "config/scout-preferences.yml"
+        strategy: overwrite
+        required: false
+        description: "Advanced Scout preferences — markets, target roles, auto-reject rules, rigour, company list"
+
+      - path: "config/target-companies.yml"
+        strategy: overwrite
+        required: false
+        description: "Priority company list with career page URLs for direct scraping"
+
   - id: pipeline
     name: "Pipeline & Tracking"
     description: "Job pipeline, applications, follow-ups, and scan history"
@@ -89,6 +99,11 @@ groups:
         strategy: overwrite
         required: false
         description: "Follow-up tracking"
+
+      - path: "data/scout-reject-log.md"
+        strategy: overwrite
+        required: false
+        description: "Auto-reject audit log from the Advanced Scout (rolling 200-entry cap)"
 
   - id: reports
     name: "Reports"

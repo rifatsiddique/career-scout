@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.38
-**Last Updated:** 2026-05-26 -- Phase 7B plan v1.5: Gemini Round 3 — LLM text extraction explicit, YAML array sanitization, scan --rejected, pre-populated setup UX. Phase 2b: Courier New fallback fixed (technical-engineering.html), phantom container + JD-grounded template justification added to modes/cv.md.
+**Version:** 1.39
+**Last Updated:** 2026-05-26 -- Phase 7B implemented: modes/scan.md fully rewritten (advanced scout flow integrated with Phase 3 portal scanner), config/scout-preferences.yml + config/target-companies.yml templates created, data/scout-reject-log.md placeholder created, idle nudge added to modes/_shared.md (P3 cross-mode nudges), port-manifest.yml updated. All 11 implementation steps complete.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -860,7 +860,7 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 #### 7b: Advanced Scout — Playwright Scraping + LinkedIn ⭐ TOP PRIORITY
 
 **Plan:** `plan_rs/phase7b-advanced-scout.md` (v1.5, 2026-05-26) — Gemini Rounds 1-3 + casual-user/domain-expansion pass. All 6 open questions resolved. Automation/n8n integration deferred. Ready for implementation.
-**Status:** Plan finalized. Implementation not yet scheduled.
+**Status:** ✅ Implemented 2026-05-26. All 11 steps complete. Files: modes/scan.md (full rewrite), config/scout-preferences.yml, config/target-companies.yml, data/scout-reject-log.md, modes/_shared.md (idle nudge), config/port-manifest.yml.
 
 **What it is:** Extending Scout beyond API portals to cover companies that don't offer Greenhouse/Ashby/Lever APIs. Three levels, each independently shippable:
 

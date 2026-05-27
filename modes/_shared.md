@@ -292,8 +292,21 @@ nudge — not an interrupt, not a multi-paragraph warning.
 | cv mode finishes a PDF and fit is GOOD_FIT+ | cv |
 | evaluate finishes with fit GOOD_FIT+ | evaluate |
 | setup finishes and pipeline.md is empty | setup |
+| scout idle ≥ 4 days (see below) | pipeline-triage, cv, evaluate |
 
 One nudge per condition. Never stack nudges. The mode still completes its normal work.
+
+**Scout idle nudge** — append this line at the very end of any pipeline-triage, cv, or evaluate response when ALL of the following are true:
+1. `config/scout-preferences.yml` exists and has `last_scan` set
+2. `last_scan` is more than 4 days ago
+3. The current mode is NOT `scan`
+
+Nudge text (one line, appended after the mode's normal output):
+```
+💡 It's been {N} days since your last scout run — type 'scan' to discover new roles.
+```
+
+Fire at most once per session (track whether nudge was already shown this session).
 
 ### P4 — Long Outputs Have a `--tldr` Variant
 
