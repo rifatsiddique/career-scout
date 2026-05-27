@@ -17,7 +17,11 @@
       "Bash(node scripts/merge-tracker.mjs)",
       "Bash(node scripts/verify-pipeline.mjs)",
       "Bash(node scripts/_test-step3.mjs)",
-      "Bash(grep \"^\\\\\\\\*\\\\\\\\*Version\" plan_rs/CONSOLIDATION-PLAN.md)"
+      "Bash(grep \"^\\\\\\\\*\\\\\\\\*Version\" plan_rs/CONSOLIDATION-PLAN.md)",
+      "Bash(Get-ChildItem 'C:\\\\Work\\\\Git-Python\\\\career-scout\\\\config\" | Select-Object Name *)",
+      "Bash(Select-Object Name)",
+      "Bash(Write-Host \"---\")",
+      "Bash(Get-ChildItem \"C:\\\\Work\\\\Git-Python\\\\career-scout\\\\modes\\\\\" | Select-Object Name)"
     ],
     "additionalDirectories": [
       "C:\\Work\\Local_GitClones"

@@ -10,7 +10,20 @@ Processes pending job URLs from `data/pipeline.md`. The user adds URLs to the Pe
 
 Read `data/pipeline.md` → find all rows in the **Pending** table (rows where the URL has not yet been moved to Evaluated).
 
-If no pending rows: report "Pipeline is empty — no pending URLs to process" and stop.
+If no pending rows, print this instead of a bare "empty" message:
+
+```
+Your pipeline is empty — nothing to triage right now.
+
+Here's how to fill it:
+
+  1. Run a scan          → 'scan'               Searches portals + web for new roles
+  2. Set up Advanced Scout → 'scan --setup'     Enables priority company checking + smart filtering
+  3. Drop URLs manually  → data/inbox.txt       Paste links from LinkedIn, email, referrals (one per line)
+  4. Evaluate directly   → paste any job URL    Skip the queue and evaluate a role right now
+```
+
+Then stop.
 
 ### Step 2: For Each Pending URL
 

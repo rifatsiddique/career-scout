@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.39
-**Last Updated:** 2026-05-26 -- Phase 7B implemented: modes/scan.md fully rewritten (advanced scout flow integrated with Phase 3 portal scanner), config/scout-preferences.yml + config/target-companies.yml templates created, data/scout-reject-log.md placeholder created, idle nudge added to modes/_shared.md (P3 cross-mode nudges), port-manifest.yml updated. All 11 implementation steps complete.
+**Version:** 1.40
+**Last Updated:** 2026-05-26 -- AI guidance/conversational improvements: warm invitation for unconfigured Advanced Scout (scan.md Step 0f), concrete 3-option empty-scan guidance (Step 4), post-setup first-scan offer (Step 0e), Phase 7B upgrade prompt for existing users (AGENTS.md), active GOOD_FIT+ CV offer in evaluate.md (Block E), conversational empty-pipeline routing in pipeline-triage.md, Phase 7 status row + scan --setup section in README.md.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -860,7 +860,7 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 #### 7b: Advanced Scout — Playwright Scraping + LinkedIn ⭐ TOP PRIORITY
 
 **Plan:** `plan_rs/phase7b-advanced-scout.md` (v1.5, 2026-05-26) — Gemini Rounds 1-3 + casual-user/domain-expansion pass. All 6 open questions resolved. Automation/n8n integration deferred. Ready for implementation.
-**Status:** ✅ Implemented 2026-05-26. All 11 steps complete. Files: modes/scan.md (full rewrite), config/scout-preferences.yml, config/target-companies.yml, data/scout-reject-log.md, modes/_shared.md (idle nudge), config/port-manifest.yml.
+**Status:** ✅ Implemented 2026-05-26. All 11 steps complete. Files: modes/scan.md (full rewrite), config/scout-preferences.yml, config/target-companies.yml, data/scout-reject-log.md, modes/_shared.md (idle nudge), config/port-manifest.yml. AI guidance pass: conversational improvements to scan.md (Step 0f warm invite, Step 4 empty-scan 3-option offer, Step 0e post-setup first-scan ask), AGENTS.md (Phase 7B upgrade prompt), evaluate.md (active GOOD_FIT+ CV offer), pipeline-triage.md (empty-pipeline routing), README.md (Phase 7 status + scan --setup docs).
 
 **What it is:** Extending Scout beyond API portals to cover companies that don't offer Greenhouse/Ashby/Lever APIs. Three levels, each independently shippable:
 

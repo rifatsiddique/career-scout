@@ -363,10 +363,11 @@ After all fields collected:
 
    💡 You can set this scan to run automatically on a schedule — check your CLI's
       scheduling or cron support and point it at the 'scan' command.
-
-   Run 'scan' to start discovering jobs.
    ```
-4. STOP.
+4. Ask: `Want me to run your first scout scan now? [y/n]`
+   - `y` / `yes`: proceed immediately to Step 1 (skip confirm block — prefs were just set)
+   - `n` / `no` / empty: print "Run 'scan' whenever you're ready." and STOP.
+5. STOP (if user said no).
 
 ---
 
@@ -374,8 +375,21 @@ After all fields collected:
 
 Skip entirely if: `--setup`, `--discover`, `--rejected`, `--new-chapter`, `--import`, or any domain-expansion flag.
 
-**If PREFS is empty or unpopulated:** Advanced scout is disabled. Print once per session:
-> "Advanced Scout is not configured. Run 'scan --setup' to enable priority company checking, web search discovery, and smart filtering. Continuing with portal scanner and inbox drain only."
+**If PREFS is empty or unpopulated:** Advanced scout is disabled. Instead of a terse one-liner, offer a brief warm invitation — this fires at most once per session:
+
+```
+👋 Looks like Advanced Scout isn't configured yet.
+
+Here's what it adds on top of the portal scanner you already have:
+  🏢 Priority companies — I check their career pages every scan and always surface their
+     roles, even if the match is borderline. Add your dream employers once; I handle the rest.
+  🔍 Web search discovery — I query LinkedIn, Indeed, Glassdoor, and niche boards for your
+     target roles across your target markets. No job board account needed.
+  ⛔ Smart filtering — contract/C2C roles, clearance-required postings, and ghost jobs are
+     silently filtered out and logged so you can audit them anytime.
+
+Takes about 2 minutes to set up. Run 'scan --setup' whenever you're ready.
+```
 
 Then proceed directly to Step 1.
 
@@ -710,9 +724,22 @@ New in your pipeline:  {n}
 | Condition | Message |
 |-----------|---------|
 | 0 new jobs | "Your job queue is up to date." |
-| 0 new jobs + consecutive_empty_scans ≥ 3 | "No new jobs found in {n} searches. Try broadening your title keywords in portals.yml or running 'scan --rigour explorer'." |
+| 0 new jobs + consecutive_empty_scans ≥ 3 | See empty-scan guidance below. |
 | 1-4 new | "Run 'pipeline' to review." |
 | 5+ new | "Run 'pipeline' to review — you have a good batch." |
+
+**Empty-scan guidance (consecutive_empty_scans ≥ 3):** Instead of a generic broadening tip, offer three concrete options:
+
+```
+No new roles in {n} consecutive scans — your current settings may be too narrow, or the market
+is quiet right now. A few things that often help:
+
+  1. Widen your geography    → scan --add-city "Austin TX"   (adds a new target market)
+  2. Switch to explorer mode → scan --rigour explorer        (surfaces ≥50-score matches, max coverage)
+  3. Add a priority company  → scan --add-company "Tesla"    (checks their career page every scan)
+
+Or, if the market feels genuinely quiet, try again in a few days — scout will keep checking.
+```
 
 ---
 

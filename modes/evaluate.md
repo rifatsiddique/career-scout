@@ -264,9 +264,19 @@ and "Proof point sources" from `_profile.md`:
 |---|---------|---------------|-----------------|-----|
 | 1 | {section} | {current} | {proposed} | {reason tied to JD} |
 
-If composite ≥ 80 (GOOD_FIT+): also include 2-3 cover letter angles, and note:
-> "Ready to generate a tailored CV? Run `cv` mode with this report loaded."
-> "Want a quick draft HTML to edit manually? Run `cv --fast`."
+If composite ≥ 80 (GOOD_FIT+): also include 2-3 cover letter angles, then ask directly:
+
+```
+This is a {CATEGORY} — worth pursuing. Want me to generate a tailored CV for it now?
+  [y] Generate CV (PDF + HTML, tailored to this JD)
+  [f] Fast draft only (editable HTML, no PDF)
+  [n] Not yet — I'll run 'cv' when I'm ready
+```
+
+Handle the response:
+- `y` / `yes`: proceed to `cv` mode immediately (skip the "run cv" instruction)
+- `f` / `fast`: proceed to `cv --fast` mode immediately
+- `n` / `no` / empty: print "Run `cv` when you're ready — report #{REPORT_NUM} is saved." and stop
 
 ---
 

@@ -50,7 +50,16 @@ At the start of each session, silently check:
 
 Do NOT proceed with evaluations until setup or port is complete.
 
-**If all pass:** Proceed normally.
+**If all three pass AND `config/scout-preferences.yml` is missing or empty:** The user has a working profile but hasn't enabled Phase 7B Advanced Scout yet. Print once per session (before their first command):
+
+> "👋 Quick heads-up: Advanced Scout isn't configured yet. It adds priority company checking,
+>  web search discovery, and smart auto-filtering on top of the portal scanner you already have.
+>  Run `scan --setup` to enable it (takes about 2 minutes). Or just type your command — everything
+>  else works as before."
+
+Then proceed with the user's request normally — this is non-blocking.
+
+**If all pass and scout-preferences.yml has content:** Proceed normally.
 
 ---
 

@@ -26,6 +26,7 @@ Human-in-the-loop: AI evaluates and drafts. You review and submit.
 | Phase 4: Interview Prep | ✅ Complete | Company-specific prep docs, story bank mapping, Pre-Flight Cheatsheet, post-interview debrief |
 | Phase 5: Auto-Pipeline + Batch | ✅ Complete | One-command end-to-end (`auto`) + parallel batch processing (`batch`) |
 | Phase 6: Profile Porting | ✅ Complete | Migrate personal data from a previous instance (`port`) |
+| Phase 7: Advanced Scout | ✅ Complete | Priority company scraping, web search discovery, smart auto-filtering, quick-pass scoring |
 
 ---
 
@@ -217,7 +218,13 @@ just run `batch` again — it picks up where it left off.
 
 ### 9. Discover new jobs
 
-Run a full scan of all configured company portals:
+First, configure Advanced Scout (one-time, ~2 minutes):
+```
+> scan --setup
+```
+
+This sets your target roles, markets, priority companies, and auto-reject rules.
+After setup, run a full scan:
 ```
 > scan
 ```
@@ -227,8 +234,22 @@ Or a quick daily check of your dream companies only:
 > scan --fast
 ```
 
-Scout scans Greenhouse, Ashby, and Lever APIs (zero LLM tokens), deduplicates against
-your history, and appends new jobs to `data/pipeline.md`. Then run `pipeline` to evaluate.
+Scout checks priority company career pages (Playwright scraping), runs web searches on
+LinkedIn/Indeed/Glassdoor, and scans Greenhouse/Ashby/Lever APIs (zero LLM tokens).
+New jobs are auto-filtered, scored, and appended to `data/pipeline.md`. Then run `pipeline` to evaluate.
+
+**Expand your search on the fly:**
+```
+scan --add-city "Austin TX"     # Add a new target market (permanent)
+scan --add-company "Tesla"      # Add to your priority company list (AI finds the career URL)
+scan --rigour explorer          # Surface everything ≥50, maximum coverage
+scan --rigour high              # Only high-confidence matches (≥75)
+```
+
+**Audit auto-rejected roles:**
+```
+scan --rejected                 # Show the last 15 auto-rejected roles — catch false negatives
+```
 
 **Inbox — drop URLs from any source:**
 
