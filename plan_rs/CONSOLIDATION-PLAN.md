@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.34
-**Last Updated:** 2026-05-26 -- Phase 7B plan v1.1: Gemini Round 1 incorporated — rigour levels, pivot/exploration mode, OR-consolidated queries, niche board additions, reject log cap, full-JD enrichment (non-walled only), anti-bot fallback explicit, idle nudge. All 6 open questions resolved.
+**Version:** 1.38
+**Last Updated:** 2026-05-26 -- Phase 7B plan v1.5: Gemini Round 3 — LLM text extraction explicit, YAML array sanitization, scan --rejected, pre-populated setup UX. Phase 2b: Courier New fallback fixed (technical-engineering.html), phantom container + JD-grounded template justification added to modes/cv.md.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -859,7 +859,7 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 
 #### 7b: Advanced Scout — Playwright Scraping + LinkedIn ⭐ TOP PRIORITY
 
-**Plan:** `plan_rs/phase7b-advanced-scout.md` (v1.1, 2026-05-26) — Gemini Round 1 incorporated. All 6 open questions resolved. Ready for implementation.
+**Plan:** `plan_rs/phase7b-advanced-scout.md` (v1.5, 2026-05-26) — Gemini Rounds 1-3 + casual-user/domain-expansion pass. All 6 open questions resolved. Automation/n8n integration deferred. Ready for implementation.
 **Status:** Plan finalized. Implementation not yet scheduled.
 
 **What it is:** Extending Scout beyond API portals to cover companies that don't offer Greenhouse/Ashby/Lever APIs. Three levels, each independently shippable:

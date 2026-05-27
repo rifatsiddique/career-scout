@@ -1,7 +1,7 @@
 # Plan: Phase 7B — Advanced Scout
 
-**Version:** 1.1
-**Last Updated:** 2026-05-26 -- Gemini Round 1 incorporated: rigour levels (§5.3), pivot/exploration mode (§9.1), OR-consolidated query strategy (§4.2), niche board additions (§4.3), reject log rolling cap (§5.2), full-JD enrichment (§6.3), anti-bot fallback explicit (Step 5), idle nudge (§11.11)
+**Version:** 1.5
+**Last Updated:** 2026-05-26 -- Gemini Round 3 (bug hunt + UX): LLM-based text extraction explicit in §4.4 (no CSS selectors), YAML array sanitization added to Step 2, scan --rejected audit command (§3.4 + §7 tip), 🚫 reject breakdown in summary. Phase 2b items applied directly: phantom container rule + JD-grounded template justification added to modes/cv.md; Courier New fallback fixed in technical-engineering.html. Previously v1.4: §4.5-4.6 explainers.
 **Parent Plan:** CONSOLIDATION-PLAN.md §Phase 7, item 7b
 **Depends on:** Phase 3 (scan mode baseline — web search, inbox drain, portal scanner, scan-history.tsv dedup)
 
@@ -91,7 +91,7 @@ All answers saved to `config/scout-preferences.yml`.
 ### 3.2 Every subsequent scan (Option C confirm + Option B execution)
 
 ```
-📡 Scout check-in (preferences last reviewed: 3 days ago)
+📡 Scout check-in (preferences last reviewed: 3 days ago · 7 days since last scan)
 
 Current strategy:
   🎯 Roles: Senior Power Electronics Engineer, Hardware Design Engineer
@@ -100,16 +100,24 @@ Current strategy:
   🏢 Priority companies: Vicor, Analog Devices, TI, Murata, Bel Fuse (+3 more)
   ⛔ Auto-reject: contract, clearance-required, < Senior level, < 20 employees
 
-[Enter] Run with these settings
-[u]     Update a setting
-[full]  Run full preference setup
+[Enter]     Run with these settings
++<city>     Add a market just for this scan   (e.g. +Denver CO)
++co:<name>  Add a company just for this scan  (e.g. +co:Tesla)
+[remote]    Toggle remote-only for this scan
+[u]         Permanently update a setting
+[full]      Run full preference setup
+[quiet]     Stop showing this check-in — just run on stored prefs from now on
 ```
 
 If the user hits Enter: runs fully autonomously. AI makes all filtering and ranking decisions. User sees only the curated summary at the end.
 
+**Inline quick-edits** (`+city`, `+co:`, `remote`) apply to **this scan only** and are NOT written to `scout-preferences.yml`. They let the user widen the net for one run without committing to a permanent change. To persist a change, use `[u]` or the quick-add commands in §3.4.
+
+**Quiet mode:** `[quiet]` sets `scout-preferences.yml → auto_confirm: true`. From then on, `scan` skips this check-in and runs immediately on stored prefs (drift detection still fires — see §3.3). The casual user who never changes settings gets a one-keystroke recurring scan. Re-enable the check-in any time with `scan --confirm` or by running `scan --setup`.
+
 ### 3.3 Drift detection
 
-After 3 consecutive scans with identical settings AND more than 14 days since the last manual update:
+**Trigger is purely time-based:** more than 14 days since `last_reviewed` (the last time the user touched their strategy). Invocation count is NOT a factor — a user who runs 3 scans in one afternoon while triaging should never see a drift warning, and an infrequent scanner shouldn't have to scan 3 times before drift fires. Time elapsed is the only signal that the strategy is genuinely stale.
 
 ```
 ⏱  It's been 3 weeks since you last reviewed your scout preferences.
@@ -119,6 +127,25 @@ After 3 consecutive scans with identical settings AND more than 14 days since th
 ```
 
 This fires once per drift period — not on every scan.
+
+### 3.4 Quick domain expansion (persistent, no full setup)
+
+Expanding the search should never require re-running the whole setup conversation. These commands edit one field of `scout-preferences.yml` (or `target-companies.yml`) in place and confirm the change in one line:
+
+| Command | Effect |
+|---------|--------|
+| `scan --add-city "Denver CO"` | Append to `markets.active`. Confirms: `✅ Added Denver CO. Markets: Boston, San Jose, Austin, Denver, Remote.` |
+| `scan --remove-city "Austin TX"` | Remove from `markets.active`. |
+| `scan --add-company "Tesla"` | Append to `target-companies.yml` (AI discovers the careers URL). Confirms with the URL it found for review. |
+| `scan --remote` | Set `remote_preference: remote-first`. |
+| `scan --hybrid` / `scan --onsite` | Set `remote_preference` accordingly. |
+| `scan --international active` / `passive` | Flip the international market mode. |
+| `scan --rigour explorer` / `moderate` / `high` | Change the rigour level (§5.3). |
+| `scan --rejected` | Print a compact table of the last 15 auto-rejected roles (Company · Title · Reason) so the user can catch false negatives. Reads from `data/scout-reject-log.md`. |
+
+Natural language also works — the agent maps "add Denver to my search" or "include remote roles" to the same field edits. Either way: edit one field, confirm in one line, no full setup walk-through. Each quick-add also updates `last_reviewed` (resetting the drift counter, since the user just touched their strategy).
+
+These also serve as a one-off when combined with `--once` (e.g. `scan --add-city "Denver CO" --once` applies only to this scan without persisting) — same effect as the inline `+city` shortcut in §3.2.
 
 ---
 
@@ -170,12 +197,71 @@ Archetype read from `modes/_profile.md`. If multiple archetypes, union of boards
 
 For each company in `config/target-companies.yml`:
 1. Read the career page URL (user-provided or AI-discovered during setup)
-2. Playwright scrapes the careers page
-3. Extract open roles (title, location, posting date) using DOM selectors or text extraction
-4. Any role matching target_roles (fuzzy match) → add to results with `priority: true` flag
-5. Roles at priority companies with ANY match → surface (even borderline); roles with NO match → surface with a note "open role at priority company — low match"
+2. **24-hour cache check** — if `last_scraped` for this company is less than 24 hours ago, **skip** the live scrape. Note: there is nothing to "replay" — any roles found last scrape are already in `pipeline.md`. Skipping just avoids re-launching a browser to re-check a page that almost certainly hasn't changed since this morning. `scan --force` bypasses the cache and re-scrapes everything.
+3. Playwright scrapes the careers page and captures the **full visible inner-text** plus all `<a href>` anchor links
+4. **LLM-based text extraction** — the agent reads the visible text and link list to identify role titles, locations, and posting URLs. Do NOT rely on hardcoded CSS selectors (e.g. `.jobs-list__item`) — ATS platforms (Workday, Lever, Greenhouse, iCIMS) update their DOM structures regularly and any hardcoded selector will break silently within weeks. Text + anchors passed to the LLM is resilient against DOM changes.
+5. Any role matching target_roles (fuzzy match) → add to results with `priority: true` flag
+6. Roles at priority companies with ANY match → surface (even borderline); roles with NO match → surface with a note "open role at priority company — low match"
+7. Update `last_scraped` to now.
+
+**Throttle:** Scrape companies one at a time with a short polite delay between pages — never hammer a target portal. In the agent-driven flow the agent fetches sequentially by default. If a deterministic scraping script is built later (see automation note), cap it at **3 concurrent Playwright instances** to bound local CPU/memory and reduce IP-ban / Cloudflare risk.
 
 **LinkedIn/Indeed scraping caveat:** These sites actively block Playwright. P0 (direct career pages) uses Playwright. P1/P2 (aggregators) use web search — we search Google/Bing for the job posting, which returns the LinkedIn/Indeed URL without directly scraping the protected site.
+
+### 4.5 How to add a company to your priority list
+
+There are three ways — all write to `config/target-companies.yml`:
+
+**1. By name (AI discovers the URL):**
+```
+scan --add-company "Tesla"
+```
+The AI searches for the company's careers page, shows you the URL it found, and asks you to confirm before saving. This is the easiest path — you don't need to hunt for the link.
+
+**2. Natural language at any point:**
+> "Add Tesla to my priority companies"
+
+Same outcome as the command — AI finds and confirms the URL.
+
+**3. Directly in the file:**
+Open `config/target-companies.yml` and add an entry following the schema in §10. Use this when you already have the exact URL and want to bypass the confirmation step.
+
+**What "the career page URL" means in practice:**
+
+| Company type | URL to use | Notes |
+|---|---|---|
+| Greenhouse ATS | `https://boards.greenhouse.io/companyname` | Works well — standard DOM |
+| Lever ATS | `https://jobs.lever.co/companyname` | Works well — standard DOM |
+| Workday | `https://company.wd5.myworkdayjobs.com/...` | Variable — sometimes needs fallback |
+| Custom career site | `https://company.com/careers` | Best-effort; fallback to web search if DOM is unusual |
+| LinkedIn company page | Don't use — use web search instead (§4.6) | LinkedIn blocks Playwright |
+
+**ATS reliability:** Playwright extraction works cleanly on standard ATS platforms (Greenhouse, Lever). For custom or Workday sites it's best-effort — if Playwright can't parse the roles, the system falls back to a targeted web search for that company (Step 5). You always get a result; the quality just varies.
+
+### 4.6 How LinkedIn coverage actually works (and what you do and don't get)
+
+**The short version:** career-scout does NOT log into LinkedIn or scrape it directly. LinkedIn blocks all Playwright access without authentication. Instead, it uses search engines to find LinkedIn postings — the difference matters for what you get.
+
+**What the scout does:**
+1. Runs a web search: `"Senior Power Electronics Engineer" site:linkedin.com/jobs (Boston OR Austin OR Remote)`
+2. Google/Bing returns **job listing URLs + snippets** — title, company, location, and 2-3 lines of description — without loading the LinkedIn page.
+3. That snippet feeds the quick-pass score (title, keywords from snippet, location).
+4. The LinkedIn URL is written to `pipeline.md` as normal.
+
+**What you get:**
+- The posting found and deduped
+- Title, company, location
+- A snippet for quick-pass triage
+- The link to read the full JD
+
+**What you do NOT get automatically:**
+- The full job description text (login wall blocks enrichment — §6.3)
+- Any salary data LinkedIn might show members
+- Application deadline or applicant count
+
+**Consequence for evaluation:** when you run `evaluate` on a LinkedIn-sourced role, you need to open the link and paste or read the full JD yourself — the scout hands you the URL, not the text. For roles from priority company career pages (P0), the full description IS available because Playwright fetched the page directly.
+
+**Manual path for more LinkedIn coverage:** Drop LinkedIn job URLs directly into `data/inbox.txt` (one per line) while browsing. The P3 inbox drain picks them up at the next scan. This supplements search-based discovery with anything you spot while on the site.
 
 ---
 
@@ -191,8 +277,13 @@ Applied after discovery, before dedup and fit scoring. No user prompt — result
 | Requires active clearance | Description contains "active TS/SCI", "active Secret clearance", "clearance required" |
 | Below target level | Title contains junior/associate/entry-level when target is senior/staff/principal |
 | Company too small | Headcount < 20 employees (estimated from web search if not known) |
-| Duplicate | URL or (company + title) already in `data/scan-history.tsv` |
+| Duplicate | **Normalized key** `company-slug::title-slug` already in `data/scan-history.tsv`, `pipeline.md`, or `data/archived.md` (see dedup detail below) |
 | Expired posting | Posting date > 60 days ago (if extractable) |
+
+**Deduplication detail (normalized key + status protection).** The same role is often posted to LinkedIn, Indeed, Glassdoor, *and* the company's own portal — each with a different tracking URL (UTM tokens, session IDs). Raw-URL matching therefore fails and the user's pipeline fills with duplicates. Instead:
+
+- **Normalized key:** `[lowercase-company-slug]::[lowercase-title-slug]` — e.g. `vicor-corporation::senior-power-electronics-engineer`. Strip punctuation, collapse whitespace to hyphens, drop common suffixes ("Inc", "Corp", "LLC"). Two postings that resolve to the same key are the same job regardless of source URL; keep the one from the highest-trust source (direct career page > Glassdoor > LinkedIn/Indeed).
+- **Status protection:** Before adding a role, check whether its key already exists in `pipeline.md`, `data/applications.md`, or `data/archived.md` in a **terminal state** (`Applied`, `Rejected`, `Archived`). If so, **silently skip** — never re-surface a role the user has already acted on. Re-adding an applied/rejected role is one of the most annoying scout failure modes. Only genuinely-new keys reach the scoring stage.
 
 ### 5.2 User-customisable rules
 
@@ -267,6 +358,8 @@ After the scan completes, show a structured summary. Example:
 ```
 📡 Scout complete — 2026-05-26 14:32
 
+   🆕 5 new roles since your last scan (7 days ago). 1 at a priority company.
+
 Sources checked:
   ✅ Priority companies (8/8 career pages scraped)
   ✅ Web search — LinkedIn, Indeed, Glassdoor (42 results)
@@ -283,12 +376,15 @@ Added to pipeline:
   ✅ Monolithic Power Systems — Senior IC Design Engineer · San Jose, CA (score: 74)
   ⚠️  [LOW-CONF] GaN Systems — Applications Engineer · Austin, TX (score: 54 — "Applications" vs. "Design")
 
-Auto-rejected (18): 9 contract roles, 4 clearance-required, 3 below-level, 2 expired
+🚫 Auto-rejected (18): 9 contract, 4 clearance-required, 3 below-level, 2 expired
+   Tip: run 'scan --rejected' to audit the last 15 discards and catch any false negatives.
 Duplicates skipped (11): already in pipeline or scan history
 
 Run 'pipeline' to triage the new entries.
 Run 'evaluate <url>' on any role to get the full A-G report.
 ```
+
+**The 🆕 headline** is the first thing the casual user sees — the single number that matters ("how many new things since I last looked"). It's derived from the count of entries written to pipeline this run (all are new-since-last-scan by definition, since dedup against `scan-history.tsv` removes everything seen before). If zero new roles, the line reads `🆕 No new roles since your last scan (3 days ago) — your pipeline is current.`
 
 ---
 
@@ -313,6 +409,8 @@ Run 'evaluate <url>' on any role to get the full A-G report.
 version: 1
 last_reviewed: ""              # ISO date — used for drift detection
 last_scan: ""                  # ISO datetime of last scan run
+auto_confirm: false            # true = skip the per-scan check-in (§3.2), run on stored prefs.
+                               # Set by '[quiet]' at the confirm prompt. Drift detection still fires.
 
 target_roles:
   - ""                         # e.g. "Senior Power Electronics Engineer"
@@ -345,10 +443,11 @@ exploration_mode:              # Optional — for career pivoters targeting a ne
   # score_tolerance prevents bridge roles from being silently rejected by the keyword signal.
 
 drift_check:
-  scan_count: 0                # increments each scan; resets when preferences updated
-  alert_after_scans: 3         # trigger drift warning after this many scans without update
-  alert_after_days: 14         # also trigger if > N days since last_reviewed
+  alert_after_days: 14         # fire drift warning when > N days since last_reviewed (time-based only)
+  last_alerted: ""             # ISO date the drift warning last fired — prevents repeat alerts in the same stale period
 ```
+
+> Drift is **purely time-based** (§3.3). There is deliberately no scan-count gate: counting invocations either false-fires for someone triaging 3× in an afternoon or never fires for an infrequent scanner. `last_alerted` ensures the warning shows once per stale period, not on every scan after day 14.
 
 ### 9.1 Exploration Mode — How It Works
 
@@ -398,15 +497,24 @@ Create template files in `config/`. Both start empty/placeholder so setup mode p
 
 ### Step 2: Build preference setup flow (`scan --setup`)
 
-Write the interactive preference conversation to `modes/scan.md`. Reads existing `profile.yml` (target_roles, location) as suggested defaults. Writes to `scout-preferences.yml`.
+Write the interactive preference conversation to `modes/scan.md`. Pre-populate prompts from `config/profile.yml` and `cv.md` — for example: `Target location found in your profile: Boston, MA. Use this as your primary market? [Y/n]`. This turns typing from scratch into a confirmation flow.
 
-**Verify:** Run `scan --setup` from scratch. All 5 preference fields populated. `scout-preferences.yml` written with correct schema. Re-running offers to update, not overwrite.
+**YAML array sanitization (critical):** Any field that writes to a YAML array (`target_roles`, `markets.active`, `auto_reject.keywords`) must normalize input before writing. If the user types comma-separated input (`Senior Engineer, Technical Lead`), the writer must split, strip whitespace, and emit a proper YAML sequence — not a raw string. A raw string will crash any code that loops over the field. Example of correct output:
+```yaml
+target_roles:
+  - "Senior Engineer"
+  - "Technical Lead"
+```
 
-### Step 3: Add Step 0 confirm block to every scan
+**Verify:** Run `scan --setup` from scratch. All 5 preference fields populated. `scout-preferences.yml` written with correct schema. Re-running offers to update, not overwrite. Inputting comma-separated roles produces a proper YAML list, not a string. Pre-populated suggestions match what's in `profile.yml`/`cv.md`.
 
-At the start of each `scan` run (when not in `--setup` mode): read `scout-preferences.yml`, print the 30-second confirm block (§3.2), wait for input, then proceed or branch to setup.
+### Step 3: Add Step 0 confirm block + quick-edit handling to every scan
 
-**Verify:** `scan` with empty preferences → routes to setup. `scan` with populated preferences → shows confirm block. User edits a setting mid-confirm → preference file updated, scan continues with new value.
+At the start of each `scan` run (when not in `--setup` mode): read `scout-preferences.yml`. If `auto_confirm: false`, print the confirm block (§3.2) and wait for input; if `auto_confirm: true`, skip straight to the scan (drift detection still runs). Handle the inline quick-edits (`+city`, `+co:`, `remote` — apply to this scan only, no file write), `[u]` (persist a setting), `[full]` (route to setup), and `[quiet]` (set `auto_confirm: true`).
+
+Also handle the persistent quick-add flags from §3.4 (`--add-city`, `--add-company`, `--remote`, `--rigour`, etc.) and their natural-language equivalents — each edits one field, confirms in one line, updates `last_reviewed`.
+
+**Verify:** `scan` with empty preferences → routes to setup. Populated + `auto_confirm: false` → shows confirm block. `[quiet]` → sets `auto_confirm: true`; next `scan` skips the block. `+Denver CO` at the prompt → that scan includes Denver but the file is unchanged. `scan --add-city "Denver CO"` → file updated, one-line confirm, `last_reviewed` bumped. `scan --confirm` → re-enables the check-in.
 
 ### Step 4: Build query constructor
 
@@ -416,11 +524,14 @@ Function (in `modes/scan.md` as drafter instructions) that builds 3-5 web search
 
 ### Step 5: Priority company career page scraping
 
-For each company in `target-companies.yml`: run Playwright to fetch the careers page, extract role listings (title + location + URL), fuzzy-match against target_roles. Update `last_scraped` date.
+For each company in `target-companies.yml` (respecting the 24h cache from §4.4): run Playwright to fetch the careers page, extract role listings (title + location + URL), fuzzy-match against target_roles. Update `last_scraped` date.
 
-**Anti-bot fallback:** If Playwright fails (timeout, CAPTCHA, JS-heavy ATS that blocks headless), automatically fall back to a targeted web search: `"{Company Name}" "{target_role}" careers 2026`. Parse the snippet results for matching roles. Note the fallback in the summary (`⚠️ Vicor: Playwright blocked → web search fallback`).
+**Two distinct failure modes, two guards:**
 
-**Verify:** Given a company with a known open role, the scraper finds it. Given a company with no open roles, it returns empty cleanly (no crash). Given a simulated Playwright failure, the fallback web search runs and its results appear in the summary with the fallback note.
+1. **Browser won't launch at all (environment failure).** Playwright depends on a local Chromium binary that can be missing, blocked by group policy (unsigned-executable restrictions), or broken by a Node upgrade. Wrap browser launch in a try/catch. If it throws, **skip the entire P0 tier** and continue with P1/P2/P3 search-based discovery — do NOT crash the scan. Print once: `⚠️ Direct scraping browser unavailable — skipping career-page scans, continuing with web search.`
+2. **A single page fails (anti-bot / timeout).** If the browser launched fine but one company's page times out, CAPTCHAs, or blocks headless, fall back for *that company* to a targeted web search: `"{Company Name}" "{target_role}" careers 2026`. Parse snippets for matching roles. Note in summary: `⚠️ Vicor: Playwright blocked → web search fallback`.
+
+**Verify:** Given a company with a known open role, the scraper finds it. Given a company with no open roles, returns empty cleanly. Given a simulated single-page Playwright failure, the per-company web-search fallback runs and appears in the summary. Given a simulated browser-launch failure, the whole P0 tier is skipped with the friendly warning and P1/P2/P3 still run to completion. A company scraped <24h ago is skipped unless `--force`.
 
 ### Step 6: Web search discovery + niche boards
 
@@ -442,9 +553,9 @@ Apply the 3-signal quick-pass score (§6.1) to each remaining role. Route to pip
 
 ### Step 9: Summary output + drift detection
 
-Print the structured summary (§7). After writing to pipeline, update `scout-preferences.yml → scan_count` and `last_scan`. If drift threshold met, show the drift warning.
+Print the structured summary (§7), leading with the 🆕 "new since last scan" headline (count of roles written to pipeline this run, plus how long since the previous scan, read from the old `last_scan` value before it is overwritten). After writing to pipeline, update `scout-preferences.yml → last_scan`. Check drift: if `now - last_reviewed > alert_after_days` AND the warning hasn't already fired this stale period (`last_alerted` older than `last_reviewed`), show the drift warning and set `last_alerted`.
 
-**Verify:** Summary shows correct counts. After 3 scans with unchanged settings and 14+ days elapsed, drift warning fires. After user updates any preference, `scan_count` resets to 0.
+**Verify:** Summary shows correct counts. The 🆕 headline reports the right new-role count and the elapsed time since the previous `last_scan`. A scan that surfaces nothing new shows the "pipeline is current" variant. With `last_reviewed` 15+ days ago, the drift warning fires once and not again until preferences are next touched. Running 3 scans in one afternoon (with a recent `last_reviewed`) fires NO drift warning. Editing any preference updates `last_reviewed`, which re-arms the next drift cycle.
 
 ### Step 10: Update port-manifest.yml + CONSOLIDATION-PLAN.md
 
@@ -493,6 +604,8 @@ All 6 original questions resolved in Round 1 (2026-05-26). See §14 for Gemini's
 | Date | Round | Summary |
 |------|-------|---------|
 | 2026-05-26 | Round 1 | 3 persona lenses (Busy/Efficiency, Pivot Seeker, Non-Technical). Q1-Q6 all answered. Incorporated: rigour levels (§5.3), pivot/exploration mode (§9.1, schema + how-it-works), OR-consolidated query strategy (§4.2), niche board additions (HW/EE: SemiWiki, Embedded.com, ClearanceJobs opt-in; Biotech: MassBio, FierceBiotech), reject log rolling 200-entry cap (§5.2), full-JD enrichment with login-wall caveat (§6.3), anti-bot fallback explicit in Step 5, idle nudge + post-setup automation hint (Step 11). |
+| 2026-05-26 | Round 2 | Technical robustness / dev-ops critique. 4 safeguards. **Incorporated:** (1) 24h scrape cache via `last_scraped` + `--force` override (§4.4); (2) normalized dedup key `company-slug::title-slug` + status protection against re-surfacing Applied/Rejected/Archived roles (§5.1); (3) graceful browser-launch degradation — skip P0, continue web search, never crash (Step 5, distinct from existing per-page fallback); (4) time-only drift trigger — dropped the scan_count gate (§3.3, schema). **Adapted (pushback):** "load cached roles" reframed to "skip if <24h" (nothing to replay — prior roles already in pipeline); "3 parallel workers" scoped to the future deterministic-script path only, since the agent-driven flow fetches sequentially. |
+| 2026-05-26 | Round 3 | Bug hunt + UX review spanning both Phase 2b and 7b. **7B incorporated:** LLM-based text extraction first (no CSS selectors) in §4.4; YAML array sanitization + pre-populated setup UX in Step 2; `scan --rejected` audit command in §3.4 + summary tip in §7. **Phase 2b applied directly to files:** Courier New fallback → `SFMono-Regular, Consolas, Liberation Mono, Menlo` in `technical-engineering.html`; empty-parent-container rule added to `modes/cv.md`; template recommendation "Why" grounded in JD text, not generic archetype. **Pushback:** Bug 3 (phantom container) — Gemini's `secondary-contact-row` doesn't exist in our templates; contact-row always has mandatory items, so the specific failure scenario can't occur. Added rule as a general guardrail anyway. UX 3 (idle nudge) — already in Step 11.1 from Round 1; not re-added. |
 
 **Q1 resolution:** Keep 3-signal scoring. "Systems Engineer" title ambiguity makes keyword coverage essential; latency of reading `_profile.md` is negligible (cached in session).
 

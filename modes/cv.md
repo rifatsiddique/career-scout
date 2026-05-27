@@ -123,7 +123,10 @@ For Template 4 (`technical-engineering`):
 ```
 📐 Recommended template (based on your archetype):
   🎯 {Template Name} — {Sub-layout Name}
-     Why: {one sentence matching archetype to template strengths}
+     Why: {one sentence citing something specific from the JD that makes this template the right fit
+           — e.g. "The JD emphasises hardware bring-up and Altium, so T4b's hardware skills matrix
+           and project cards lead with exactly what this hiring manager is scanning for."
+           Do NOT give a generic reason. Anchor it to a word or phrase from the actual job description.}
 
   [Enter] Accept recommendation
   [1]  T1: ATS-Optimized — General Corporate (keyword density, Lever/Greenhouse safe)
@@ -272,6 +275,8 @@ Contact placeholders are filled EXCLUSIVELY from `config/profile.yml → candida
 | `{{WORK_AUTH}}` | `candidate.work_authorization` | Omit the span |
 
 **Complete-tag omission rule:** When any optional contact field is empty, delete the **entire HTML element** from the output — not just the placeholder text inside it. The contact row uses `.contact-item + .contact-item::before` to render `|` separators via CSS. An empty element still triggers the selector and produces a stray `|`. The element must be completely absent.
+
+**Empty parent container rule:** If all child elements inside a parent container are optional AND all are omitted, the parent container itself must also be removed. An empty `<div>` or `<span>` with `display: flex` or margin/padding will still render visible whitespace (phantom gaps) in the PDF even with no visible content. Check: if every child of a container block was omitted, delete the containing block too.
 
 ```
 ✅ Field empty → omit:  <a class="contact-item" href="...">...</a>  (entire tag removed)
