@@ -1,7 +1,7 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.32
-**Last Updated:** 2026-05-26 -- Phase 2b complete: modes/port.md updated (fonts/user/), all checklist items done except all-4-templates live test (deferred — requires populated cv.md). Previously: fonts downloaded, academic-research.html + technical-engineering.html built (T4A/T4B sub-layouts via CSS body class), manifest.yml updated, generate-pdf.mjs --max-pages flag added, modes/cv.md updated with all new placeholders + archetype-aware template selector, profile.yml updated, fonts/user/ created, port-manifest.yml updated.
+**Version:** 1.33
+**Last Updated:** 2026-05-26 -- Phase 7B plan drafted: plan_rs/phase7b-advanced-scout.md (v1.0) — 4-tier source strategy, priority company scraping, Option C (brief confirm) + Option B (AI filters), 3-signal quick-pass scoring, drift detection, new config files (scout-preferences.yml, target-companies.yml). 7A Shadow CV shelved (two installations cover the edge case). Previously: Phase 2b complete.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -825,13 +825,15 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 ### Phase 7: Future Concepts (not scheduled — captured here to avoid losing them)
 
 **Goal:** Capture post-Phase-6 ideas with enough detail that they can be planned when the time comes.
-**Status:** Concept only. No implementation timeline. Items are independent — any can be prioritised without doing the others.
-**Priority order (top candidates first):** 7a → 7b → 7c → 7d → 7e → 7f → 7g → 7h → 7i
+**Status:** 7b has a detailed plan (see below). All others: concept only. Items are independent — any can be prioritised without doing the others.
+**Priority order (top candidates first):** 7b → 7c → 7a (shelved) → 7d → 7e → 7f → 7g → 7h → 7i
 **Detailed spec:** Phase 7 items each warrant their own plan file when scheduled.
 
 ---
 
-#### 7a: Shadow CV / Per-Archetype Master CVs ⭐ TOP PRIORITY
+#### 7a: Shadow CV / Per-Archetype Master CVs — SHELVED
+
+**Status:** Shelved 2026-05-26. Decision: two separate career-scout installations handle the edge case cleanly. The existing tailoring + Block C framing handles bullet reframing within a single profile. Re-evaluate only if a user reports strong need for same-installation dual-track management.
 
 **What it is:** Some candidates genuinely have two different careers on one person — for example, a technical founder equally applying for CTO roles (leadership-heavy CV) and Staff Engineer roles (IC-heavy CV). A single `cv.md` forces a compromise; a shadow CV system lets them maintain separate master CVs per track.
 
@@ -856,6 +858,9 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 ---
 
 #### 7b: Advanced Scout — Playwright Scraping + LinkedIn ⭐ TOP PRIORITY
+
+**Plan:** `plan_rs/phase7b-advanced-scout.md` (v1.0, 2026-05-26) — detailed spec ready for Gemini review. 6 open questions (Q1-Q6) documented at end of plan.
+**Status:** Plan drafted, pending Gemini review and implementation scheduling.
 
 **What it is:** Extending Scout beyond API portals to cover companies that don't offer Greenhouse/Ashby/Lever APIs. Three levels, each independently shippable:
 
