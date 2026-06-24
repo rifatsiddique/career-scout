@@ -47,7 +47,9 @@ location, JD) is sporadic — parsed best-effort and requested when missing.
 ## Step 0 — Minimal gather (lazy-load — do NOT read everything up front)
 
 Read only what's needed to identify and parse:
-- `modes/_profile.md` — writing style (needed for any reply).
+- `modes/_profile.md` — writing style **and the `## Your Recruiter Handling`
+  section if present** (your saved reply stance — see Step 5). If the section is
+  absent, the stance defaults to `warm-open`.
 - **List the `data/recruiters/` directory** to see the existing dossier filenames
   (slugs). Do this actively — list the directory; do not read the dossier contents
   yet, and do not guess the names from memory.
@@ -180,7 +182,41 @@ fold its composite/fit into the reply and the thread note.
 ## Step 5 — Draft the reply (fit-aware)
 
 Voice and register come from `modes/_profile.md`. Output a clean, ready-to-paste
-block. Length scales down with fit. Strategy by verdict:
+block. Length scales down with fit.
+
+### Reply stance (the tone layer — resolve this first)
+
+The **stance** sets how warm, brief, and forward-leaning the reply is. Resolve it
+by precedence — **lowest scope wins**:
+
+```
+one-off (this draft)  >  per-recruiter (dossier Known Facts)  >  global (_profile.md → Your Recruiter Handling)  >  default: warm-open
+```
+
+The four presets:
+- **warm-open** *(default)* — friendly and open; share the resume on request; ask
+  for the JD politely; propose a call only for strong-fit roles.
+- **eager** — friendly and proactive; offer the resume *and* propose a call right
+  away on anything plausible.
+- **curt** — brief and businesslike; minimal pleasantries.
+- **gatekeeper** — firm; require company + JD + comp before any intro call.
+
+If the user has no saved stance, use **warm-open** — never default to a cold or
+demanding tone. A `Stance-Agency` / `Stance-InHouse` value (if set) overrides the
+base `Stance` for that recruiter type.
+
+**Stance bounds delivery, never content.** It changes warmth and how readily you
+offer the resume or a call — it does **not** license embellishment. `eager` never
+invents experience, enthusiasm, or skills the user lacks; every claim still traces
+to `cv.md` / `config/profile.yml` (the NEVER rules hold at every stance).
+
+**Treat the presets as equally valid** — `eager` is a legitimate market-entry
+strategy, not desperation; `gatekeeper` is not "more professional." Never profile
+the user's career stage to pick a stance.
+
+### Per-verdict strategy (what to communicate)
+
+Apply the resolved stance to each verdict:
 
 - **STRONG** → warm; express genuine interest; propose a concrete next step (a
   short call); ask only the 1–2 still-missing facts. (Up to ~6 sentences.)
@@ -195,15 +231,19 @@ block. Length scales down with fit. Strategy by verdict:
   (e.g. "Sounds interesting — send the JD and comp band and I'll take a look.")
 - **networking** (from Step 2.5) → short, warm, human catch-up. No fit talk, no JD demand.
 
-### Recruiter-type bias (applies across all verdicts)
+### Recruiter-type bias (shapes content, NOT tone)
+
+Type informs *what* you ask about; the **stance** owns the tone. Do not let Type
+turn a reply cold unless the resolved stance is `gatekeeper`.
 
 - **in-house** (recruiter sits inside a target company) → bias toward
   bridge-building. Even on a WEAK fit, stay warm, explain what you *are* looking
   for, and ask them to keep you in mind. Protect this relationship.
-- **agency** (third-party) → polite but establish a firm criteria-wall: company
-  name, JD, and comp band are required before any intro call. Don't soften it.
-- **unknown** → firm-but-warm default (lean toward the agency posture for
-  time-protection until the type is learned). When you're already asking for
+- **agency** (third-party) → the client is usually hidden, so it's fair to ask
+  *which company* the role is with (alongside the JD). Keep the tone set by the
+  stance — `warm-open` stays warm; only `gatekeeper` makes company/JD/comp a hard
+  precondition for a call.
+- **unknown** → use the resolved stance as-is. When you're already asking for
   missing info (WORTH-EXPLORING / INSUFFICIENT-INFO), also fold in a brief ask
   whether they're an internal talent partner or representing a client — the answer
   resolves the `Type` for next time. Don't add this to a STRONG or WEAK reply.
@@ -262,6 +302,56 @@ This is the only place the roster is touched — it stays out of the Step 0–5 
   > "Add this to your pipeline for a full evaluation? [y/n]"
   If yes → append a row to the **Pending** table in `data/pipeline.md`.
 - If a thread reaches applied/interviewing → suggest logging it in `data/applications.md`.
+
+---
+
+## Step 6.5 — Learn the user's stance (debounced)
+
+If the user reacts to a draft with a tone/handling preference, capture it — but
+**debounce**: a single offhand reaction must not silently rewrite their global
+outward persona. Classify the signal first:
+
+- **Explicit calibration command** — "always be eager", "never demand comp up
+  front", "use a curt tone from now on". The command *is* the consent → **write
+  it directly** to the stance field, then confirm in one line.
+- **Inferred from a reaction** — "that felt cold", "I'd have shared my resume",
+  "too pushy". Apply it to the **current draft only**, then offer to make it
+  permanent with an inline gate, showing the exact rule:
+  > "Want me to make 'warm-open, share resume readily' your default from now on? [y/n]"
+  Write only on `y`.
+- **One-off** — "just this time, propose a call" → apply to this draft, persist nothing.
+
+**Where a confirmed write lands (scope):**
+- General ("…with recruiters") → global `Stance` in `_profile.md` →
+  `## Your Recruiter Handling`. Create the section if it doesn't exist yet
+  (this is a User-layer write — announce it; never silent).
+- Type-specific and explicitly stated ("…with **agency** recruiters") →
+  `Stance-Agency` / `Stance-InHouse` in that section.
+- About one named recruiter → that recruiter's dossier `Known Facts` as a
+  per-recruiter stance override (e.g. "Stance for this recruiter: curt").
+
+**Never** let a global stance write overwrite an explicit per-recruiter override
+(precedence: one-off > per-recruiter > global).
+
+---
+
+## `## Your Recruiter Handling` schema (in `modes/_profile.md`)
+
+Written by Step 6.5 once a stance is learned — does not exist until then.
+
+```markdown
+## Your Recruiter Handling
+- Stance: warm-open                 <!-- warm-open | eager | curt | gatekeeper -->
+- Resume: share readily on request
+- Calls: selective — strong-fit roles only
+- Ask-first: JD (politely); don't demand comp/company up front
+- Stance-Agency: (unset → use Stance)
+- Stance-InHouse: (unset → use Stance)
+- Notes: <edge-case routing only — NOT core tone>
+```
+
+Core behavior always resolves to one of the four presets; `Notes` is for narrow
+edge-case routing, never a place to stack contradictory tone instructions.
 
 ---
 

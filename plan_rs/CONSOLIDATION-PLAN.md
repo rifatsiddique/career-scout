@@ -1,7 +1,8 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.43
-**Last Updated:** 2026-06-23 -- Phase 8 hardening after 3rd Gemini pass (post-implementation review): recruiter.md patched for roster read-before-write (dedup), active dir listing, unknown-type resolution ask, fact-hoisting before dead-thread compaction, Unicode-accent slugging, pasted-transcript handling. Spec → v0.4.
+**Version:** 1.44
+**Last Updated:** 2026-06-23 -- Phase 8b (Recruiter reply stance) implemented: soft `warm-open` default replaces the hardcoded agency criteria-wall; 4 learned presets (warm-open/eager/curt/gatekeeper) in _profile.md → `## Your Recruiter Handling`; 3-tier precedence + debounced learning loop (Step 6.5); Type shapes content not tone; stance never licenses fabrication. recruiter.md + phase8 spec reconciled. Spec: plan_rs/phase8b-recruiter-stance.md v0.2.
+**Prior:** 1.43 (2026-06-23) -- Phase 8 hardening after 3rd Gemini pass (post-implementation review): recruiter.md patched for roster read-before-write (dedup), active dir listing, unknown-type resolution ask, fact-hoisting before dead-thread compaction, Unicode-accent slugging, pasted-transcript handling. Spec → v0.4.
 **Prior:** 1.42 (2026-06-23) -- Phase 8 (Recruiter Relationship Manager) implemented: new `recruiter` mode (fit-aware reply drafting + per-recruiter dossiers with job threads, lazy-load pipeline, agency/in-house bias, networking intent); scaffolded data/recruiters.md + data/recruiters/; wired routing (AGENTS.md, SKILL.md), porting (port-manifest.yml recruiters group, port.md), and DATA_CONTRACT.md.
 **Prior:** 1.41 (2026-05-27) -- Conversational UX pass 2 (18 changes across 7 files): AGENTS.md warm first-time greeting + returning-user dashboard + interview-scheduled/debrief session-start checks; setup.md writing-samples yes/no + post-setup "search now?" offer; evaluate.md PARTIAL_MATCH gap discussion + deep-research nudge + TOO_JUNIOR/OVERQUALIFIED strategy offer; cv.md per-bullet flagged-rewording yes/no + DOCX format-selection ask + post-PDF interview-prep offer; pipeline-triage.md smart curator + batch offer (≥4 rows) + post-triage CV offer; scan.md inline rejection audit offer; interview-prep.md 48h urgency check + post-debrief status update.
 **Project name:** career-scout
@@ -844,6 +845,28 @@ confirms there's something to assess.
 - [ ] End-to-end scenario tests (a–o in spec §8) — run when user has real recruiter messages
 
 **Spec:** `plan_rs/phase8-recruiter.md` (v0.4 — 3 Gemini review passes; pass 3 = post-implementation operational hardening: roster read-before-write, active dir listing, unknown-type resolution, fact-hoisting on compaction, Unicode slugging, transcript handling)
+
+#### Phase 8b: Recruiter reply stance ✅ Complete (2026-06-23)
+
+**Goal:** Replace Phase 8's hardcoded firm "agency criteria-wall" default (which
+produced cold, demanding replies) with a **soft default + learned, per-user stance**.
+
+**Design decisions locked (2 Gemini passes — EE + recent-grad personas):**
+- Default reply tone = `warm-open`; never cold/demanding by default
+- Four presets: warm-open / eager / curt / gatekeeper (the old wall is now opt-in `gatekeeper`)
+- Stance is data in `modes/_profile.md` → `## Your Recruiter Handling`, learned over time (nothing pre-seeded)
+- 3-tier precedence: one-off > per-recruiter (dossier) > global (`_profile.md`) > warm-open
+- Debounced learning loop: explicit command writes directly; inferred-from-reaction applies to the draft then asks `[y/n]`; one-offs persist nothing
+- Type (agency/in-house) shapes content (ask agency "which company?"), not tone
+- Stance bounds delivery never content — `eager` never licenses fabrication
+- Type-split (`Stance-Agency`/`Stance-InHouse`) only on explicit user instruction; no career-stage auto-profiling
+
+**Deliverables:**
+- [x] `modes/recruiter.md` — Step 0 reads stance; Step 5 stance layer + warm-open default + demoted type-bias; Step 6.5 debounced learning loop; `## Your Recruiter Handling` schema
+- [x] `plan_rs/phase8-recruiter.md` — superseding banner + Step 5 reconciliation
+- [ ] Scenario tests (§6 of 8b spec) — run with real recruiter messages
+
+**Spec:** `plan_rs/phase8b-recruiter-stance.md` (v0.2 — 2 Gemini passes)
 
 ### Phase 2b: Templates 3 & 4 (next up)
 

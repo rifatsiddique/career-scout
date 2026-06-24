@@ -6,6 +6,14 @@
 **Owner:** rifat
 **Depends on:** Phase 1 (evaluate / `_shared.md` scoring), `_profile.md` writing style, interview-prep per-entity doc pattern
 
+> **⚠ Superseded in part by Phase 8b** (`plan_rs/phase8-recruiter-stance.md`):
+> the **default reply tone is now `warm-open`, not the firm agency criteria-wall**.
+> Recruiter `Type` shapes *content* (e.g. asking an agency which company) but no
+> longer dictates a cold tone; tone is a learned **stance** (warm-open / eager /
+> curt / gatekeeper). Where this doc still says "agency = firm criteria-wall as
+> default" (§2 row, §4 Step 5, §10 item 4), read that as the now-opt-in
+> `gatekeeper` stance.
+
 ---
 
 ## 1. Problem & Goal
@@ -249,10 +257,15 @@ user's time. Strategy by verdict:
 - **in-house** (recruiter sits inside a target company) → bias toward
   bridge-building. Even on a WEAK fit, stay warm, explain what you *are* looking
   for, and ask them to keep you in mind. Protect this relationship.
-- **agency** (third-party) → polite but establish a firm criteria-wall: company
-  name, JD, and comp band are required before any intro call. Don't soften this.
-- **unknown** → firm-but-warm default (treat closer to agency for time-protection
-  until the type is learned).
+- **agency** (third-party) → *[superseded by Phase 8b]* it's fair to ask which
+  company the role is with (agencies hide the client), but tone follows the
+  resolved **stance** — only `gatekeeper` makes company/JD/comp a hard precondition
+  for a call. Default `warm-open` stays warm.
+- **unknown** → use the resolved stance (Phase 8b); default `warm-open`. (Originally
+  specced as firm-but-warm — superseded.) When already asking for missing info
+  (WORTH-EXPLORING / INSUFFICIENT-INFO), also fold in a brief ask whether they're
+  an internal talent partner or representing a client — the answer resolves the
+  `Type` for next time. Don't add this to a STRONG or WEAK reply.
 
 Reply must reuse any **standing answers** already in the dossier (don't re-ask
 "are you open to relocation?" if the dossier records "not relocating").
