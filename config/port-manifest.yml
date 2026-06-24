@@ -105,6 +105,21 @@ groups:
         required: false
         description: "Auto-reject audit log from the Advanced Scout (rolling 200-entry cap)"
 
+  - id: recruiters
+    name: "Recruiters"
+    description: "Recruiter dossiers and roster (per-recruiter history + reply log)"
+    files:
+      - path: "data/recruiters.md"
+        strategy: overwrite
+        required: false
+        description: "Recruiter roster index"
+
+      - path: "data/recruiters/*.md"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "Per-recruiter dossiers (history, known facts, job threads) — user-editable, never overwritten"
+
   - id: reports
     name: "Reports"
     description: "Evaluation reports and their HTML companions"

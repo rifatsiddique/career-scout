@@ -334,6 +334,36 @@ decision-to-apply moment, not the tactical prep pass.
 
 ---
 
+## Replying to recruiters
+
+Paste a recruiter's LinkedIn/email message and get a fit-aware, copy-paste-ready reply:
+```
+> recruiter
+  Hi! A recruiter named Jane Smith sent me this: "Great opportunity at Foo, are you open?"
+```
+The system:
+- **Remembers each recruiter** in a dossier (`data/recruiters/{slug}.md`) — one recruiter,
+  many jobs over time, tracked as separate threads. Later messages reuse what you've already
+  told them (comp, location, what you're looking for).
+- **Tailors the reply to fit:** warm + a proposed call for strong matches; a polite
+  boundary-setting decline for poor ones; a quick ask for the JD/comp/location when the
+  message is vague.
+- **Reads the relationship:** in-house recruiters at target companies get bridge-building;
+  third-party agencies get a firm "company name, JD, and comp band before a call."
+- **Handles catch-ups:** a "been a while, coffee?" networking message gets a human reply,
+  not a robotic request for a job description.
+
+Other commands:
+```
+> recruiter Jane Smith        # show what you know about a recruiter
+> recruiter --list            # list every recruiter you've tracked
+> recruiter --log Jane Smith  # record a message/reply without drafting
+```
+
+Nothing is ever sent for you — you always get text to review and paste yourself.
+
+---
+
 ## File Structure
 
 ```
@@ -353,6 +383,7 @@ career-scout/
 │   ├── auto-pipeline.md          # Hands-off end-to-end orchestrator (Phase 5)
 │   ├── batch.md                  # Parallel batch orchestrator (Phase 5)
 │   ├── setup.md                  # Guided profile creation
+│   ├── recruiter.md              # Recruiter reply drafting + dossiers (Phase 8)
 │   └── port.md                   # Profile porting guided UX (Phase 6)
 │
 ├── config/
@@ -369,6 +400,8 @@ career-scout/
 │   ├── archived.md               # Dead/stale links removed from pipeline (recoverable)
 │   ├── .scout-state.json         # Scan state (last run, dry spell counter)
 │   ├── follow-ups.md             # Follow-up tracker
+│   ├── recruiters.md             # Recruiter roster index (Phase 8)
+│   ├── recruiters/               # Per-recruiter dossiers ({slug}.md — history + threads)
 │   └── batch/                    # Ephemeral batch state (gitignored contents)
 │       ├── batch-state.json      # Resume state: per-job status + assigned report numbers
 │       ├── results/              # Per-worker JSON results (archived after merge)

@@ -1,7 +1,9 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.41
-**Last Updated:** 2026-05-27 -- Conversational UX pass 2 (18 changes across 7 files): AGENTS.md warm first-time greeting + returning-user dashboard + interview-scheduled/debrief session-start checks; setup.md writing-samples yes/no + post-setup "search now?" offer; evaluate.md PARTIAL_MATCH gap discussion + deep-research nudge + TOO_JUNIOR/OVERQUALIFIED strategy offer; cv.md per-bullet flagged-rewording yes/no + DOCX format-selection ask + post-PDF interview-prep offer; pipeline-triage.md smart curator + batch offer (≥4 rows) + post-triage CV offer; scan.md inline rejection audit offer; interview-prep.md 48h urgency check + post-debrief status update.
+**Version:** 1.43
+**Last Updated:** 2026-06-23 -- Phase 8 hardening after 3rd Gemini pass (post-implementation review): recruiter.md patched for roster read-before-write (dedup), active dir listing, unknown-type resolution ask, fact-hoisting before dead-thread compaction, Unicode-accent slugging, pasted-transcript handling. Spec → v0.4.
+**Prior:** 1.42 (2026-06-23) -- Phase 8 (Recruiter Relationship Manager) implemented: new `recruiter` mode (fit-aware reply drafting + per-recruiter dossiers with job threads, lazy-load pipeline, agency/in-house bias, networking intent); scaffolded data/recruiters.md + data/recruiters/; wired routing (AGENTS.md, SKILL.md), porting (port-manifest.yml recruiters group, port.md), and DATA_CONTRACT.md.
+**Prior:** 1.41 (2026-05-27) -- Conversational UX pass 2 (18 changes across 7 files): AGENTS.md warm first-time greeting + returning-user dashboard + interview-scheduled/debrief session-start checks; setup.md writing-samples yes/no + post-setup "search now?" offer; evaluate.md PARTIAL_MATCH gap discussion + deep-research nudge + TOO_JUNIOR/OVERQUALIFIED strategy offer; cv.md per-bullet flagged-rewording yes/no + DOCX format-selection ask + post-PDF interview-prep offer; pipeline-triage.md smart curator + batch offer (≥4 rows) + post-triage CV offer; scan.md inline rejection audit offer; interview-prep.md 48h urgency check + post-debrief status update.
 **Project name:** career-scout
 **Source projects:** LangHire, ai-job-search, career-ops, job-search-toolkit
 
@@ -804,6 +806,44 @@ import their data. Avoids all git merge complexity. Old instance is never modifi
 - [x] `README.md` — "Upgrading from a Previous Version" section
 
 **Spec:** `plan_rs/phase6-port-profile.md` (v1.4 — 4 Gemini review rounds, 10/10 final)
+
+### Phase 8: Recruiter Relationship Manager ✅ Complete (2026-06-23)
+
+**Goal:** Help the user reply to recruiter outreach (LinkedIn, email) with a
+fit-aware, copy-paste-ready draft, while accumulating per-recruiter knowledge over
+time so later messages get smarter, better-grounded responses. One recruiter can
+pitch multiple jobs over months; the system models this as a per-recruiter dossier
+with internal job *threads*.
+
+**Approach:** Pure prompt + markdown data (no new scripts), like interview-prep.
+Name is the stable dossier key; everything else is parsed best-effort and requested
+when missing. Lazy-load pipeline keeps token cost low: roster is out of the hot
+path, and the heavy fit inputs (`cv.md`/`profile.yml`) load only after a gate
+confirms there's something to assess.
+
+**Design decisions locked (2 Gemini review passes):**
+- Fit-aware replies: STRONG/WORTH/WEAK/INSUFFICIENT-INFO verdicts via `_shared.md` heuristics
+- Recruiter `Type` (agency / in-house / unknown) drives reply bias (bridge-build vs. criteria-wall)
+- `Intent` (job-pitch / networking) — networking skips the fit check (no robotic "send me a JD")
+- Gatekeeper short-circuit: no role/JD + no comp ⇒ INSUFFICIENT-INFO without reading `cv.md`
+- Roster out of the hot path (O(N) token fix); identity via dossier filename listing
+- Name normalization before slugging (strip emojis/titles/parentheticals)
+- One thread per distinct role; dead-thread compaction to `## Historical Threads`
+- Whole-file read/regenerate/write guardrail to protect User-Layer dossiers
+- Terser low-fit replies + approval gate only for STRONG/WORTH; voice from `_profile.md`
+- Pipeline coupling opt-in only (never auto-push)
+
+**Deliverables:**
+- [x] `modes/recruiter.md` — full mode (sub-modes: default draft, `<name>`, `--list`, `--log`)
+- [x] `data/recruiters.md` — roster scaffold; `data/recruiters/.gitkeep` — dossier dir
+- [x] `config/port-manifest.yml` — new `recruiters` group (roster overwrite, dossiers copy-missing)
+- [x] `modes/port.md` — group menu `[3] recruiters` + "what gets ported" summary
+- [x] `docs/DATA_CONTRACT.md` — User-Layer rows for roster + dossiers
+- [x] `AGENTS.md` — Mode Routing row, User-Layer list, Main Files Reference rows
+- [x] `.agents/skills/career-scout/SKILL.md` — routing, discovery menu, standalone-modes table, Phase status
+- [ ] End-to-end scenario tests (a–o in spec §8) — run when user has real recruiter messages
+
+**Spec:** `plan_rs/phase8-recruiter.md` (v0.4 — 3 Gemini review passes; pass 3 = post-implementation operational hardening: roster read-before-write, active dir listing, unknown-type resolution, fact-hoisting on compaction, Unicode slugging, transcript handling)
 
 ### Phase 2b: Templates 3 & 4 (next up)
 

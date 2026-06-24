@@ -40,7 +40,8 @@ the following steps exactly, in this order, before producing any output:
 | `cv` | Read `modes/_shared.md`, then `modes/cv.md`. Execute CV generation workflow. |
 | `cv --fast` or `cv --draft-only` | Read `modes/_shared.md`, then `modes/cv.md`. Execute with FAST_MODE: draft HTML only, no reviewer or PDF. |
 | `scan` or `scout` | Read `modes/_shared.md`, then `modes/scan.md`. Execute job discovery. |
-| `interview-prep` | Read `modes/interview-prep.md`. (Phase 4 — not yet implemented) |
+| `interview-prep` | Read `modes/interview-prep.md`. Execute company-specific interview prep. |
+| `recruiter` (or pastes a recruiter message) | Read `modes/recruiter.md` (it pulls `modes/_shared.md` lazily for the fit check). Draft a fit-aware recruiter reply. |
 | `port` or `import profile` | Read `modes/port.md`. Execute guided profile porting. |
 | No input / `help` | Read `AGENTS.md` and show the mode routing table. |
 
@@ -54,7 +55,7 @@ Two file layers. This rule is absolute.
 
 **User Layer — NEVER auto-update, NEVER overwrite without explicit user instruction:**
 `cv.md`, `config/profile.yml`, `modes/_profile.md`, `article-digest.md`,
-`data/*`, `reports/*`, `output/*`, `interview-prep/*`, `writing-samples/*`
+`data/*` (incl. `data/recruiters.md` + `data/recruiters/*`), `reports/*`, `output/*`, `interview-prep/*`, `writing-samples/*`
 
 **System Layer — safe to read and update:**
 `AGENTS.md`, `GEMINI.md`, `modes/_shared.md`, `modes/evaluate.md`,

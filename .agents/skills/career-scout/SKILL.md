@@ -3,7 +3,7 @@ name: career-scout
 description: AI-powered job search system — evaluate offers, triage pipeline, configure profile
 arguments: mode
 user-invocable: true
-argument-hint: "[evaluate | pipeline | setup | cv | scan | interview-prep | batch | auto]"
+argument-hint: "[evaluate | pipeline | setup | cv | scan | interview-prep | recruiter | batch | auto]"
 ---
 
 # career-scout — Router
@@ -22,6 +22,7 @@ Determine mode from `$mode`:
 | `cv` | `cv` (Phase 2) |
 | `scan` or `scout` | `scan` |
 | `interview-prep` | `interview-prep` |
+| `recruiter` | `recruiter` |
 | `deep` | `deep` |
 | `auto` | `auto-pipeline` |
 | `batch` | `batch` |
@@ -71,6 +72,11 @@ career-scout — Command Center
   /career-scout interview-prep --debrief <company>  → Post-interview capture — what was asked, what worked, lessons
   /career-scout deep <company>                      → Strategic company research — direction, culture, candidate angle
 
+  /career-scout recruiter           → Paste a recruiter message — get a fit-aware, copy-paste reply draft
+  /career-scout recruiter <name>    → Show what you know about a recruiter (history, threads)
+  /career-scout recruiter --list    → List all recruiters you've tracked
+  /career-scout recruiter --log <name> → Record a message/reply without drafting (reconcile history)
+
   /career-scout port              → Upgrading? Import CV, reports, story bank from a previous instance
   /career-scout port --dry-run    → Preview what would be imported (nothing is written)
   /career-scout port --groups 1,2 → Port only specific groups (core, pipeline, reports, etc.)
@@ -113,6 +119,7 @@ Read only `modes/{mode-file}`.
 |------|-----------|
 | `setup` | `modes/setup.md` |
 | `interview-prep` | `modes/interview-prep.md` |
+| `recruiter` | `modes/recruiter.md` (pulls `modes/_shared.md` lazily for the fit check) |
 | `deep` | `modes/deep.md` |
 | `followup` | `modes/followup.md` |
 | `port` | `modes/port.md` |
@@ -141,3 +148,4 @@ executing any mode. If either is missing or empty, prompt the user to run setup.
 | 4: Interview Prep | **Active** | interview-prep, deep |
 | 5: Auto-Pipeline + Batch | **Active** | auto, batch |
 | 6: Profile Porting | **Active** | port |
+| 8: Recruiter Manager | **Active** | recruiter |

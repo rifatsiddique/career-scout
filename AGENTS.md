@@ -21,7 +21,7 @@ Two layers. Full mapping: `docs/DATA_CONTRACT.md`.
 
 **User Layer — NEVER auto-updated:**
 `cv.md`, `config/profile.yml`, `modes/_profile.md`, `article-digest.md`
-`data/*`, `reports/*`, `output/*`, `interview-prep/*`, `writing-samples/*`
+`data/*` (incl. `data/recruiters.md` + `data/recruiters/*`), `reports/*`, `output/*`, `interview-prep/*`, `writing-samples/*`
 
 **System Layer — safe to update:**
 `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `modes/_shared.md`, all other `modes/*.md`
@@ -132,6 +132,8 @@ Fire for the FIRST undebrief'd row only. Skip if Check B already fired this sess
 | `data/archived.md` | Dead/stale links removed from pipeline (recoverable) |
 | `config/portals.example.yml` | Example portal scanner configuration (copy to portals.yml) |
 | `data/follow-ups.md` | Follow-up tracking |
+| `data/recruiters.md` | Recruiter roster index (written by `recruiter` mode; read only by `recruiter --list`) |
+| `data/recruiters/{slug}.md` | Per-recruiter dossier — history, known facts, job threads, reply log |
 | `data/batch/batch-state.json` | Batch run state — resume tracking, report number assignments, per-job status |
 | `data/batch/results/*.json` | Per-worker result artifacts (ephemeral — archived after merge) |
 | `interview-prep/story-bank.md` | Accumulated STAR+R stories across evaluations |
@@ -163,6 +165,7 @@ loading rules per mode.
 | Types "cv" | Read `modes/_shared.md` + `modes/cv.md` (Phase 2) |
 | Types "scan" or "scout" | Read `modes/_shared.md` + `modes/scan.md` |
 | Types "interview-prep" | Read `modes/interview-prep.md` |
+| Types "recruiter" (or pastes a recruiter message) | Read `modes/recruiter.md` (it lazily pulls `modes/_shared.md` only when a fit check is needed) |
 | Types "deep" | Read `modes/deep.md` |
 | Types "auto" + URL | Read `modes/_shared.md` + `modes/evaluate.md` + `modes/cv.md` + `modes/auto-pipeline.md`, execute hands-off pipeline |
 | Types "batch" | Read `modes/_shared.md` + `modes/batch.md`, orchestrate subagents |

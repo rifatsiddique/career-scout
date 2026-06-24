@@ -9,8 +9,8 @@ previous career-scout instance into this one.
   an existing career-scout folder
 
 **What gets ported:** Personal data only — CV, profile, reports, interview
-prep, story bank, pipeline tracker, scan history, custom templates. See
-`config/port-manifest.yml` for the full list and strategies.
+prep, story bank, pipeline tracker, scan history, recruiter dossiers, custom
+templates. See `config/port-manifest.yml` for the full list and strategies.
 
 **What does NOT get ported:** System files (modes, scripts, default templates,
 and the built-in fonts in `fonts/*.woff2`). The system fonts re-clone with
@@ -90,16 +90,17 @@ After showing the dry-run output, present the available groups:
 >
 >  [1] core        — CV, profile.yml, portals.yml, _profile.md
 >  [2] pipeline    — pipeline.md, applications.md, scan-history.tsv, inbox, follow-ups
->  [3] reports     — Evaluation reports (N found)
->  [4] interview   — Story bank + company prep docs
->  [5] writing     — Writing samples
->  [6] customizations — Custom CV templates, domain packs, and user-added fonts (fonts/user/)
->  [7] output      — Generated PDFs, HTML drafts, DOCX exports
+>  [3] recruiters  — Recruiter dossiers + roster (per-recruiter history & reply log)
+>  [4] reports     — Evaluation reports (N found)
+>  [5] interview   — Story bank + company prep docs
+>  [6] writing     — Writing samples
+>  [7] customizations — Custom CV templates, domain packs, and user-added fonts (fonts/user/)
+>  [8] output      — Generated PDFs, HTML drafts, DOCX exports
 >
 >  Type 'all' for everything, or enter group numbers separated by commas
 >  (e.g., 1,2,3). Default: all."
 
-Map numbers to group IDs: core, pipeline, reports, interview, writing, customizations, output.
+Map numbers to group IDs: core, pipeline, recruiters, reports, interview, writing, customizations, output.
 
 ---
 
