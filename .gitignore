@@ -1,6 +1,11 @@
 node_modules/
 output/
 *.bak
+# Claude Code settings: ignore the folder (machine-local state lives here, e.g.
+# settings.local.json). A shared project settings.json is allow-listed below;
+# if you add one, it will be tracked. Force-add anything else with: git add -f
+.claude/
+!.claude/settings.json
 # data/batch/ — ephemeral runtime state (batch jobs, results, locks). Dirs tracked; contents ignored.
 data/batch/*.json
 data/batch/*.tsv
