@@ -230,6 +230,21 @@ CSS variables (`:root { --margins; --base-font-size; --bullet-spacing }`) that c
 behavior — regenerating the HTML would break this mechanism. The template's `.page { padding: var(--margins); }`
 approach is intentional (reliable across all renderers; `@page { margin: var(--margins) }` is not).
 
+**CONDITIONAL BLOCKS ARE RESOLVED BY CODE — DO NOT TOUCH THE FENCES.** The templates use
+`{{#if NAME}} … {{/if}}` around every OPTIONAL section/element. A deterministic resolver
+(`scripts/resolve-template.mjs`, run in Step 1l, and again inside `generate-pdf.mjs` as a backstop)
+strips these fences. Your ONLY job:
+- **Have data for an optional field** → fill its `{{PLACEHOLDER}}` with the real value. The
+  resolver keeps the content and removes the fence.
+- **No data for an optional field** → **leave the `{{PLACEHOLDER}}` token exactly as written.**
+  Do NOT blank it, do NOT delete the element or the `{{#if}}`/`{{/if}}` lines. The resolver detects
+  the unfilled token and removes the whole block for you.
+- **Never** hand-delete a conditional block, and **never** edit a `{{#if}}` or `{{/if}}` line.
+  Hand-editing fences is what historically leaked `{{#if CERTIFICATIONS}}` into shipped PDFs.
+
+This is strictly less work than before — you no longer manage empty contact spans or empty
+sections by hand.
+
 ### 1e. Read Anti-Slop Writing Rules
 
 Read `templates/writing-rules.md`. These rules apply to every bullet, summary, and
@@ -266,21 +281,27 @@ Contact placeholders are filled EXCLUSIVELY from `config/profile.yml → candida
 |-------------|-------------|------------------------|
 | `{{NAME}}` | `candidate.full_name` | Stop — name is required |
 | `{{EMAIL}}` | `candidate.email` | Stop — email is required |
-| `{{PHONE}}` | `candidate.phone` | Omit the entire `<span class="contact-item">` for phone |
-| `{{LOCATION}}` | `candidate.location` | Omit the span |
-| `{{LINKEDIN_URL}}`, `{{LINKEDIN_DISPLAY}}` | `candidate.linkedin` | Omit the entire `<a>` anchor |
-| `{{GOOGLE_SCHOLAR_URL}}`, `{{GOOGLE_SCHOLAR_DISPLAY}}` | `candidate.google_scholar` | Omit the entire `<a>` anchor |
-| `{{PORTFOLIO_URL}}`, `{{PORTFOLIO_DISPLAY}}` | `candidate.portfolio_url` | Omit the entire `<a>` anchor |
-| `{{GITHUB}}` | `candidate.github` | Omit the span |
-| `{{WORK_AUTH}}` | `candidate.work_authorization` | Omit the span |
+| `{{PHONE}}` | `candidate.phone` | Leave `{{PHONE}}` as-is — resolver removes its `{{#if}}` block |
+| `{{LOCATION}}` | `candidate.location` | Leave `{{LOCATION}}` as-is |
+| `{{LINKEDIN_URL}}`, `{{LINKEDIN_DISPLAY}}` | `candidate.linkedin` | Leave the tokens as-is |
+| `{{GOOGLE_SCHOLAR_URL}}`, `{{GOOGLE_SCHOLAR_DISPLAY}}` | `candidate.google_scholar` | Leave the tokens as-is |
+| `{{PORTFOLIO_URL}}`, `{{PORTFOLIO_DISPLAY}}` | `candidate.portfolio_url` | Leave the tokens as-is |
+| `{{GITHUB}}` | `candidate.github` | Leave the token as-is |
+| `{{WORK_AUTH}}` | `candidate.work_authorization` | Leave the token as-is |
 
-**Complete-tag omission rule:** When any optional contact field is empty, delete the **entire HTML element** from the output — not just the placeholder text inside it. The contact row uses `.contact-item + .contact-item::before` to render `|` separators via CSS. An empty element still triggers the selector and produces a stray `|`. The element must be completely absent.
-
-**Empty parent container rule:** If all child elements inside a parent container are optional AND all are omitted, the parent container itself must also be removed. An empty `<div>` or `<span>` with `display: flex` or margin/padding will still render visible whitespace (phantom gaps) in the PDF even with no visible content. Check: if every child of a container block was omitted, delete the containing block too.
+**Fill-or-leave rule (replaces the old hand-deletion rules):** Each optional contact field lives
+inside a `{{#if}}` block.
+- **Field populated in profile.yml → you MUST fill its `{{PLACEHOLDER}}`.** Silently dropping a
+  field that exists is a defect — the render-time contact audit will warn if a populated field is
+  missing from the CV.
+- **Field empty in profile.yml → leave the `{{PLACEHOLDER}}` token untouched.** The resolver removes
+  the block (and its CSS `|` separator auto-heals — separators are pseudo-elements, never hand-managed).
+- Do NOT delete elements, blank tokens, or edit `{{#if}}`/`{{/if}}` lines yourself.
 
 ```
-✅ Field empty → omit:  <a class="contact-item" href="...">...</a>  (entire tag removed)
-❌ Field empty → leave: <a class="contact-item" href=""></a>         (causes stray |)
+✅ Has data:  fill {{PHONE}} → <span class="contact-item">978-555-0100</span>  (resolver strips fence)
+✅ No data:   leave {{#if PHONE}}<span class="contact-item">{{PHONE}}</span>{{/if}}  (resolver removes block)
+❌ Never:     hand-delete the element or blank the token
 ```
 
 **Short display URLs:** Use the display form of each link (e.g. `linkedin.com/in/name`, `scholar.google.com/citations?user=XXXXX`). If the contact line looks visually crowded, prompt the user to shorten their URLs before generating the PDF.
@@ -288,8 +309,11 @@ Contact placeholders are filled EXCLUSIVELY from `config/profile.yml → candida
 **NEVER:**
 - Use `cv.md`, `article-digest.md`, the JD, or any other source for contact fields
 - Infer or construct a value (no "guess the LinkedIn URL from the name")
-- Leave a template placeholder string (e.g., "+1-555-0123", "your@email.com") in output
-- Emit `N/A` or `TBD` for missing fields — only omit
+- Substitute a fake **sample/default value** (e.g., "+1-555-0123", "your@email.com") for a missing
+  field — these are caught and blocked by the render-time contact audit (exit 4). (This is distinct
+  from leaving an unfilled `{{PLACEHOLDER}}` token, which is the CORRECT action for an empty optional
+  field — the resolver removes it.)
+- Emit `N/A` or `TBD` for missing fields — leave the `{{PLACEHOLDER}}` token instead
 
 For each `{{PLACEHOLDER}}` in the template, generate the content:
 
@@ -304,7 +328,7 @@ For each `{{PLACEHOLDER}}` in the template, generate the content:
 **`{{SECTION_SUMMARY}}`** — localized section heading (e.g., "Professional Summary" / "Professionelles Profil")
 **`{{SECTION_COMPETENCIES}}`** — "Core Competencies" or equivalent
 **`{{SECTION_EXPERIENCE}}`** — "Work Experience" / "Berufserfahrung"
-**`{{SECTION_PROJECTS}}`** — "Projects" / "Projekte"
+**`{{SECTION_PROJECTS}}`** — "Key Projects" (English default) / localized equivalent ("Schlüsselprojekte" for DACH, etc.). In the technical template this section now renders AFTER Work Experience.
 **`{{SECTION_EDUCATION}}`** — "Education" / "Ausbildung"
 **`{{SECTION_CERTIFICATIONS}}`** — "Certifications" / "Zertifizierungen"
 **`{{SECTION_SKILLS}}`** — "Technical Skills" / "Technische Fähigkeiten"
@@ -526,17 +550,24 @@ All three fields (problem, choice, metric) are required. If cv.md lacks the tech
 
 **`{{PATENT_URL}}`** — T4B only. From `profile.yml → candidate.patent_url`. Omit element if empty.
 
-**`{{PATENT_LIST}}`** — T4B and T2b only. Curated patent list (max 4 entries):
+**`{{PATENT_LIST}}`** — T4B, T2b, and now also the general templates (classic-professional,
+ats-optimized) when the candidate has patents. Curated patent list (max 4 entries):
 ```html
 <div class="patent-item">
   <div class="patent-header">
     <span class="patent-title">{Patent Title}</span>
     <span class="patent-number">{Patent Number — e.g. US11234567B2}</span>
   </div>
-  <span class="patent-year">{Filing or grant year}</span>
+  <div class="patent-status">{Status — Granted | Pending | Application} · {Filing or grant year}</div>
 </div>
 ```
-Copy patent numbers and titles verbatim from cv.md. Do NOT infer or construct patent numbers. Omit section if cv.md has no patents. Order: most recent first.
+- Copy patent numbers and titles **verbatim** from cv.md. Do NOT infer or construct patent numbers.
+- **Status:** derive only from what cv.md states. A granted patent number (e.g. `US11234567B2`,
+  has a kind code `B1/B2`) → "Granted". An application/publication number (e.g. `US20210382102A1`,
+  kind code `A1`, or "App. No.") → "Application" or "Pending" if cv.md says so. If cv.md does not
+  indicate status, omit the status word and show only the year — do NOT guess "Granted".
+- Omit the entire section if cv.md has no patents (leave `{{PATENT_LIST}}` unfilled → the resolver
+  removes the `{{#if PATENT_LIST}}` block). Order: most recent first.
 
 **`{{SECTION_HARDWARE_PROJECTS}}`** — Localized heading for T4B projects section: "Tape-outs, Board Designs & Shipped Products"
 
@@ -642,14 +673,33 @@ For every generated bullet, classify:
 Collect all "Flag" items with their original wording for Step 4.
 Silently remove "Never" items and note them in the discard log.
 
-### 1l. Write draft to disk
+### 1l. Write draft to disk, then resolve conditionals
 
-Write the filled, cut, and cleaned HTML to `output/draft-{company-slug}.html`.
+Write the filled HTML to `output/draft-{company-slug}.html`. Leave every `{{#if}}` fence and
+every unfilled optional `{{PLACEHOLDER}}` token exactly as written — do NOT hand-strip them.
 
-**If FAST_MODE is set:** Tell the user:
-> "Draft written to `output/draft-{company-slug}.html`. --fast mode: no reviewer, no PDF generated.
+Then resolve the conditional blocks deterministically so the draft the user reviews is clean:
+
+```
+node scripts/resolve-template.mjs output/draft-{company-slug}.html
+```
+
+This rewrites the draft in place (removes empty optional blocks, strips fences from filled ones)
+and reports kept/removed sections. Check its exit code:
+- **Exit 0:** clean — proceed.
+- **Exit 3:** residual tokens remain. The script lists them with line numbers. These are either a
+  required placeholder you forgot to fill (e.g. `{{NAME}}`, `{{SECTION_EXPERIENCE}}`) or a stray
+  `{{#if}}`/`{{/if}}` from malformed markup. Re-read the draft, fill the named tokens (or fix the
+  fence), and re-run resolve-template. **Do this before continuing** — a leaked token will be
+  blocked again by `generate-pdf.mjs` (exit 3) at render time.
+
+**If FAST_MODE is set:** after resolve-template succeeds (exit 0), tell the user:
+> "Draft written and resolved at `output/draft-{company-slug}.html`. --fast mode: no reviewer, no PDF generated.
 > Edit the file, then run:
 > `node scripts/generate-pdf.mjs output/draft-{company-slug}.html output/cv-{lastname}-{company-slug}-{YYYY-MM-DD}.pdf --max-pages={MAX_PAGES}`"
+>
+> If resolve-template exited 3 in fast mode, instead warn: "⚠️ Your draft still has unresolved
+> tokens ({list them}). Fix these before generating the PDF or it will be blocked."
 
 **STOP. Do not proceed to Step 2.**
 
@@ -817,6 +867,12 @@ so the user can reply naturally (e.g., "1: keep, 2: change to exactly 'Led therm
 {list any items explicitly protected — "per your 'always include patent count' rule", etc.}
 {or: "(none — no CV Generation Rules are set)"}
 
+### Sensitive specifics to confirm (NDA check — you decide):
+{List any named clients/accounts, unreleased product or chip codenames, or proprietary project
+ names that appear in the draft (e.g. "names Nvidia, Google, VW as accounts"). Do NOT rewrite them.
+ Ask: "Are you cleared to name these? Keep / generalize / remove?"}
+{or: "(none — no obviously sensitive specifics detected)"}
+
 ### Flagged rewording (your sign-off needed):
 {If no flags:}
 (No flagged items — all rewording passed the backtrack test.)
@@ -904,9 +960,35 @@ Capture stdout and exit code from generate-pdf.mjs. The script prints: `Pages: {
 ```
 
 Check the exit code:
-- Exit code 0: success, ≤2 pages — proceed
-- Exit code 2: OVERFLOW (>2 pages) — apply overflow fix (see below)
-- Exit code 1: error — report to user with the error message from stdout (not suppressed stderr)
+- **Exit 0:** success, ≤ maxPages — read the `FILL_RATIO:` line and apply the underflow fix below
+  if the CV underfills, otherwise proceed.
+- **Exit 2:** OVERFLOW (> maxPages) — apply overflow fix (see below)
+- **Exit 1:** error — report to user with the error message from stdout (not suppressed stderr)
+- **Exit 3:** LEAK — an unresolved `{{...}}` token reached the renderer. The stdout lists the token(s)
+  and line(s). Re-read the draft, fill the named placeholder (or fix the stray `{{#if}}`/`{{/if}}`),
+  re-run resolve-template, then regenerate. **Bounded to ONE self-correction attempt** — if it leaks
+  again, stop and show the user the offending tokens (do not loop).
+- **Exit 4:** CONTACT FAILURE — a fabricated or placeholder contact value, OR (with `--strict-contact`)
+  a populated profile.yml field missing from the CV. Stop. Show the offending value. Instruct the user
+  to fix `config/profile.yml` or the draft. **Never auto-invent a contact value.** Do not regenerate
+  until the user resolves it.
+
+### Underflow fix (measure-then-expand — max ONE extra render)
+
+If exit 0 AND `MAX_PAGES` ≥ 2 AND the render came back as **1 page** OR the `FILL_RATIO:` on the
+last page is **< 0.6** (a sparse final page), the CV underfills. Run ONE expansion pass, then
+regenerate once:
+
+1. Apply the Layer 0.5 expansion ladder (§1i): verbose recent-role bullets → restore real bullets
+   that were cut for low relevance (pull from `cv.md` + the discard log from Step 1k) → fuller
+   project descriptions → 5–6 sentence summary → full skills/certs. **No fabrication** — every
+   added line traces to `cv.md` / `article-digest.md`.
+2. Use the `FILL_RATIO` magnitude to gauge how much to add (e.g. 0.30 on a 1-page render ⇒ roughly
+   half a page short ⇒ restore ~4–6 bullets).
+3. Regenerate the PDF once. Accept the result even if still slightly under — do NOT loop. If still
+   sparse, tell the user the CV is content-bound and offer to add specific material.
+
+Underflow and overflow are mutually exclusive; never run both in one generation.
 
 ### Overflow fix (max 2 Playwright invocations total)
 
@@ -1072,7 +1154,9 @@ Apply all CSS changes at once — do not loop. Single regeneration.
 | `{{EDUCATION}}` | Education HTML | |
 | `{{CERTIFICATIONS}}` | Certifications HTML | optional |
 | `{{SKILLS}}` | Skills grid HTML | |
-| `{{#if PROJECTS}}...{{/if}}` | Conditional section | If no relevant projects exist, remove the entire `<div class="section">` block for Projects from the HTML before writing to disk. Same for Certifications. These are not Handlebars templates — the LLM removes the conditional block manually. |
+| `{{#if PROJECTS}}...{{/if}}` | Conditional section | **Resolved by code, not by hand.** Fill `{{PROJECTS}}` if there are projects; otherwise leave the token. `resolve-template.mjs` (Step 1l) and `generate-pdf.mjs` (backstop) strip the fence when filled and delete the whole block when unfilled. NEVER hand-edit the `{{#if}}`/`{{/if}}` lines. |
+| `{{PATENT_LIST}}` | Patent list HTML | optional; title + number + status·year. Verbatim numbers from cv.md |
+| `{{SUMMARY_TEXT}}` (technical) | Optional exec summary | technical template only — fill for senior/principal/director framing; leave token to omit |
 
 ---
 
@@ -1085,3 +1169,6 @@ Apply all CSS changes at once — do not loop. Single regeneration.
 5. **Single merged interaction** — Step 4 combines backtrack flags + discard summary
 6. **Max 2 Playwright invocations** — initial + one retry with all CSS fallbacks at once
 7. **Verbatim text** — if user provides exact replacement wording, use it as-is
+8. **Never hand-edit `{{#if}}`/`{{/if}}` fences** — fill tokens or leave them; the resolver +
+   generate-pdf leak gate (exit 3) handle removal and block any leak. Contact fabrication is
+   blocked at render (exit 4) — never invent contact data.

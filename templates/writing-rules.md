@@ -145,6 +145,25 @@ These markers signal human authorship:
 
 ---
 
+## Technical-Term Casing (source of truth: cv.md)
+
+- Preserve the **exact casing** of technical terms, acronyms, tools, and brands as the candidate
+  wrote them in `cv.md` (e.g. SiC, GaN, PMBus, LTspice, MATLAB/Simulink, SEMI F-47, CISPR, PSIM,
+  Altium). Never re-case, "normalize", or guess casing.
+- If a term is not in `cv.md`, follow the casing in the JD or profile — do not invent a convention.
+- Correct casing signals precision to technical reviewers; mis-casing ("ltspice", "pmbus") quietly
+  undermines credibility.
+
+## Sensitive / NDA-Bound Specifics (flag, never auto-rewrite)
+
+- Named clients/accounts, unreleased product or chip codenames, and proprietary project names may
+  be NDA-bound. Do **not** silently rewrite or sanitize them — that risks destroying accurate,
+  approved content the candidate is permitted to use.
+- Instead, **flag** any such specifics in the CV review step (cv.md Step 4) so the candidate
+  decides whether to keep, generalize, or remove them. The candidate owns this call.
+
+---
+
 ## Scope
 
 These rules apply to:

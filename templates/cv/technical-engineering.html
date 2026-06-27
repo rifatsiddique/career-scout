@@ -133,6 +133,10 @@
     content: " | ";
     color: #ccc;
     margin: 0 6px;
+    /* inline-block stops an adjacent underlined <a>'s text-decoration from
+       painting through the separator; text-decoration:none is belt-and-suspenders */
+    display: inline-block;
+    text-decoration: none;
   }
 
   /* GitHub / Portfolio styled links (T4A) */
@@ -165,6 +169,13 @@
     border-bottom: 1.5px solid var(--accent-muted);
     padding-bottom: 3px;
     margin-bottom: 10px;
+  }
+
+  /* === PROFESSIONAL SUMMARY (optional) === */
+  .summary-text {
+    font-size: var(--base-font-size);
+    line-height: 1.55;
+    color: #333;
   }
 
   /* === SKILLS (T4A — Software/ML) === */
@@ -485,6 +496,13 @@
     white-space: nowrap;
   }
 
+  .patent-status {
+    font-family: var(--mono-font);
+    font-size: 9px;
+    color: var(--accent-muted);
+    margin-top: 1px;
+  }
+
   /* === PRINT === */
   @media print {
     body {
@@ -525,31 +543,29 @@
     </div>
   </div>
 
-  <!-- SKILLS: T4A (Software/ML) — tiered tag cloud -->
+  <!-- PROFESSIONAL SUMMARY (optional — executive framing for senior/principal/director) -->
+  {{#if SUMMARY_TEXT}}
+  <div class="section avoid-break">
+    <div class="section-title">{{SECTION_SUMMARY}}</div>
+    <div class="summary-text">{{SUMMARY_TEXT}}</div>
+  </div>
+  {{/if}}
+
+  <!-- SKILLS: T4A (Software/ML) — tiered tag cloud. Fill the TECH_STACK placeholder for the
+       software sub-layout; leave it for hardware and the resolver removes this block. -->
+  {{#if TECH_STACK}}
   <div class="section software-only avoid-break">
     <div class="section-title">{{SECTION_SKILLS}}</div>
     {{TECH_STACK}}
   </div>
+  {{/if}}
 
-  <!-- SKILLS: T4B (Hardware EE) — category matrix -->
+  <!-- SKILLS: T4B (Hardware EE) — category matrix. Fill the TECH_STACK_HARDWARE placeholder for the
+       hardware sub-layout; leave it for software and the resolver removes this block. -->
+  {{#if TECH_STACK_HARDWARE}}
   <div class="section hardware-only avoid-break">
     <div class="section-title">{{SECTION_SKILLS}}</div>
     {{TECH_STACK_HARDWARE}}
-  </div>
-
-  <!-- PROJECTS: T4A (Software/ML) -->
-  {{#if PROJECTS}}
-  <div class="section software-only">
-    <div class="section-title">{{SECTION_PROJECTS}}</div>
-    {{PROJECTS}}
-  </div>
-  {{/if}}
-
-  <!-- PROJECTS: T4B (Hardware EE) — tape-outs, board designs, shipped products -->
-  {{#if HARDWARE_PROJECTS}}
-  <div class="section hardware-only">
-    <div class="section-title">{{SECTION_HARDWARE_PROJECTS}}</div>
-    {{HARDWARE_PROJECTS}}
   </div>
   {{/if}}
 
@@ -558,6 +574,22 @@
     <div class="section-title">{{SECTION_EXPERIENCE}}</div>
     {{EXPERIENCE}}
   </div>
+
+  <!-- KEY PROJECTS: T4A (Software/ML) — placed AFTER Experience (senior ordering) -->
+  {{#if PROJECTS}}
+  <div class="section software-only">
+    <div class="section-title">{{SECTION_PROJECTS}}</div>
+    {{PROJECTS}}
+  </div>
+  {{/if}}
+
+  <!-- KEY PROJECTS: T4B (Hardware EE) — board designs & shipped products, AFTER Experience -->
+  {{#if HARDWARE_PROJECTS}}
+  <div class="section hardware-only">
+    <div class="section-title">{{SECTION_HARDWARE_PROJECTS}}</div>
+    {{HARDWARE_PROJECTS}}
+  </div>
+  {{/if}}
 
   <!-- EDUCATION (position controlled by drafter: top for 0-4 YOE, bottom for 5+ YOE) -->
   <!-- EDUCATION_BLOCK -->

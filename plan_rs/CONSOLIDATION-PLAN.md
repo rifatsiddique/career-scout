@@ -1,7 +1,8 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.44
-**Last Updated:** 2026-06-23 -- Phase 8b (Recruiter reply stance) implemented: soft `warm-open` default replaces the hardcoded agency criteria-wall; 4 learned presets (warm-open/eager/curt/gatekeeper) in _profile.md → `## Your Recruiter Handling`; 3-tier precedence + debounced learning loop (Step 6.5); Type shapes content not tone; stance never licenses fabrication. recruiter.md + phase8 spec reconciled. Spec: plan_rs/phase8b-recruiter-stance.md v0.2.
+**Version:** 1.45
+**Last Updated:** 2026-06-26 -- Phase 2 hardening implemented: deterministic CV template resolver (`scripts/lib/cv-template.mjs`) + unbypassable leak gate (exit 3) and contact gate (exit 4) in `generate-pdf.mjs` (shared `lib/contact-audit.mjs`); `FILL_RATIO` measure-then-expand underflow loop; technical-template Projects-after-Experience + "Key Projects" + optional summary + patent status; optional patent section on classic/ats; contact-separator underline + competency-clip fixes; cv.md contract rewrite (leave tokens, never hand-edit fences) + writing-rules casing/NDA rules. Spec: plan_rs/cv-template-resolver-and-underflow.md v1.5 (3 Gemini rounds).
+**Prior:** 1.44 (2026-06-23) -- Phase 8b (Recruiter reply stance) implemented: soft `warm-open` default replaces the hardcoded agency criteria-wall; 4 learned presets (warm-open/eager/curt/gatekeeper) in _profile.md → `## Your Recruiter Handling`; 3-tier precedence + debounced learning loop (Step 6.5); Type shapes content not tone; stance never licenses fabrication. recruiter.md + phase8 spec reconciled. Spec: plan_rs/phase8b-recruiter-stance.md v0.2.
 **Prior:** 1.43 (2026-06-23) -- Phase 8 hardening after 3rd Gemini pass (post-implementation review): recruiter.md patched for roster read-before-write (dedup), active dir listing, unknown-type resolution ask, fact-hoisting before dead-thread compaction, Unicode-accent slugging, pasted-transcript handling. Spec → v0.4.
 **Prior:** 1.42 (2026-06-23) -- Phase 8 (Recruiter Relationship Manager) implemented: new `recruiter` mode (fit-aware reply drafting + per-recruiter dossiers with job threads, lazy-load pipeline, agency/in-house bias, networking intent); scaffolded data/recruiters.md + data/recruiters/; wired routing (AGENTS.md, SKILL.md), porting (port-manifest.yml recruiters group, port.md), and DATA_CONTRACT.md.
 **Prior:** 1.41 (2026-05-27) -- Conversational UX pass 2 (18 changes across 7 files): AGENTS.md warm first-time greeting + returning-user dashboard + interview-scheduled/debrief session-start checks; setup.md writing-samples yes/no + post-setup "search now?" offer; evaluate.md PARTIAL_MATCH gap discussion + deep-research nudge + TOO_JUNIOR/OVERQUALIFIED strategy offer; cv.md per-bullet flagged-rewording yes/no + DOCX format-selection ask + post-PDF interview-prep offer; pipeline-triage.md smart curator + batch offer (≥4 rows) + post-triage CV offer; scan.md inline rejection audit offer; interview-prep.md 48h urgency check + post-debrief status update.
@@ -556,6 +557,33 @@ project-root/
   - [x] **A: Drop headline line.** Removed `.header-headline` div + CSS from classic-professional.html. `narrative.headline` retained in profile.yml for evaluation context. `{{HEADLINE}}` removed from modes/cv.md placeholder table and fill logic.
   - [x] **B: Visible links + Google Scholar.** `.contact-row a` CSS updated to `color: inherit; text-decoration: underline; text-decoration-color: #ccc; text-underline-offset: 2.5px; text-decoration-thickness: 1px` in both templates. `google_scholar` optional field added to profile.yml + both templates + audit-contact.mjs. Complete-tag-omission rule documented in modes/cv.md Step 1g.
   - [x] **C: 2-page padding rule (Layer 0.5).** Added underflow expansion logic in modes/cv.md Step 1i. Gate 1: hard early-career stop (< 10 raw bullets in cv.md → target 1 page). Gate 2: `target_pages` config (1 or 2, default 2). Padding caps: 7/5/4 bullets per role. `target_pages: 2` field added to profile.yml cv block.
+
+#### Phase 2 hardening — deterministic resolver + contact gate + underflow + template fixes (2026-06-26)
+
+**Spec:** `plan_rs/cv-template-resolver-and-underflow.md` (v1.5 — 3 Gemini review rounds, build log §14).
+Prompted by real shipped CVs leaking `{{#if CERTIFICATIONS}}` / `{{PHONE}}` tokens into PDFs.
+
+- [x] **Deterministic template resolver** (`scripts/lib/cv-template.mjs`): `resolveConditionals`
+  (negative-lookahead parser — a missing `{{/if}}` can't mass-delete adjacent sections),
+  `findLeaks` (dual matcher: strict `{{[A-Z0-9_]+}}` + liberal control-tag), `lintTemplate`.
+  `scripts/resolve-template.mjs` CLI + `scripts/_test-cv-template.mjs` (8 tests). Moves conditional
+  handling out of the LLM's hands entirely.
+- [x] **Unbypassable gates in `generate-pdf.mjs`**: in-memory resolve → leak gate (exit 3) →
+  contact gate (exit 4) before render. Contact logic extracted to shared `scripts/lib/contact-audit.mjs`
+  (also detects omission of populated profile.yml fields); `audit-contact.mjs` refactored onto it.
+  Kills the leaked-placeholder and hallucinated-contact classes on every path (normal/`--fast`/batch).
+- [x] **Measure-then-expand underflow**: `FILL_RATIO` probe in `generate-pdf.mjs` (print-media,
+  printable-width measurement); `modes/cv.md` Step 5b triggers one bounded expansion render when the
+  last page is sparse (< 0.6). Replaces the blind pre-render bullet-count heuristic as the trigger.
+- [x] **Template fixes**: contact-separator underline bleed fixed (all 4 templates); competency
+  `overflow:hidden` clipping removed (classic + ats); technical template — Projects moved AFTER
+  Experience + renamed "Key Projects", optional `{{#if SUMMARY_TEXT}}` block, skills blocks made
+  conditional, patent `status` field; optional `{{#if PATENT_LIST}}` added to classic + ats.
+- [x] **`modes/cv.md` contract rewrite**: drafter leaves tokens for empty optional fields and never
+  hand-edits `{{#if}}` fences; fill-or-leave contact rule; exit-3 bounded self-correction / exit-4 stop;
+  Step 4 NDA sensitive-specifics flag. `templates/writing-rules.md`: preserve-cv.md-casing rule.
+- [ ] Deferred (per Gemini reviews): executive-font sub-layout, publications-everywhere on general
+  templates, silicon tape-out matrix, batch browser-instance reuse.
 
 #### Phase 2 post-launch polish (2026-05-22)
 
