@@ -12,3 +12,5 @@ data/batch/*.tsv
 data/batch/*.lock
 data/batch/results/*.json
 data/batch/results/processed/*.json
+# curate: ephemeral undo pointer for `log`
+data/.last-append.json

@@ -45,11 +45,6 @@ groups:
         required: true
         description: "Archetypes, behavioral profile, writing style, and CV generation rules"
 
-      - path: "article-digest.md"
-        strategy: overwrite
-        required: false
-        description: "Proof points and project deep-dives"
-
       - path: "config/scout-preferences.yml"
         strategy: overwrite
         required: false
@@ -140,15 +135,24 @@ groups:
     name: "Interview Prep"
     description: "Story bank and company-specific prep docs"
     files:
-      - path: "interview-prep/story-bank.md"
+      - path: "stories.md"
         strategy: overwrite
         required: false
-        description: "Accumulated STAR+R stories — main body of your interview library"
+        description: "Accumulated STAR+R stories — curated from career-log.md"
+
+      - path: "career-log.md"
+        strategy: overwrite
+        required: false
+        description: "Career log — canonical source of truth for CV and stories"
+
+      - path: "data/curate-state.md"
+        strategy: overwrite
+        required: false
+        description: "Curate watermarks, suppressions, and declined proposals"
 
       - path: "interview-prep/*.md"
         strategy: copy-missing
         glob: true
-        exclude: ["story-bank.md"]
         required: false
         description: "Per-company interview prep and deep-research docs"
 

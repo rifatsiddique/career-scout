@@ -17,7 +17,6 @@ LLM streaming cannot pause mid-output to execute tools. Gather all data first.
 | `cv.md` | Stop. Tell user: "cv.md is empty — run setup first or paste your CV." |
 | `config/profile.yml` | Stop. Tell user: "profile.yml not configured — run setup first." |
 | `modes/_profile.md` | Warn, continue with generic evaluation (no archetype framing) |
-| `article-digest.md` | Skip silently — optional |
 
 ### 0b. Extract JD
 
@@ -47,7 +46,25 @@ Read these files now; do not re-read them mid-output:
 1. `config/profile.yml` — candidate identity, comp targets, market
 2. `modes/_profile.md` — archetypes, behavioral profile, scoring calibration
 3. `cv.md` — master CV
-4. `article-digest.md` — if it exists, read it for proof point details
+4. `stories.md` — read in Block E for proof-point depth (not here)
+
+**Role-drift check (do this before scoring).** Compare `config/profile.yml`'s current
+role and seniority against the most recent Work Experience heading in `cv.md`. If they
+disagree, say so before producing any score:
+
+```
+⚠️  profile.yml says "{profile role}" but your CV's current role is "{cv role}".
+    Seniority drives comp targets (Block D) and level gating (Block C), so the scores
+    below may be wrong. Run setup's incremental update to fix it.
+```
+
+Do not stop — score anyway, with the warning attached. A silently stale seniority
+corrupts every evaluation; a visible one costs a line.
+
+**Staleness nudge.** If `career-log.md` exists and is newer than `cv.md`, print one
+line: `ℹ career-log.md has entries newer than cv.md — run 'curate' first? [y/n]`.
+Proceed with the current `cv.md` if declined. Check with
+`node scripts/curate-state.mjs stale` (exit 10 = stale).
 
 ### 0f. Detect archetype
 
@@ -263,6 +280,11 @@ Read `config/profile.yml → location.market` and adapt:
 
 ## Block E — Personalization Plan
 
+Read `stories.md` for proof-point depth before writing this block. `cv.md` is a
+compressed cut — its bullets state outcomes but not the detail that makes a
+personalization angle land. `stories.md` holds that depth in curated form. (Never read
+`career-log.md` here; only `curate`/`fix` read the log.)
+
 Top 5 CV changes for this specific role, using the archetype's "What they buy"
 and "Proof point sources" from `_profile.md`:
 
@@ -295,12 +317,12 @@ point sources" from `_profile.md` to select experiences.
 |---|---------------|-------------|--------|-----------|--------|
 | 1 | {requirement} | {title} | {tags} | {action summary} | {quantified result} |
 
-**Story Bank:** Read `interview-prep/story-bank.md`. Skip stories already there (match by title).
-For each new story, append to `interview-prep/story-bank.md` using the Phase 4 schema below.
+**Story Bank:** Read `stories.md`. Skip stories already there (match by title).
+For each new story, append to `stories.md` using the Phase 4 schema below.
 Apply P6 User Layer Write Confirmation before appending:
 ```
-⚠️ This will update story-bank.md (adding {N} new stories from this evaluation).
-   A backup has been saved to story-bank.md.bak.
+⚠️ This will update stories.md (adding {N} new stories from this evaluation).
+   A backup has been saved to stories.md.bak.
    Proceed? [y/N]
 ```
 
@@ -399,7 +421,7 @@ Use the stored check-history.mjs JSON output:
 Only execute this block if the final composite score is 90 or above (PERFECT_MATCH).
 
 Draft answers to the 3-5 most common application form questions for this role type.
-Base all answers on `cv.md` and `article-digest.md` — no fabrication.
+Base all answers on `cv.md` and `stories.md` — no fabrication.
 
 For each question:
 - **Q:** {question}

@@ -3,7 +3,7 @@ name: career-scout
 description: AI-powered job search system — evaluate offers, triage pipeline, configure profile
 arguments: mode
 user-invocable: true
-argument-hint: "[evaluate | pipeline | setup | cv | scan | interview-prep | recruiter | batch | auto]"
+argument-hint: "[evaluate | pipeline | setup | cv | scan | interview-prep | recruiter | log | curate | batch | auto]"
 ---
 
 # career-scout — Router
@@ -24,6 +24,7 @@ Determine mode from `$mode`:
 | `interview-prep` | `interview-prep` |
 | `recruiter` | `recruiter` |
 | `deep` | `deep` |
+| `log`, `curate`, `fix` | `curate` |
 | `auto` | `auto-pipeline` |
 | `batch` | `batch` |
 | `followup` | `followup` (Phase 5) |
@@ -76,6 +77,10 @@ career-scout — Command Center
   /career-scout recruiter <name>    → Show what you know about a recruiter (history, threads)
   /career-scout recruiter --list    → List all recruiters you've tracked
   /career-scout recruiter --log <name> → Record a message/reply without drafting (reconcile history)
+
+  /career-scout log <text>        → Jot down a win while it's fresh (no confirmation, instant)
+  /career-scout curate            → Fold recent wins into your CV and story bank
+  /career-scout fix <what's wrong> → Correct something — routes to the right file automatically
 
   /career-scout port              → Upgrading? Import CV, reports, story bank from a previous instance
   /career-scout port --dry-run    → Preview what would be imported (nothing is written)

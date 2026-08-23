@@ -43,6 +43,29 @@ Before starting, verify:
 
 If both are ready, proceed.
 
+**Legacy instances (no `career-log.md`).** An older career-scout folder predates the
+career log. `config/port-manifest.yml` handles the file copies; after the port
+completes, tell the user:
+
+> "Your old instance predates the career log, so a few files landed in places nothing
+>  reads any more:
+>    • `interview-prep/story-bank.md` — stories now live in `stories.md` at the root
+>    • `article-digest.md` — retired; the career log holds this depth now
+>
+>  Want me to seed `career-log.md` from your old CV, article digest, and story bank so
+>  future `curate` runs have your history? [y/n]"
+
+On yes:
+1. Append each source file as its own dated SEED entry via
+   `node scripts/curate-state.mjs append "SEED — {what it is}:
+{contents}"`.
+2. Move the old `interview-prep/story-bank.md` content into `stories.md` (P6 confirm),
+   then delete the dead file.
+3. Run `curate` once so `cv.md` and `stories.md` reflect the seeded history.
+
+On no: leave the files where they are, say plainly that nothing reads them, and note
+that the log starts empty and fills from here.
+
 ---
 
 ## Step 1: Get Source Path

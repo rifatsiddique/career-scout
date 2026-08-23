@@ -277,6 +277,6 @@ reduces the "lost in the middle" degradation on long contexts.)
 ## Global rules (always apply)
 
 - **Never auto-submit.** No form fills, no apply button clicks. The user reviews all materials before submitting.
-- **No fabrication.** Every claim in generated CV materials traces back to `cv.md` or `article-digest.md`.
+- **No fabrication.** Every claim in generated CV materials traces back to `cv.md` or `stories.md`.
 - **Batch is read-only on pipeline.md/applications.md during dispatch.** Workers write only their own `results/{id}.json`. The orchestrator's merge step (Step 6) is the single writer to shared trackers.
 - **Respect the data contract.** `data/batch/` is ephemeral system state. `applications.md`, `pipeline.md`, `reports/`, and `output/` are User layer (`.bak` written before any modification).

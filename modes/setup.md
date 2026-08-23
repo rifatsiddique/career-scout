@@ -30,7 +30,7 @@ If the user wants to wipe their profile and start completely fresh:
 2. Delete `config/profile.yml` and `modes/_profile.md` (and any `.bak` files if they want a clean slate)
 3. Run setup from Step 1 — the system detects missing files and rebuilds from `cv.md`
 
-`cv.md`, `data/`, `reports/`, and `interview-prep/story-bank.md` are never touched by reset.
+`career-log.md`, `cv.md`, `stories.md`, `data/`, and `reports/` are never touched by reset.
 
 ---
 
@@ -48,7 +48,38 @@ Check if `cv.md` has content (more than just headers):
   >
   > Which do you prefer?"
 
-  Create or populate `cv.md` from what the user provides. Format as clean markdown with sections: Professional Summary, Work Experience, Projects, Education, Skills.
+  **Seed the career log first, then curate.** What the user pastes is raw material, and
+  `career-log.md` is now the canonical source for `cv.md`. So:
+
+  1. Append what they gave you verbatim as a SEED entry:
+     `node scripts/curate-state.mjs append "SEED — imported CV:
+{their text}"`
+  2. Curate it into `cv.md` (read `modes/curate.md` for the rules; format as clean
+     markdown with sections: Professional Summary, Work Experience, Projects,
+     Education, Skills).
+  3. Then offer the depth pass below.
+
+  ### Depth pass (optional, skippable)
+
+  A CV is a lossy compression of a career — it has the breadth (every role, date,
+  title) but not the depth (the metric that didn't fit, why it was hard). Ask for
+  depth on a few items only, never for the whole career at once.
+
+  Pick the **3–5 items most likely to matter**: the most recent role, the two or three
+  bullets carrying the biggest metrics, anything matching the user's archetypes. Ask
+  one at a time:
+
+  > "Your CV says *'{bullet}'*. Tell me about that one like you'd tell a colleague —
+  >  what was hard, what you actually did, how it ended up. Two or three sentences is
+  >  plenty.
+  >  (Say **skip** for this one, or **skip all** to finish setup now.)"
+
+  Append each answer as its own log entry via the script. **skip all** exits
+  immediately to Step 2 and is never re-prompted during setup.
+
+  Anything not covered here gets picked up later, in context: `interview-prep` and `cv`
+  offer to capture depth when they hit thin material for a **live opportunity** — never
+  as a standing backlog.
 
 - **If cv.md has content:** Mention port once, then proceed:
   > "I can see your CV is ready. If you also have an old career-scout folder
@@ -133,7 +164,7 @@ Work through each archetype interactively. The goal is a table like:
 ```markdown
 | Archetype | Domain signals | What they buy | Proof point sources |
 |-----------|---------------|---------------|---------------------|
-| {name} | {signals — phrases, patterns, context clues} | {value you deliver} | {cv.md section, article-digest.md} |
+| {name} | {signals — phrases, patterns, context clues} | {value you deliver} | {cv.md section, stories.md} |
 ```
 
 For each archetype: ask, confirm, refine. Don't rush this step — quality here drives every future evaluation.
@@ -365,7 +396,7 @@ Print a brief summary of what was configured, then offer a single clear next act
   🏢 Company watch list: {N} companies
 
 As you evaluate jobs, I'll automatically build an interview story bank at
-interview-prep/story-bank.md — so by the time you land an interview, your prep is half done.
+stories.md — so by the time you land an interview, your prep is half done.
 ```
 
 Then ask:

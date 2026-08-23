@@ -20,7 +20,7 @@ Designed for human-in-the-loop: AI evaluates, drafts, and coaches. The user revi
 Two layers. Full mapping: `docs/DATA_CONTRACT.md`.
 
 **User Layer — NEVER auto-updated:**
-`cv.md`, `config/profile.yml`, `modes/_profile.md`, `article-digest.md`
+`career-log.md`, `cv.md`, `stories.md`, `config/profile.yml`, `modes/_profile.md`
 `data/*` (incl. `data/recruiters.md` + `data/recruiters/*`), `reports/*`, `output/*`, `interview-prep/*`, `writing-samples/*`
 
 **System Layer — safe to update:**
@@ -124,7 +124,9 @@ Fire for the FIRST undebrief'd row only. Skip if Check B already fired this sess
 | `cv.md` | Master CV — canonical source, never hardcode metrics |
 | `config/profile.yml` | Candidate identity, targets, compensation, market |
 | `modes/_profile.md` | Archetypes, behavioral profile, writing style, scoring calibration |
-| `article-digest.md` | Detailed project proof points (optional) |
+| `career-log.md` | **Canonical.** Append-only plain-English career log — read only by `curate`/`fix` |
+| `stories.md` | STAR+R stories, curated from the log — also Block E proof-point depth |
+| `data/curate-state.md` | Curate watermarks, suppressions, declined proposals |
 | `data/pipeline.md` | Scout → Evaluator contract (pending + evaluated jobs) |
 | `data/applications.md` | Full application tracker |
 | `data/scan-history.tsv` | Scout dedup history — read via `scripts/check-history.mjs` only |
@@ -136,7 +138,7 @@ Fire for the FIRST undebrief'd row only. Skip if Check B already fired this sess
 | `data/recruiters/{slug}.md` | Per-recruiter dossier — history, known facts, job threads, reply log |
 | `data/batch/batch-state.json` | Batch run state — resume tracking, report number assignments, per-job status |
 | `data/batch/results/*.json` | Per-worker result artifacts (ephemeral — archived after merge) |
-| `interview-prep/story-bank.md` | Accumulated STAR+R stories across evaluations |
+| `stories.md` | Accumulated STAR+R stories across evaluations |
 | `reports/` | Evaluation reports (`{###}-{company-slug}-{YYYY-MM-DD}.md`) |
 | `output/` | Generated CVs and cover letters |
 
@@ -167,6 +169,7 @@ loading rules per mode.
 | Types "interview-prep" | Read `modes/interview-prep.md` |
 | Types "recruiter" (or pastes a recruiter message) | Read `modes/recruiter.md` (it lazily pulls `modes/_shared.md` only when a fit check is needed) |
 | Types "deep" | Read `modes/deep.md` |
+| Types "log", "curate", or "fix" | Read `modes/curate.md` — career log → cv.md + stories.md |
 | Types "auto" + URL | Read `modes/_shared.md` + `modes/evaluate.md` + `modes/cv.md` + `modes/auto-pipeline.md`, execute hands-off pipeline |
 | Types "batch" | Read `modes/_shared.md` + `modes/batch.md`, orchestrate subagents |
 | Types "port" or "import profile" | Read `modes/port.md`, execute guided profile porting |
@@ -207,7 +210,7 @@ See `modes/_shared.md` for:
 - **NEVER submit an application without the user reviewing it first.** Fill forms, draft answers, generate PDFs — but always STOP before clicking Submit/Send/Apply. The user makes the final call.
 - **Discourage low-fit applications.** If composite < 80 (below GOOD_FIT), explicitly recommend against applying. Only proceed if the user has a specific reason.
 - **Quality over quantity.** A well-targeted application to 5 companies beats a generic blast to 50.
-- **No fabrication.** Every claim in generated materials must trace back to `cv.md` or `article-digest.md`. The "interview backtrack test": could the candidate comfortably explain this bullet in an interview without backtracking?
+- **No fabrication.** Every claim in generated materials must trace back to `cv.md` or `stories.md`. The "interview backtrack test": could the candidate comfortably explain this bullet in an interview without backtracking?
 
 ---
 

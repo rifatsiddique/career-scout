@@ -13,7 +13,7 @@
 
 **This is the most important rule in this project.**
 
-- **User layer files** (`cv.md`, `config/profile.yml`, `modes/_profile.md`, `data/*`, `interview-prep/story-bank.md`, `writing-samples/*`, `reports/*`, `output/*`) contain the user's personal data and accumulated work.
+- **User layer files** (`career-log.md`, `cv.md`, `stories.md`, `config/profile.yml`, `modes/_profile.md`, `data/*`, `writing-samples/*`, `reports/*`, `output/*`) contain the user's personal data and accumulated work.
 - **NEVER overwrite, reset, or auto-update User layer files.** Only append to or modify them when explicitly instructed by the user.
 - **System layer files** (`modes/*.md` except `_profile.md`, `templates/*`, `scripts/*`, `fonts/*`, `docs/*`, `AGENTS.md`, `.agents/*`) contain instructions and tooling. These are safe to update.
 - When in doubt about a file's layer, treat it as User layer.

@@ -65,7 +65,11 @@ or note "JD not available in report — tailoring will rely on Block E only."
 1. `config/profile.yml` — candidate identity, market, comp targets
 2. `modes/_profile.md` — archetypes, behavioral profile, **CV Generation Rules**, writing style
 3. `cv.md` — master CV (full content)
-4. `article-digest.md` — if it exists, read for proof point details
+
+**Staleness nudge.** Run `node scripts/curate-state.mjs stale`. If it exits 10,
+`career-log.md` has entries newer than `cv.md` — print one line:
+`ℹ career-log.md has entries newer than cv.md — run 'curate' first? [y/n]` and proceed
+with the current `cv.md` if declined. Never read `career-log.md` in this mode.
 
 **After reading profile.yml, immediately print the contact audit report:**
 
@@ -307,7 +311,7 @@ inside a `{{#if}}` block.
 **Short display URLs:** Use the display form of each link (e.g. `linkedin.com/in/name`, `scholar.google.com/citations?user=XXXXX`). If the contact line looks visually crowded, prompt the user to shorten their URLs before generating the PDF.
 
 **NEVER:**
-- Use `cv.md`, `article-digest.md`, the JD, or any other source for contact fields
+- Use `cv.md`, `stories.md`, the JD, or any other source for contact fields
 - Infer or construct a value (no "guess the LinkedIn URL from the name")
 - Substitute a fake **sample/default value** (e.g., "+1-555-0123", "your@email.com") for a missing
   field — these are caught and blocked by the render-time contact audit (exit 4). (This is distinct
@@ -638,7 +642,7 @@ Per-role bullet caps during padding (override Layer 1 caps):
 - Older roles: up to **4 bullets** (Layer 1 cap: 3) if space permits
 
 **Hard constraints on padding:**
-- All added content must trace to `cv.md` or `article-digest.md`. No fabrication.
+- All added content must trace to `cv.md` or `stories.md`. No fabrication.
 - CV Generation Rules (`_profile.md → ## CV Generation Rules`) take absolute precedence —
   e.g. if rules say "max 5 bullets", that cap holds even during padding.
 - Stop at estimated 2 pages. The overflow fallback chain (Layers 1–3) remains as backstop.
@@ -982,7 +986,7 @@ regenerate once:
 1. Apply the Layer 0.5 expansion ladder (§1i): verbose recent-role bullets → restore real bullets
    that were cut for low relevance (pull from `cv.md` + the discard log from Step 1k) → fuller
    project descriptions → 5–6 sentence summary → full skills/certs. **No fabrication** — every
-   added line traces to `cv.md` / `article-digest.md`.
+   added line traces to `cv.md` / `stories.md`.
 2. Use the `FILL_RATIO` magnitude to gauge how much to add (e.g. 0.30 on a 1-page render ⇒ roughly
    half a page short ⇒ restore ~4–6 bullets).
 3. Regenerate the PDF once. Accept the result even if still slightly under — do NOT loop. If still

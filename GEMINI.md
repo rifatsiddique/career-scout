@@ -42,6 +42,7 @@ the following steps exactly, in this order, before producing any output:
 | `scan` or `scout` | Read `modes/_shared.md`, then `modes/scan.md`. Execute job discovery. |
 | `interview-prep` | Read `modes/interview-prep.md`. Execute company-specific interview prep. |
 | `recruiter` (or pastes a recruiter message) | Read `modes/recruiter.md` (it pulls `modes/_shared.md` lazily for the fit check). Draft a fit-aware recruiter reply. |
+| `log`, `curate`, or `fix` | Read `modes/curate.md`. `log` appends to `career-log.md` with NO confirmation; `curate` proposes diffs into `cv.md` + `stories.md`; `fix` routes a correction. |
 | `port` or `import profile` | Read `modes/port.md`. Execute guided profile porting. |
 | No input / `help` | Read `AGENTS.md` and show the mode routing table. |
 
@@ -54,12 +55,12 @@ For full system context, rules, and file reference table: read `AGENTS.md`.
 Two file layers. This rule is absolute.
 
 **User Layer — NEVER auto-update, NEVER overwrite without explicit user instruction:**
-`cv.md`, `config/profile.yml`, `modes/_profile.md`, `article-digest.md`,
+`career-log.md`, `cv.md`, `stories.md`, `config/profile.yml`, `modes/_profile.md`,
 `data/*` (incl. `data/recruiters.md` + `data/recruiters/*`), `reports/*`, `output/*`, `interview-prep/*`, `writing-samples/*`
 
 **System Layer — safe to read and update:**
 `AGENTS.md`, `GEMINI.md`, `modes/_shared.md`, `modes/evaluate.md`,
-`modes/pipeline-triage.md`, `modes/setup.md`, `scripts/*`, `templates/*`
+`modes/pipeline-triage.md`, `modes/setup.md`, `modes/curate.md`, `scripts/*`, `templates/*`
 
 When the user asks to customize anything (archetypes, comp targets, location,
 writing style), write to `modes/_profile.md` or `config/profile.yml` ONLY.
@@ -100,7 +101,7 @@ Do NOT proceed with evaluations until setup or port is complete.
 - If composite score < 80 (below GOOD_FIT), explicitly recommend against applying.
   Only continue if the user has a specific strategic reason to override.
 - Every claim in generated materials must trace back to `cv.md` or
-  `article-digest.md`. No fabrication.
+  `stories.md`. No fabrication.
 
 ---
 

@@ -31,7 +31,7 @@ archetypes:
       before they reach users.
     proof_point_sources:
       - "cv.md — any evals, monitoring, or platform work"
-      - "article-digest.md — production AI system metrics"
+      - "stories.md — production AI system metrics"
 
   - name: "Agentic / Automation"
     domain_signals:
@@ -54,7 +54,7 @@ archetypes:
       should defer to humans.
     proof_point_sources:
       - "cv.md — any agent, workflow, or automation projects"
-      - "article-digest.md — agent reliability metrics"
+      - "stories.md — agent reliability metrics"
 
   - name: "Technical AI PM"
     domain_signals:
@@ -76,7 +76,7 @@ archetypes:
       adoption with non-technical stakeholders.
     proof_point_sources:
       - "cv.md — product launches, roadmap ownership, cross-functional work"
-      - "article-digest.md — adoption metrics, user outcomes"
+      - "stories.md — adoption metrics, user outcomes"
 
   - name: "ML Infrastructure / MLOps"
     domain_signals:
@@ -99,7 +99,7 @@ archetypes:
       maturity to move models from notebook to production reliably.
     proof_point_sources:
       - "cv.md — pipeline builds, training cost reductions, scale metrics"
-      - "article-digest.md — infrastructure throughput and cost metrics"
+      - "stories.md — infrastructure throughput and cost metrics"
 
   - name: "Applied ML / Data Science"
     domain_signals:
@@ -123,7 +123,7 @@ archetypes:
       communicate uncertainty and trade-offs to non-technical stakeholders.
     proof_point_sources:
       - "cv.md — model impact metrics, A/B test results, business outcomes"
-      - "article-digest.md — model performance and business ROI"
+      - "stories.md — model performance and business ROI"
 
   - name: "AI Research Engineering"
     domain_signals:
@@ -148,4 +148,4 @@ archetypes:
       explain complex work to engineering and leadership.
     proof_point_sources:
       - "cv.md — publications, research projects, novel implementations"
-      - "article-digest.md — benchmark results, research impact"
+      - "stories.md — benchmark results, research impact"

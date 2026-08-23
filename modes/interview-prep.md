@@ -33,7 +33,7 @@ If no company is provided, ask: "Which company and role are you prepping for?"
 
 ### 0c. Dependency check
 - Does `data/applications.md` exist? If not, interview date will be unavailable — note this.
-- Does `interview-prep/story-bank.md` exist with any stories? If not, story mapping will have all "none" rows — still proceed.
+- Does `stories.md` exist with any stories? If not, story mapping will have all "none" rows — still proceed.
 - Does `reports/` have any files? If not, ask for JD text or URL to use in place of an evaluation report.
 
 ### 0d. Locate the evaluation report
@@ -60,9 +60,8 @@ Read these files before generating any output:
 - `config/profile.yml` — candidate identity, comp targets, market
 - `modes/_profile.md` — archetypes, behavioral profile, writing style
 - `cv.md` — proof points, experience, skills
-- `article-digest.md` — if the file exists, extended proof points
 - The evaluation report from 0d (Block A archetype, Block B fit, Block E personalization, Block F existing stories)
-- `interview-prep/story-bank.md` — all current stories (new and legacy schemas — see Story Bank Parser section)
+- `stories.md` — all current stories (new and legacy schemas — see Story Bank Parser section)
 - `data/applications.md` — look up interview date for this company+role if present
 
 ### 0f. Read compensation context
@@ -161,7 +160,7 @@ and what a strong answer looks like for this specific candidate (reference CV pr
 
 ### 4b. Behavioral
 Leadership, conflict, collaboration, failure. For each: the question, source tag, and which
-story from `story-bank.md` maps best.
+story from `stories.md` maps best.
 
 ### 4c. Role-Specific
 Questions tied to the JD requirements — archetype-aware (use Block A's detected archetype
@@ -204,7 +203,7 @@ For each gap: "You need a story about {topic}. Consider: {specific experience fr
 could become a STAR+R story}."
 
 After the table, offer: "I found {N} story gaps. Want me to draft them now? [y/N]"
-(Only prompt if gaps > 0. Apply P6 before appending to story-bank.md.)
+(Only prompt if gaps > 0. Apply P6 before appending to stories.md.)
 
 ---
 
@@ -456,7 +455,7 @@ Follow-up prompts (print after the above, when applicable):
 
 ## Story Bank Parser
 
-Accept both schemas when reading `interview-prep/story-bank.md`.
+Accept both schemas when reading `stories.md`.
 
 **New schema (Phase 4+):**
 ```markdown
@@ -494,7 +493,7 @@ mixed formats until `--bank-review` offers per-entry upgrade.
 
 ## Sub-mode: --bank-review
 
-A structured curation pass over `interview-prep/story-bank.md`. Interactive — every change
+A structured curation pass over `stories.md`. Interactive — every change
 requires P6 confirmation.
 
 ### Step 1: Load and index
@@ -551,8 +550,8 @@ After:   | **Themes** | scaling, cross-team |
 ### Step 6: Confirm and write (P6)
 For every edit — merge, mark superseded, Reflection update, schema upgrade:
 ```
-⚠️ This will update story-bank.md ({what's changing in 1 line}).
-   A backup has been saved to story-bank.md.bak.
+⚠️ This will update stories.md ({what's changing in 1 line}).
+   A backup has been saved to stories.md.bak.
    Proceed? [y/N]
 ```
 Default N — user must type y or yes.
@@ -607,7 +606,7 @@ Apply P6 per story update.
 
 ### Step 5: Capture new stories
 "Did any questions come up with no matching story? Want to draft them now?"
-If yes: draft in STAR+R new schema format. Apply P6 before appending to story-bank.md.
+If yes: draft in STAR+R new schema format. Apply P6 before appending to stories.md.
 
 ### Step 6: Application status update
 
@@ -648,7 +647,7 @@ Generated:
 ```
 
 **P6 — User Layer Write Confirmation**
-Before writing to any User Layer file (`story-bank.md`, `applications.md`, etc.):
+Before writing to any User Layer file (`stories.md`, `applications.md`, etc.):
 ```
 ⚠️ This will update {file} ({what's changing}).
    A backup has been saved to {file}.bak.

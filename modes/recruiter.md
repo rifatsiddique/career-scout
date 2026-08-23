@@ -59,7 +59,7 @@ After Step 1 resolves the slug, read the contents of the **one** matched dossier
 **Do NOT read** `data/recruiters.md` (the roster) here — it grows O(N) and is
 write-mostly; it's read only by `recruiter --list` and during the Step 6 write
 phase. **Do NOT read** `cv.md`,
-`config/profile.yml`, or `article-digest.md` yet — those heavy fit inputs load
+`config/profile.yml`, or `stories.md` yet — those heavy fit inputs load
 lazily in Step 4, and only if the Step 2.5 gate passes.
 
 ### Sub-mode short-circuits (handle before Step 1)

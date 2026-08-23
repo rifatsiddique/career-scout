@@ -368,7 +368,9 @@ Nothing is ever sent for you — you always get text to review and paste yoursel
 
 ```
 career-scout/
-├── cv.md                         # Your master CV (USER layer — fill this in)
+├── career-log.md                 # Your career log — CANONICAL (USER layer, append-only)
+├── cv.md                         # Master CV — curated from the log (USER layer, editable)
+├── stories.md                    # STAR+R interview stories — curated from the log (USER layer)
 ├── AGENTS.md                     # CLI-agnostic system instructions
 ├── CLAUDE.md                     # Claude Code wrapper
 ├── GEMINI.md                     # Gemini CLI wrapper
@@ -379,6 +381,7 @@ career-scout/
 │   ├── evaluate.md               # A-G evaluation blocks
 │   ├── cv.md                     # CV generation workflow (Phase 2)
 │   ├── scan.md                   # Job discovery workflow (Phase 3)
+│   ├── curate.md                 # Career log → cv.md + stories.md (log / curate / fix)
 │   ├── pipeline-triage.md        # Pipeline inbox processing
 │   ├── auto-pipeline.md          # Hands-off end-to-end orchestrator (Phase 5)
 │   ├── batch.md                  # Parallel batch orchestrator (Phase 5)
@@ -426,8 +429,7 @@ career-scout/
 │
 ├── reports/                      # Evaluation reports (generated)
 ├── output/                       # Generated CVs (Phase 2)
-├── interview-prep/
-│   └── story-bank.md             # Accumulated STAR+R stories
+├── interview-prep/               # Per-company prep and deep-research docs
 └── plan_rs/                      # All planning documents
 ```
 
@@ -438,10 +440,10 @@ career-scout/
 Two types of files. **Never mix them up.**
 
 **User layer** — your personal data, never auto-updated:
-`cv.md`, `config/profile.yml`, `config/portals.yml`, `modes/_profile.md`, `data/*`, `reports/*`, `output/*`, `interview-prep/story-bank.md`, `writing-samples/*`
+`career-log.md`, `cv.md`, `stories.md`, `config/profile.yml`, `config/portals.yml`, `modes/_profile.md`, `data/*`, `reports/*`, `output/*`, `interview-prep/*`, `writing-samples/*`
 
 **System layer** — instructions and tooling, safe to update:
-`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `modes/_shared.md`, `modes/evaluate.md`, `modes/cv.md`, `modes/scan.md`, `modes/pipeline-triage.md`, `modes/setup.md`, `modes/auto-pipeline.md`, `modes/batch.md`, `scripts/*`, `templates/*`, `config/portals.example.yml`
+`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `modes/_shared.md`, `modes/evaluate.md`, `modes/cv.md`, `modes/scan.md`, `modes/pipeline-triage.md`, `modes/setup.md`, `modes/curate.md`, `modes/auto-pipeline.md`, `modes/batch.md`, `scripts/*`, `templates/*`, `config/portals.example.yml`
 
 Full mapping: `docs/DATA_CONTRACT.md`
 
@@ -567,11 +569,36 @@ control (reduces them in order if CV overflows 2 pages).
 ```
 Setup backs up your existing files to `.bak` before writing new ones, so nothing is lost.
 
-### Updating your CV incrementally
+### Keeping your CV current — the career log
 
-`cv.md` is a plain markdown file — edit it in any text editor (or in Gemini) at any time. Every evaluation reads it fresh, so additions are picked up immediately.
+`career-log.md` is where you dump milestones in plain English, whenever they happen. No
+structure, no tags, no confirmation:
 
-For detailed proof points (project metrics, case study narratives) that are too long for the CV itself, use `article-digest.md` in the project root. The evaluate mode reads it automatically if it exists.
+```
+career-scout log "Got the 3kW LLC prototype to 97.2% peak efficiency. Planar
+                  transformer, first board spin. I owned the magnetics."
+```
+
+Or just open the file and type. Then, when you feel like it:
+
+```
+career-scout curate     # folds new entries into cv.md and stories.md
+```
+
+Curate shows you a diff per file and asks before writing (with a `.bak`). It reads your
+whole log, so an entry from February and its follow-up in August become one bullet
+rather than two disconnected ones.
+
+**`cv.md` and `stories.md` are yours to edit.** Curate never regenerates them — it only
+proposes changes against what's on disk, so anything you reword, reorder, or write by
+hand simply stays. If you delete a bullet, it is not proposed again.
+
+Got something wrong? `career-scout fix "the efficiency number is 97.2, not 97.8"` — it
+works out whether the log is wrong (and corrects it at the source, so the fix reaches
+your stories too) or just the CV wording, and tells you which it found.
+
+Detailed proof points live in the log and in `stories.md`; `article-digest.md` is no
+longer used.
 
 ### Starting from scratch
 
@@ -585,7 +612,7 @@ If you want to wipe your profile completely and start over:
    ```
 2. Run `setup` — it detects missing files and starts fresh from your `cv.md`
 
-Your `cv.md`, `reports/`, `data/`, and `interview-prep/story-bank.md` are **not** affected — only the profile configuration is wiped.
+Your `career-log.md`, `cv.md`, `stories.md`, `reports/`, and `data/` are **not** affected — only the profile configuration is wiped.
 
 ---
 

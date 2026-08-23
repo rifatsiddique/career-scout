@@ -202,7 +202,7 @@ Steps:
 ## Global rules (always apply)
 
 - **Never auto-submit.** No form fills, no submit/apply button clicks. The user makes the final call.
-- **No fabrication.** Every claim in generated CV materials must trace back to `cv.md` or `article-digest.md`.
+- **No fabrication.** Every claim in generated CV materials must trace back to `cv.md` or `stories.md`.
 - **Contact-info fabrication is a hard stop.** Audit exit 2 halts CV generation in all modes.
 - **Backtrack-test "Never" items** are silently removed (already automatic in cv.md Step 1k).
 - **P6 User Layer write confirmation** is auto-confirmed in `auto` (`.bak` written). Interactive users who want explicit confirmation should use `cv` directly.

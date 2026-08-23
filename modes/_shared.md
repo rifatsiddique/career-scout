@@ -13,12 +13,14 @@
 | Master CV | `cv.md` (project root) | ALWAYS before evaluating |
 | Candidate profile | `config/profile.yml` | ALWAYS (identity, targets, compensation, market) |
 | Archetypes + narrative | `modes/_profile.md` | ALWAYS (user archetypes, behavioral profile, writing style) |
-| Proof points digest | `article-digest.md` | If it exists — detailed project metrics |
+| Career log | `career-log.md` | ONLY by `curate` / `fix` — never by evaluation or CV modes |
+| Story bank | `stories.md` | Interview stories + proof-point depth (Block E, interview-prep) |
 | Writing samples | `writing-samples/` | Only if no Writing Style section in `_profile.md` |
 | Pipeline inbox | `data/pipeline.md` | When running pipeline triage |
 | Scan history | `data/scan-history.tsv` | Block G only — use check-history.mjs script, not raw read |
 
-**RULE: NEVER hardcode metrics from the CV.** Read them from `cv.md` + `article-digest.md` at evaluation time.
+**RULE: NEVER hardcode metrics from the CV.** Read them from `cv.md` + `stories.md` at evaluation time.
+**RULE: Only `curate` and `fix` read `career-log.md`.** Every other mode reads the curated files (`cv.md`, `stories.md`). The log is raw, unverified, and may contain superseded facts.
 **RULE: `_profile.md` overrides defaults here.** Read it AFTER this file.
 **RULE: Raw `scan-history.tsv` is never passed to the LLM.** Use `node scripts/check-history.mjs` to parse it.
 
@@ -103,8 +105,8 @@ Run this algorithm at the start of every evaluation:
 
 ### NEVER
 
-1. Invent experience or metrics — read from `cv.md` and `article-digest.md` only
-2. Modify `cv.md`, `article-digest.md`, or any User-layer file without explicit instruction
+1. Invent experience or metrics — read from `cv.md` and `stories.md` only
+2. Modify `cv.md`, `career-log.md`, or any User-layer file without explicit instruction
 3. Submit applications or send messages on behalf of the candidate
 4. Pass raw `scan-history.tsv` to context — use `node scripts/check-history.mjs` instead
 5. Generate a CV without reading the JD first
@@ -117,7 +119,7 @@ Run this algorithm at the start of every evaluation:
 
 ### ALWAYS
 
-1. Read `cv.md`, `_profile.md`, and `article-digest.md` (if exists) before evaluating
+1. Read `cv.md`, `_profile.md`, and `stories.md` (if exists) before evaluating
 2. Detect archetype from `_profile.md` (dynamic lookup, not hardcoded)
 3. Cite exact lines from the CV when matching requirements
 4. Use web search for comp and company data — never invent salary numbers
@@ -346,5 +348,5 @@ Rules:
 - **Default is N (cancel)** — typo safety; user must type y or yes
 - **Skippable** — recognize `--yes` / `--no-confirm` flags for batch/headless mode
 
-Applies to: story-bank.md appends, applications.md edits, pipeline.md edits, any other User Layer write.
+Applies to: stories.md appends, applications.md edits, pipeline.md edits, any other User Layer write.
 - No passive voice in CV bullets
