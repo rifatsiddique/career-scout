@@ -63,6 +63,12 @@ guarantee that; code can.
 If the script reports `appended: false` (identical entry already present), say so
 plainly rather than claiming a write happened.
 
+**Demote headings inside an entry.** `## ` at entry level delimits entries, so any
+`#`/`##` heading in pasted content (a CV, a story bank, a doc) must be demoted to
+`###` or deeper before appending. Otherwise `## Work Experience` reads as an entry
+boundary and the log fragments into nonsense. Applies to `log`, to setup's SEED
+import, and to port's legacy migration.
+
 ---
 
 ## `curate` — fold the log into the curated files
