@@ -72,16 +72,21 @@ Run these checks once at the start of each session, after confirming all three p
 
 Read `data/pipeline.md` (count Pending rows), `config/scout-preferences.yml` (read `last_scan`), and `data/applications.md` (count rows by status). Show a brief state snapshot, then suggest ONE action:
 
+Also read the date of the last `## YYYY-MM-DD` heading in `career-log.md`.
+
 ```
 Welcome back! Here's where things stand:
   • {N} jobs waiting in your queue
   • Last scout search: {N} days ago  (or "never run yet")
   • {N} active applications
+  • Career log: last entry {N} days ago   (omit this line if < 30 days)
 ```
 
 Then suggest the single most useful next action:
 - If `last_scan` > 4 days ago (or never): "Shall I run a scan to find new roles? [y/n]"
 - Else if pending jobs > 0: "Want to evaluate the jobs in your queue? [y/n]"
+- Else if the career log's last entry is > 30 days old: "Anything happened at work
+  worth capturing? Even one line keeps your CV current — just say `log <what happened>`."
 - Else: "Want to evaluate a specific job? Paste a URL or job description."
 
 If user says yes: trigger the suggested mode. If no: ask "What would you like to work on?"
@@ -114,6 +119,28 @@ If the prep doc exists but has NO debrief section, print once:
 - **no** → proceed normally
 
 Fire for the FIRST undebrief'd row only. Skip if Check B already fired this session.
+
+### Check D: Career Log Freshness
+
+The career log only works if it gets fed. But nagging kills it faster than silence, so
+prompts are **anchored to moments where something log-worthy just happened**, not to a
+calendar:
+
+| Moment | Prompt |
+|---|---|
+| Interview debrief captured (`interview-prep --debrief`) | "Interviews usually surface things you'd forgotten you did. Anything worth adding to your career log?" |
+| An application moves to Offer / Accepted | "That's a milestone — want it in your career log? It'll show up in your CV next time you curate." |
+| `cv` cuts a bullet for thin content | "I trimmed *'{bullet}'* — there wasn't enough detail to make it land. Want to tell me what actually happened so it's stronger next time?" |
+| `interview-prep` maps a question to material that only exists as a one-line CV bullet | "I only have the CV line for this. Want to tell me the story properly? It goes in your log and I'll have it for every future interview." |
+| Dashboard, log untouched > 30 days | The line above |
+
+**Rules that keep this from becoming noise:**
+- **At most ONE career-log prompt per session.** If any of the above fired, the rest stay quiet.
+- Never fire while the user is mid-task on something else — wait until that task reports.
+- Declining is never re-asked in the same session, and the 30-day dashboard line does not
+  repeat until another 30 days pass.
+- The offer is always one line with a concrete next step, never a lecture about why
+  logging matters.
 
 ---
 

@@ -662,6 +662,20 @@ Score each remaining (unprotected) line on:
 
 Cut the lowest-scoring lines. Relevance beats recency — an older-role bullet that matches JD keywords survives over a recent-role bullet that doesn't.
 
+**Track thin cuts for the career-log offer (AGENTS.md Check D).** Note any bullet cut
+because it was *underspecified* — no metric, no scope, nothing concrete — as opposed to
+cut for irrelevance. Those are not weak accomplishments; they are accomplishments the
+career log never captured properly. Surface at most ONE at the end of the run (Step 4),
+after the CV is delivered — never mid-generation:
+
+> "One thing I trimmed: *'{bullet}'* — there wasn't enough detail for it to earn space.
+>  If you tell me what actually happened there, I'll put it in your career log and it'll
+>  be stronger in every CV from now on. [tell me / skip]"
+
+On "tell me": append via `node scripts/curate-state.mjs append "<text>"`. Skip entirely
+if a career-log prompt already fired this session, or if nothing was cut for thinness.
+Never list every thin bullet — one, the most relevant to this JD.
+
 ### 1k. Apply interview backtrack test (skip if FAST_MODE)
 
 **If FAST_MODE: skip this step entirely — proceed to 1l.**

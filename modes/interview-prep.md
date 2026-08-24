@@ -205,6 +205,20 @@ could become a STAR+R story}."
 After the table, offer: "I found {N} story gaps. Want me to draft them now? [y/N]"
 (Only prompt if gaps > 0. Apply P6 before appending to stories.md.)
 
+**Thin material — offer to capture it properly (AGENTS.md Check D).** If the best
+available material for a question is a single CV bullet with no story behind it, the
+drafted story will be thin no matter how well it is written, because there is nothing
+underneath it. Say so and offer the fix:
+
+> "For *'{question}'* all I have is the CV line — *'{bullet}'*. I can draft something,
+>  but it'll be thin. Two or three sentences from you about what actually happened
+>  would make it real, and it goes in your career log so every future interview has it.
+>  [tell me / draft it anyway]"
+
+On "tell me": append what they say via `node scripts/curate-state.mjs append`, then
+draft the story from it. Ask only for material tied to **this** interview — never
+walk the user through every thin bullet in their CV. One per session, max.
+
 ---
 
 ## Step 5b: Pre-Flight Cheatsheet
@@ -598,6 +612,23 @@ Apply P6 before writing:
    A backup has been saved to {file}.bak.
    Proceed? [y/N]
 ```
+
+### After the debrief — offer to log (AGENTS.md Check D)
+
+Interviews reliably surface work the candidate had forgotten they did: a number they
+quoted out loud, a project they described that never made it onto the CV. That makes
+the debrief the single best moment to feed the career log.
+
+Once the debrief is written, offer **once**:
+
+> "Talking through your work usually shakes loose things you'd forgotten. Anything from
+>  that conversation worth putting in your career log? Just tell me in plain English —
+>  I'll append it and it'll flow into your CV next time you curate."
+
+On yes: append via `node scripts/curate-state.mjs append "<text>"` (no confirmation
+needed — see `modes/curate.md`). On no: move on, and do not ask again this session.
+
+Skip entirely if a career-log prompt already fired this session — one per session, max.
 
 ### Step 4: Offer story Reflection updates
 For each story used, ask: "Story #{NN} — {title}: want me to add a note to its Reflection?"

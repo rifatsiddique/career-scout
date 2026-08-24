@@ -371,9 +371,24 @@ three times (`modes/setup.md` 8c–8e).
 
 **3. Ongoing enrichment.** A thread whose only source is the SEED import has never
 been told properly. That is derived by looking at the log, not tracked as a flag.
-Enrichment is offered **only against a live opportunity** — `interview-prep` hits a
-thin area while mapping a likely question, or `cv` cuts a thin bullet for weak content
-— never as a standing backlog. Nobody gets interrogated about a ten-year-old job.
+
+Enrichment is offered **only against a live opportunity**, never as a standing
+backlog, so nobody gets interrogated about a ten-year-old job. The prompts are
+anchored to moments where something log-worthy just happened — specified as
+**Check D in `AGENTS.md`** and implemented at four sites:
+
+| Moment | Where |
+|---|---|
+| Interview debrief captured | `modes/interview-prep.md` — debrief step |
+| Story mapping hits a one-line CV bullet with no story behind it | `modes/interview-prep.md` Step 5 |
+| `cv` cuts a bullet for thinness (not irrelevance) | `modes/cv.md` 1j, surfaced at Step 4 |
+| Application moves to Offer | `templates/states.yml` (`career_log_prompt: true`) |
+| Log untouched > 30 days | `AGENTS.md` Check A dashboard line |
+
+**One career-log prompt per session, maximum.** Declines are not re-asked in the same
+session. This is the concrete answer to §16.3's prompt-fatigue risk: the cap is on
+prompts per session, not per feature, so adding a fifth site does not add a fifth
+interruption.
 
 ---
 
