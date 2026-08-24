@@ -211,13 +211,15 @@ drafted story will be thin no matter how well it is written, because there is no
 underneath it. Say so and offer the fix:
 
 > "For *'{question}'* all I have is the CV line — *'{bullet}'*. I can draft something,
->  but it'll be thin. Two or three sentences from you about what actually happened
->  would make it real, and it goes in your career log so every future interview has it.
->  [tell me / draft it anyway]"
+>  but it'll be thin. What actually happened there — what made it hard?"
 
-On "tell me": append what they say via `node scripts/curate-state.mjs append`, then
-draft the story from it. Ask only for material tied to **this** interview — never
-walk the user through every thin bullet in their CV. One per session, max.
+Because you know the topic, ask about it directly rather than open-ended. Follow up
+once or twice for the missing piece (a number, who else was involved, how it ended
+up), then append via `node scripts/curate-state.mjs append` and draft the story from
+what they told you. Full method: `modes/curate.md` → *Eliciting a log entry*.
+
+Ask only about material tied to **this** interview — never walk the user through every
+thin bullet in their CV. One conversation per session, max.
 
 ---
 
@@ -619,16 +621,26 @@ Interviews reliably surface work the candidate had forgotten they did: a number 
 quoted out loud, a project they described that never made it onto the CV. That makes
 the debrief the single best moment to feed the career log.
 
-Once the debrief is written, offer **once**:
+Once the debrief is written, **ask about it — don't just offer.** Read
+`modes/curate.md` → *Eliciting a log entry* for the full method; the short version is
+one specific question, up to two follow-ups, then save.
 
-> "Talking through your work usually shakes loose things you'd forgotten. Anything from
->  that conversation worth putting in your career log? Just tell me in plain English —
->  I'll append it and it'll flow into your CV next time you curate."
+The debrief you just captured is the best possible opening material, so use it rather
+than asking generically:
 
-On yes: append via `node scripts/curate-state.mjs append "<text>"` (no confirmation
-needed — see `modes/curate.md`). On no: move on, and do not ask again this session.
+> "You said you talked through {specific thing from the debrief}. Is that in your
+>  career log yet? It's not on your CV as far as I can see."
 
-Skip entirely if a career-log prompt already fired this session — one per session, max.
+or, if nothing in the debrief stands out:
+
+> "What did you find yourself talking about in there that isn't on your CV?"
+
+Then follow up for whatever the answer is missing — a number, the scale, which part
+was theirs — and save it in their words via
+`node scripts/curate-state.mjs append "<text>"` (no confirmation; see `modes/curate.md`).
+
+Skip entirely if a career-log conversation already fired this session — one per
+session, max. A one-word "no" is a complete answer; don't try another angle.
 
 ### Step 4: Offer story Reflection updates
 For each story used, ask: "Story #{NN} — {title}: want me to add a note to its Reflection?"

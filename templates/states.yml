@@ -23,10 +23,11 @@ statuses:
   - name: Offer
     description: Offer received
     aliases: ["offer", "offered"]
-    # Milestone. On transition INTO this status, offer once to capture it in the
-    # career log (AGENTS.md Check D): "That's a milestone — want it in your career
-    # log? It'll show up in your CV next time you curate." Append via
-    # scripts/curate-state.mjs. Skip if a career-log prompt already fired this session.
+    # Milestone. On transition INTO this status, start a short career-log
+    # conversation (AGENTS.md Check D; method in modes/curate.md -> "Eliciting a
+    # log entry"). Open with "What do you think got you this one?", follow up once
+    # or twice, then append in their words via scripts/curate-state.mjs.
+    # Skip if a career-log conversation already fired this session.
     career_log_prompt: true
 
   - name: Rejected

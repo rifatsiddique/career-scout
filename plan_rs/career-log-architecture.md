@@ -385,8 +385,16 @@ anchored to moments where something log-worthy just happened — specified as
 | Application moves to Offer | `templates/states.yml` (`career_log_prompt: true`) |
 | Log untouched > 30 days | `AGENTS.md` Check A dashboard line |
 
-**One career-log prompt per session, maximum.** Declines are not re-asked in the same
-session. This is the concrete answer to §16.3's prompt-fatigue risk: the cap is on
+**Ask, don't prompt.** "Anything worth logging?" hands the user the retrieval problem
+and reliably gets "no" — people underrate their own work and accomplishments don't
+surface on demand. Each site instead runs a short conversation, specified once in
+`modes/curate.md` → *Eliciting a log entry*: one specific opening question chosen for
+the moment, at most two follow-ups to pin down a number, scale, or the user's own
+share of the work, then the entry saved in their words (raw, not polished into CV
+language — `curate` does the shaping later). Three or four exchanges, then stop.
+
+**One career-log conversation per session, maximum.** Declines are not re-asked in the
+same session, and a one-word "no" is a complete answer. This is the concrete answer to §16.3's prompt-fatigue risk: the cap is on
 prompts per session, not per feature, so adding a fifth site does not add a fifth
 interruption.
 

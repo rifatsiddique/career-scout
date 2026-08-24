@@ -71,6 +71,90 @@ import, and to port's legacy migration.
 
 ---
 
+## Eliciting a log entry — ask questions, don't just prompt
+
+**"Anything worth logging?" is a dead-end question.** It hands the user the retrieval
+problem, and most people answer "no" — not because nothing happened, but because
+accomplishments do not surface on demand. People systematically underrate their own
+work, and the recent stuff crowds out the rest.
+
+Talking through the work is what shakes it loose. So when any Check D moment fires
+(`AGENTS.md`), **run a short conversation, not a single prompt.**
+
+### How to run it
+
+1. **Open with ONE specific question**, chosen for the moment (bank below). Never a
+   battery of questions — one, and wait.
+2. **Follow up to sharpen**, at most twice. This is where the value is: a vague answer
+   becomes usable material only when it has a number, a scope, or an outcome attached.
+3. **Offer one more, then stop.** "Anything else, or shall I save this?" If they say
+   no, save and get out.
+
+Total: three or four exchanges. This is a 1:1 with a good manager, not an interrogation.
+
+### Opening questions, by moment
+
+**After an interview debrief** — they have just narrated their career out loud:
+- "You mentioned {thing they said in the debrief} — is that in your log yet?"
+- "What did you find yourself talking about that isn't on your CV?"
+- "Any question you wished you'd had a better example for?"
+
+**Periodic / dashboard (log untouched a while):**
+- "What shipped since we last talked?"
+- "Anything break that you had to dig into?"
+- "Did anyone come to you specifically for something? What was it?"
+- "What took way longer than you expected — and why?"
+- "Anything you'd put on a promotion packet if you had to write one tomorrow?"
+
+**Thin bullet in the CV or a story gap** — you already know the topic, so ask about it
+directly rather than open-ended:
+- "Your CV says *'{bullet}'*. What actually happened there — what was hard about it?"
+- "Who else was involved, and which part was yours?"
+
+**After an offer:**
+- "What do you think got you this one?"
+
+### Follow-ups that turn talk into usable material
+
+Pick the one the answer is missing. Never ask all of these:
+
+| The answer lacks | Ask |
+|---|---|
+| A number | "Roughly how much? Before and after, if you know it." |
+| Scale | "How many people / users / units did that touch?" |
+| Their specific part | "What was yours specifically, versus the team's?" |
+| An outcome | "How did it end up? Did it ship / hold up?" |
+| Difficulty | "What made it hard? What nearly went wrong?" |
+
+If the user says "I don't know the number" — **drop it and move on.** A logged entry
+without a metric is still worth having; an invented metric is a fabrication that will
+surface in an interview.
+
+### Writing the entry
+
+Write it in **their words, lightly tidied** — plain English, first person, as they
+said it. Do NOT polish it into CV language: the log is raw material, and `curate` does
+the shaping later. Preserve any number, name, or detail they gave you exactly.
+
+Show it, append via the script, done:
+
+```
+📝 Logged (2026-08-24):
+   "Rewrote the CI pipeline — builds went from 40 min to 6 by splitting tests
+    across 4 runners. Team of 3, I owned the runner config and the caching."
+
+   Undo: node scripts/curate-state.mjs undo-append
+```
+
+### When NOT to do this
+
+- A career-log prompt already fired this session (hard cap: one).
+- The user is mid-task on something else — wait until that task reports.
+- They declined already this session.
+- They gave a one-word "no" — that is a complete answer. Do not try a different angle.
+
+---
+
 ## `curate` — fold the log into the curated files
 
 ### Step 1. Read state and inputs

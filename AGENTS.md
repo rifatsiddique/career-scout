@@ -126,16 +126,21 @@ The career log only works if it gets fed. But nagging kills it faster than silen
 prompts are **anchored to moments where something log-worthy just happened**, not to a
 calendar:
 
-| Moment | Prompt |
+| Moment | Why it's a good moment |
 |---|---|
-| Interview debrief captured (`interview-prep --debrief`) | "Interviews usually surface things you'd forgotten you did. Anything worth adding to your career log?" |
-| An application moves to Offer / Accepted | "That's a milestone — want it in your career log? It'll show up in your CV next time you curate." |
-| `cv` cuts a bullet for thin content | "I trimmed *'{bullet}'* — there wasn't enough detail to make it land. Want to tell me what actually happened so it's stronger next time?" |
-| `interview-prep` maps a question to material that only exists as a one-line CV bullet | "I only have the CV line for this. Want to tell me the story properly? It goes in your log and I'll have it for every future interview." |
-| Dashboard, log untouched > 30 days | The line above |
+| Interview debrief captured (`interview-prep --debrief`) | They just narrated their career out loud — the material is already surfaced |
+| An application moves to Offer | A milestone, and they know why they got it |
+| `cv` cuts a bullet for thin content | The gap is concrete and you can name it |
+| `interview-prep` maps a question to a one-line CV bullet with no story behind it | Same — you know exactly what to ask about |
+| Dashboard, log untouched > 30 days | Nothing specific to anchor to; use the open questions |
+
+**Ask questions — do not just prompt.** "Anything worth logging?" hands the user the
+retrieval problem and gets "no". Read `modes/curate.md` → *Eliciting a log entry* and
+run the short conversation it specifies: one specific opening question, at most two
+follow-ups to pin down a number or scope, then save in their own words.
 
 **Rules that keep this from becoming noise:**
-- **At most ONE career-log prompt per session.** If any of the above fired, the rest stay quiet.
+- **At most ONE career-log conversation per session.** If any of the above fired, the rest stay quiet.
 - Never fire while the user is mid-task on something else — wait until that task reports.
 - Declining is never re-asked in the same session, and the 30-day dashboard line does not
   repeat until another 30 days pass.

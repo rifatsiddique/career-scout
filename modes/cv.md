@@ -669,12 +669,15 @@ career log never captured properly. Surface at most ONE at the end of the run (S
 after the CV is delivered — never mid-generation:
 
 > "One thing I trimmed: *'{bullet}'* — there wasn't enough detail for it to earn space.
->  If you tell me what actually happened there, I'll put it in your career log and it'll
->  be stronger in every CV from now on. [tell me / skip]"
+>  What actually happened there?"
 
-On "tell me": append via `node scripts/curate-state.mjs append "<text>"`. Skip entirely
-if a career-log prompt already fired this session, or if nothing was cut for thinness.
-Never list every thin bullet — one, the most relevant to this JD.
+Then follow up for the missing piece (roughly what numbers moved, how many people or
+units it touched, which part was theirs) and append in their words via
+`node scripts/curate-state.mjs append "<text>"`. It'll be stronger in every CV from
+now on. Full method: `modes/curate.md` → *Eliciting a log entry*.
+
+Skip entirely if a career-log conversation already fired this session, or if nothing
+was cut for thinness. Never list every thin bullet — one, the most relevant to this JD.
 
 ### 1k. Apply interview backtrack test (skip if FAST_MODE)
 
