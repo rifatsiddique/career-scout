@@ -364,6 +364,44 @@ Nothing is ever sent for you — you always get text to review and paste yoursel
 
 ---
 
+## Optimizing your LinkedIn profile
+
+Recruiters find you through LinkedIn search before they ever see your CV. The
+`linkedin` mode rewrites your profile so it surfaces for your target role:
+
+```
+> linkedin
+```
+
+You paste your current profile text (LinkedIn blocks automated reads, so
+**More -> Save to PDF** is the easiest route), name your target role, and paste
+2-5 job postings that describe where you want to go next. You get back
+copy-paste-ready blocks: headline variants with character counts, a rewritten
+About section, quantified Experience bullets, a ranked skills list, and the
+exact Open-to-Work titles to enter.
+
+- **Every keyword is verified against `cv.md` first.** Terms you cannot defend
+  in an interview go to a separate Gap Keywords list instead of into your
+  profile. A LinkedIn profile is a permanent public record that gets
+  cross-checked against your CV during hiring.
+- **No keyword stuffing.** Each priority term appears once as an exact literal
+  string inside a sentence that supplies real context, which covers both
+  Boolean sourcing tools and LinkedIn's semantic ranking.
+- **Nothing is edited on LinkedIn.** You copy and paste every change yourself.
+
+Other commands:
+```
+> linkedin --audit      # score your current profile, no rewrites (fast)
+> linkedin --headline   # 3 headline variants - the highest-leverage single edit
+> linkedin --keywords   # the tiered keyword corpus + your gap list
+> linkedin --rewrite    # draft everything from your CV (new or blank profile)
+```
+
+Output lands in `output/linkedin/`. Your pasted profile snapshots are appended
+to `data/linkedin-profile.md` so later runs can show before/after diffs.
+
+---
+
 ## File Structure
 
 ```
@@ -387,6 +425,7 @@ career-scout/
 │   ├── batch.md                  # Parallel batch orchestrator (Phase 5)
 │   ├── setup.md                  # Guided profile creation
 │   ├── recruiter.md              # Recruiter reply drafting + dossiers (Phase 8)
+│   ├── linkedin.md               # LinkedIn profile optimization (Phase 9)
 │   └── port.md                   # Profile porting guided UX (Phase 6)
 │
 ├── config/
@@ -405,6 +444,7 @@ career-scout/
 │   ├── follow-ups.md             # Follow-up tracker
 │   ├── recruiters.md             # Recruiter roster index (Phase 8)
 │   ├── recruiters/               # Per-recruiter dossiers ({slug}.md — history + threads)
+│   ├── linkedin-profile.md       # YOUR captured LinkedIn profile snapshots (USER layer)
 │   └── batch/                    # Ephemeral batch state (gitignored contents)
 │       ├── batch-state.json      # Resume state: per-job status + assigned report numbers
 │       ├── results/              # Per-worker JSON results (archived after merge)
@@ -429,6 +469,7 @@ career-scout/
 │
 ├── reports/                      # Evaluation reports (generated)
 ├── output/                       # Generated CVs (Phase 2)
+│   └── linkedin/                 # LinkedIn rewrites and audits (Phase 9)
 ├── interview-prep/               # Per-company prep and deep-research docs
 └── plan_rs/                      # All planning documents
 ```

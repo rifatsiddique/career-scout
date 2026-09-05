@@ -29,6 +29,13 @@ the following steps exactly, in this order, before producing any output:
   "qualifications", "about the role", "what you'll do"
 - User explicitly says "evaluate this" or "analyze this job"
 
+**Exception — LinkedIn profile URLs.** A URL matching `linkedin.com/in/...` is a
+PROFILE, not a job posting. Do NOT trigger the A-G evaluation mandate. Read
+`modes/linkedin.md` instead. This exception is narrow: it applies ONLY to
+`linkedin.com/in/...`. Every other job URL — including `linkedin.com/jobs/...`
+and all external ATS links (Greenhouse, Lever, Ashby, Workday, company career
+pages) — continues to trigger evaluation exactly as before.
+
 ---
 
 ## Mode Routing — All Other Triggers
@@ -42,6 +49,7 @@ the following steps exactly, in this order, before producing any output:
 | `scan` or `scout` | Read `modes/_shared.md`, then `modes/scan.md`. Execute job discovery. |
 | `interview-prep` | Read `modes/interview-prep.md`. Execute company-specific interview prep. |
 | `recruiter` (or pastes a recruiter message) | Read `modes/recruiter.md` (it pulls `modes/_shared.md` lazily for the fit check). Draft a fit-aware recruiter reply. |
+| `linkedin` (or pastes a `linkedin.com/in/` profile URL) | Read `modes/linkedin.md`. Do NOT read `modes/_shared.md` — this mode does not use the job-fit composite. Execute the profile optimization flow. |
 | `log`, `curate`, or `fix` | Read `modes/curate.md`. `log` appends to `career-log.md` with NO confirmation; `curate` proposes diffs into `cv.md` + `stories.md`; `fix` routes a correction. |
 | `port` or `import profile` | Read `modes/port.md`. Execute guided profile porting. |
 | No input / `help` | Read `AGENTS.md` and show the mode routing table. |
@@ -56,11 +64,11 @@ Two file layers. This rule is absolute.
 
 **User Layer — NEVER auto-update, NEVER overwrite without explicit user instruction:**
 `career-log.md`, `cv.md`, `stories.md`, `config/profile.yml`, `modes/_profile.md`,
-`data/*` (incl. `data/recruiters.md` + `data/recruiters/*`), `reports/*`, `output/*`, `interview-prep/*`, `writing-samples/*`
+`data/*` (incl. `data/recruiters.md` + `data/recruiters/*` + `data/linkedin-profile.md`), `reports/*`, `output/*` (incl. `output/linkedin/*`), `interview-prep/*`, `writing-samples/*`
 
 **System Layer — safe to read and update:**
 `AGENTS.md`, `GEMINI.md`, `modes/_shared.md`, `modes/evaluate.md`,
-`modes/pipeline-triage.md`, `modes/setup.md`, `modes/curate.md`, `scripts/*`, `templates/*`
+`modes/pipeline-triage.md`, `modes/setup.md`, `modes/curate.md`, `modes/linkedin.md`, `scripts/*`, `templates/*`
 
 When the user asks to customize anything (archetypes, comp targets, location,
 writing style), write to `modes/_profile.md` or `config/profile.yml` ONLY.

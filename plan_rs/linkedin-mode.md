@@ -1,16 +1,17 @@
-# DRAFT — LinkedIn Profile Optimization Mode for career-scout
+# LinkedIn Profile Optimization Mode for career-scout
 
 | | |
 |---|---|
-| **Status** | DRAFT — for Gemini review. **No system files have been modified.** |
+| **Status** | IMPLEMENTED 2026-09-05 (v1.1). All 6 open questions resolved; §5 executed except steps 7/7a/7b. |
 | **Author** | Claude Code |
-| **Date** | 2026-08-21 |
+| **Date** | 2026-08-21 (drafted) · 2026-09-05 (Q6 staleness fix §6c; implemented, §8) |
 | **Scope** | New lazy-loaded mode `modes/linkedin.md` + routing updates to `AGENTS.md`, `GEMINI.md`, `.agents/skills/career-scout/SKILL.md`, `docs/DATA_CONTRACT.md` |
-| **Blocking question for reviewer** | See §6 "Open Questions" before merging |
+| **Open questions** | All 6 resolved — see §6b (Q1–Q5, Gemini round) and §6c (Q6, source-of-truth fix) |
 
-> **Review hand-off:** this document is for Gemini CLI review before any system files
-> are touched. Nothing in `modes/`, `AGENTS.md`, `GEMINI.md`, `SKILL.md`, or
-> `docs/` has been modified.
+> **Status note:** implemented 2026-09-05. The Gemini review round (§6b) and the
+> post-review staleness fix (§6c) are both applied, and §5 was executed in order.
+> §8 records what deviated from this spec during implementation. Three verification
+> steps (7, 7a, 7b) remain — they require a live session with real profile data.
 
 ---
 
@@ -112,7 +113,7 @@ Secondary ranking inputs, independent of text:
 ### 1.8 Ethics boundary (non-negotiable for this system)
 
 Everything above is **presentation optimization**, not fabrication. `AGENTS.md`
-already binds the system: every claim must trace to `cv.md` or `article-digest.md`,
+already binds the system: every claim must trace to `cv.md` or `stories.md`,
 and must pass the interview-backtrack test. LinkedIn adds a sharper constraint than
 the CV does — **a LinkedIn profile is a persistent public record that gets cross-checked
 against the CV during hiring.** Any divergence between the two is a live integrity
@@ -182,18 +183,24 @@ target roles. Produces copy-paste-ready rewrites; never edits LinkedIn directly.
 - Does not use the 5-dimension job-fit composite from `_shared.md`. This mode has
   its own Visibility Score with different labels — do not conflate the two, and
   never report a LinkedIn score using fit-category names (GOOD_FIT etc.).
-- Does not generate any claim that is not traceable to `cv.md` or `article-digest.md`.
+- Does not generate any claim that is not traceable to `cv.md` or `stories.md`.
 
 ## Step 0: Load context
 
 Read, in order:
 1. `config/profile.yml` — candidate identity, target roles, location, market
-2. `cv.md` — the authoritative record of experience and metrics
+2. `cv.md` — the authoritative record of what may be claimed publicly
 3. `modes/_profile.md` — archetypes, "what they buy" column, writing style
-4. `article-digest.md` — if present, for quantified proof points
+4. `stories.md` — if present, for quantified proof-point depth. `cv.md` is a
+   compressed cut whose bullets state outcomes but not the detail that makes an
+   About-section proof point land; `stories.md` holds that depth in curated form.
 5. `data/linkedin-profile.md` — if present, the previously captured profile text
 
 Do NOT read `modes/_shared.md`. This mode does not need it.
+
+Do NOT read `career-log.md`. Only `curate`/`fix` read the log. It is raw and
+uncurated — anything in it that belongs on a public profile has already been
+promoted into `cv.md` or `stories.md`.
 
 ## Step 1: Acquire the current profile
 
@@ -347,7 +354,7 @@ Four movements, first person:
    characters along with one quantified achievement — that is all that shows above
    the mobile "…see more" fold.
 2. **Proof (3–5 sentences or short bullets)** — quantified wins pulled from `cv.md`
-   and `article-digest.md`. Every one carries a number.
+   and `stories.md`. Every one carries a number.
 3. **How they work (2–3 sentences)** — approach, methods, tooling. Natural home for P2/P3 terms.
 4. **Direction + CTA (1–2 sentences)** — what they want next, how to reach them.
 
@@ -535,8 +542,12 @@ Step 3a. Revisit only if the paste path proves annoying in practice.*
 
 ## Rules
 
-- **NEVER fabricate.** Every claim traces to `cv.md` or `article-digest.md`. Cite the
+- **NEVER fabricate.** Every claim traces to `cv.md` or `stories.md`. Cite the
   source line when presenting a rewritten bullet.
+- **NEVER read `career-log.md`.** The log is raw and uncurated; only `curate`/`fix`
+  read it. Material fit for a public profile has already been promoted into `cv.md`
+  or `stories.md`. Reading the log here would leak unvetted content onto a permanent
+  public record — the exact failure §1.8 exists to prevent.
 - **NEVER place a keyword the user cannot defend in an interview.** Unsupported terms
   go to the Gap Keywords list. A LinkedIn profile is a persistent public record that
   is cross-checked against the CV during hiring — divergence is an integrity risk,
@@ -723,6 +734,10 @@ Per CLAUDE.md planning rules, each step states how it is verified before moving 
    evaluation, offer a LinkedIn tune-up for that role family. *Recommend deferring* —
    it adds cross-mode coupling for marginal benefit, and `auto-pipeline.md` is already
    the most complex orchestration path in the system.
+6. **Which file supplies proof-point depth, now that the career-log architecture has
+   landed?** *(Raised 2026-09-05, after the Gemini round — this question did not exist
+   at review time.)* The draft was written against `article-digest.md`, which was
+   retired two days later when `career-log.md` became canonical. See §6c.
 
 ---
 
@@ -742,6 +757,50 @@ Open questions resolved: Q1 keep the file (agreed); Q2 see finding 5 — split r
 cut; Q3 `--for <company>` cut from v1 (agreed); Q4 the 60% figure is now banned from
 user-facing text while the directional guidance stays (agreed); Q5 `auto-pipeline` hook
 deferred (agreed).
+
+---
+
+## 6c. Post-Review Staleness Fix (2026-09-05)
+
+**Q6 resolved.** The draft was written 2026-08-21 against `article-digest.md`. The
+career-log architecture landed 2026-08-23 (`plan_rs/career-log-architecture.md` v2.0),
+which retired `article-digest.md` and absorbed it into `career-log.md` + `stories.md`.
+Verified against the working tree: `article-digest.md` does not exist; `career-log.md`,
+`cv.md` and `stories.md` do.
+
+**Resolution — mirror `evaluate.md` Block E.** That block faced the identical problem
+and was re-pointed at `stories.md` with an explicit "never read `career-log.md` here"
+guard (`modes/evaluate.md:283-286`). This mode adopts the same three-way split, which
+also matches AGENTS.md's provenance rule ("every claim must trace back to `cv.md` or
+`stories.md`"):
+
+| File | Role in this mode |
+|---|---|
+| `cv.md` | Authoritative record of what may be claimed publicly |
+| `stories.md` | Proof-point depth for the About section and Experience bullets |
+| `career-log.md` | **Never read.** Raw and uncurated; `curate`/`fix` only |
+
+The log guard matters more here than in `evaluate`. A LinkedIn profile is a permanent
+public record, so leaking unvetted log material onto it is the concrete form of the
+integrity risk §1.8 was written to prevent.
+
+**Edits applied to this document:**
+
+| Location | Change |
+|---|---|
+| §1.8 ethics boundary | `article-digest.md` → `stories.md` |
+| §3 "What this mode does NOT do" | `article-digest.md` → `stories.md` |
+| §3 Step 0 load list | Item 4 re-pointed to `stories.md` with the compressed-cut rationale; explicit `career-log.md` prohibition added |
+| §3 Step 4 About/Proof | Proof pulled from `cv.md` + `stories.md` |
+| §3 Rules block | `NEVER fabricate` re-pointed; new `NEVER read career-log.md` rule added |
+
+**No change to scope, sub-commands, routing, or verification steps.** This is a
+source-of-truth correction, not a design change. §5's step table is unaffected —
+Step 1's grep check should simply also confirm `grep -c 'career-log' modes/linkedin.md`
+finds only the prohibition.
+
+**Status after this fix:** all six open questions resolved. The draft is
+implementation-ready; §5 remains the execution order. (Implemented 2026-09-05 — see §8.)
 
 ---
 
@@ -768,3 +827,42 @@ interest in claiming precise, quantified effects. Character limits and UI behavi
 (220 / 2,600 / 300-char fold / 5 Open-to-Work titles) are directly observable and
 reliable. Percentage claims about ranking lift are not independently verifiable and
 are marked **[Low]** or **[Medium]** in §1 accordingly.
+
+
+---
+
+## 8. Implementation Record (2026-09-05)
+
+§5 executed in order. Steps 1–6 and 8–10 complete; steps 7, 7a and 7b deferred.
+
+### Deviations from this spec
+
+| # | Spec said | What shipped | Why |
+|---|---|---|---|
+| 1 | §4.5: `data/linkedin-profile.md` uses "copy-if-absent, merge-append if present" | `strategy: copy-missing` | `merge-append` is not a real strategy. `scripts/port-profile.mjs` supports `overwrite`, `copy-missing`, and `append-dedup` (TSV rows keyed by column index — wrong shape for dated markdown sections). `copy-missing` preserves the safe half of the intent; `modes/port.md` now documents the manual append for the both-populated case. |
+| 2 | §4.5: `output/linkedin/*` "copy whole directory (matches existing `output/*` handling)" | Explicit `output/linkedin/*.md` + `*.html` globs, plus `exclude: ["linkedin"]` on `output/*` | `expandGlob` uses a non-recursive `readdirSync` and passes every match to `copyFileSync`. The existing `output/*` handling does not cover subdirectories — it would have handed the `linkedin` directory to `copyFileSync` as a file. See the latent-bug note below. |
+| 3 | §5 step 8: always-loaded delta ≤150 tokens | AGENTS.md +108 ✅ · GEMINI.md +185 ⚠️ | Accepted deliberately. The overage is entirely the CRITICAL MANDATE carve-out, which is routing safety, not leaked LinkedIn knowledge — the step-8 criterion ("knowledge has leaked out of the mode file") does not apply. Trimming it risks reintroducing Gemini finding 1: evaluation silently disabled for non-LinkedIn job URLs. |
+| 4 | §3 body used `§3` and `§1.8` cross-references | Rewritten as "Step 4c" and an inline restatement | Those numbers address sections of *this plan*, not of the mode file. Extracted verbatim they would have been dangling pointers in a file a fresh-context agent reads alone. |
+
+### Latent bug found and fixed
+
+`config/port-manifest.yml`'s bare `output/*` glob was already unsafe for any
+subdirectory; Phase 9 was simply the first change to create one. Fixed here.
+**Any future `output/` subdirectory must add both an `exclude` entry and its own
+explicit glob** — the manifest now carries a comment saying so.
+
+### Verified
+
+| Check | Result |
+|---|---|
+| §5 step 1 — no CLI-specific tool names in `modes/linkedin.md` | Pass (grep empty) |
+| §5 step 1 — mode never instructs reading `_shared.md` | Pass (all 6 mentions are prohibitions or rationale) |
+| §5 step 1 — `career-log.md` appears only as a prohibition | Pass (2 mentions, both "do NOT read") |
+| §5 step 6 — port dry-run lists both new paths | Pass (scratch instance; `output/*` correctly skipped the `linkedin` directory) |
+| §5 step 8 — always-loaded delta | AGENTS.md +108 tokens (budget 150) |
+
+### Not yet run
+
+Steps 7, 7a and 7b need a live session with real profile data: the end-to-end
+`--headline` smoke test, the P6 write-confirmation test (the isolation decision's
+main failure mode — do not skip it), and the three-way corpus-source branch test.

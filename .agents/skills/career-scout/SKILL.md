@@ -3,7 +3,7 @@ name: career-scout
 description: AI-powered job search system — evaluate offers, triage pipeline, configure profile
 arguments: mode
 user-invocable: true
-argument-hint: "[evaluate | pipeline | setup | cv | scan | interview-prep | recruiter | log | curate | batch | auto]"
+argument-hint: "[evaluate | pipeline | setup | cv | scan | interview-prep | recruiter | linkedin | log | curate | batch | auto]"
 ---
 
 # career-scout — Router
@@ -24,11 +24,16 @@ Determine mode from `$mode`:
 | `interview-prep` | `interview-prep` |
 | `recruiter` | `recruiter` |
 | `deep` | `deep` |
+| `linkedin` | `linkedin` |
 | `log`, `curate`, `fix` | `curate` |
 | `auto` | `auto-pipeline` |
 | `batch` | `batch` |
 | `followup` | `followup` (Phase 5) |
 | `port` or `import profile` | `port` |
+
+**LinkedIn profile URLs:** if `$mode` contains `linkedin.com/in/`, route to
+`linkedin` — NOT `evaluate`. Check this BEFORE the job-URL auto-detection below,
+since `linkedin.com/jobs/` must still route to `evaluate`.
 
 **Auto-detection:** If `$mode` is not a known sub-command AND contains a job
 posting URL (path segments: jobs/, careers/, posting/, opening/) or JD text
@@ -78,6 +83,12 @@ career-scout — Command Center
   /career-scout recruiter --list    → List all recruiters you've tracked
   /career-scout recruiter --log <name> → Record a message/reply without drafting (reconcile history)
 
+  /career-scout linkedin              → Optimize your LinkedIn profile for your target role
+  /career-scout linkedin --audit      → Score your current profile, no rewrites (fast)
+  /career-scout linkedin --headline   → Just the headline — 3 variants, highest-leverage edit
+  /career-scout linkedin --keywords   → What recruiters search for in your target role + your gaps
+  /career-scout linkedin --rewrite    → Draft a full profile from scratch from your CV
+
   /career-scout log <text>        → Jot down a win while it's fresh (no confirmation, instant)
   /career-scout curate            → Fold recent wins into your CV and story bank
   /career-scout fix <what's wrong> → Correct something — routes to the right file automatically
@@ -126,6 +137,7 @@ Read only `modes/{mode-file}`.
 | `interview-prep` | `modes/interview-prep.md` |
 | `recruiter` | `modes/recruiter.md` (pulls `modes/_shared.md` lazily for the fit check) |
 | `deep` | `modes/deep.md` |
+| `linkedin` | `modes/linkedin.md` (never reads `modes/_shared.md` — it has its own Visibility Score, not the job-fit composite) |
 | `followup` | `modes/followup.md` |
 | `port` | `modes/port.md` |
 

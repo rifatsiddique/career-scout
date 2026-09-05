@@ -10,7 +10,13 @@ previous career-scout instance into this one.
 
 **What gets ported:** Personal data only — CV, profile, reports, interview
 prep, story bank, pipeline tracker, scan history, recruiter dossiers, custom
-templates. See `config/port-manifest.yml` for the full list and strategies.
+templates, captured LinkedIn profile snapshots. See `config/port-manifest.yml`
+for the full list and strategies.
+
+`data/linkedin-profile.md` is copied only if the new instance does not already
+have one, so an existing capture history is never clobbered. If both instances
+hold captures, port it manually by appending the old dated sections to the new
+file — the format is append-only dated blocks, so they concatenate cleanly.
 
 **What does NOT get ported:** System files (modes, scripts, default templates,
 and the built-in fonts in `fonts/*.woff2`). The system fonts re-clone with
@@ -118,12 +124,13 @@ After showing the dry-run output, present the available groups:
 >  [5] interview   — Story bank + company prep docs
 >  [6] writing     — Writing samples
 >  [7] customizations — Custom CV templates, domain packs, and user-added fonts (fonts/user/)
->  [8] output      — Generated PDFs, HTML drafts, DOCX exports
+>  [8] linkedin    — Captured LinkedIn profile snapshots (data/linkedin-profile.md)
+>  [9] output      — Generated PDFs, HTML drafts, DOCX exports, LinkedIn rewrites
 >
 >  Type 'all' for everything, or enter group numbers separated by commas
 >  (e.g., 1,2,3). Default: all."
 
-Map numbers to group IDs: core, pipeline, recruiters, reports, interview, writing, customizations, output.
+Map numbers to group IDs: core, pipeline, recruiters, reports, interview, writing, customizations, linkedin, output.
 
 ---
 

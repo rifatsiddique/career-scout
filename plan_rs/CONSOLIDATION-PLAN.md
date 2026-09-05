@@ -1,7 +1,9 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.46
-**Last Updated:** 2026-08-23 -- Career-log architecture implemented (Phases 1-9). New `curate` mode (log/curate/fix) + `scripts/curate-state.mjs` owning backup/watermark/append invariants. `career-log.md` is now canonical; `cv.md` and `stories.md` are curated cuts, never regenerated (curate proposes diffs only, so hand edits survive). `interview-prep/story-bank.md` -> `stories.md`; `article-digest.md` retired (absorbed by the log + stories). evaluate Block E re-pointed at `stories.md`; role-drift check against profile.yml added. linkedin.md deferred until modes/linkedin.md ships. Spec: plan_rs/career-log-architecture.md v2.0 (3 review rounds; v1 archived).
+**Version:** 1.48
+**Last Updated:** 2026-09-05 16:45 -- Phase 9 (LinkedIn Profile Optimization) IMPLEMENTED. New `modes/linkedin.md` (415 lines, never loads `_shared.md`, restates P6 verbatim); routing wired into AGENTS.md (+108 tokens, under budget), GEMINI.md (mandate carve-out narrowly scoped to `/in/`), SKILL.md (auto-detect precedence before job-URL matching); DATA_CONTRACT + port manifest + port.md updated. Fixed a latent `output/*` glob bug in the port manifest that any output subdirectory would have triggered. Steps 7/7a/7b deferred - they need a live session with real profile data.
+**Prior:** 1.47 (2026-09-05) -- Phase 9 (LinkedIn Profile Optimization) added to roadmap as planned-not-implemented. `plan_rs/linkedin-mode.md` moved DRAFT -> REVIEWED: Q6 raised and resolved (spec was written against the retired `article-digest.md`; re-pointed at `stories.md` with an explicit never-read-`career-log.md` guard, mirroring evaluate Block E). All 6 open questions now closed; no system files touched yet.
+**Prior:** 1.46 (2026-08-23) -- Career-log architecture implemented (Phases 1-9). New `curate` mode (log/curate/fix) + `scripts/curate-state.mjs` owning backup/watermark/append invariants. `career-log.md` is now canonical; `cv.md` and `stories.md` are curated cuts, never regenerated (curate proposes diffs only, so hand edits survive). `interview-prep/story-bank.md` -> `stories.md`; `article-digest.md` retired (absorbed by the log + stories). evaluate Block E re-pointed at `stories.md`; role-drift check against profile.yml added. linkedin.md deferred until modes/linkedin.md ships. Spec: plan_rs/career-log-architecture.md v2.0 (3 review rounds; v1 archived).
 **Prior:** 1.45 (2026-06-26) -- Phase 2 hardening implemented: deterministic CV template resolver (`scripts/lib/cv-template.mjs`) + unbypassable leak gate (exit 3) and contact gate (exit 4) in `generate-pdf.mjs`; `FILL_RATIO` measure-then-expand underflow loop; technical-template Projects-after-Experience; cv.md contract rewrite. Spec: plan_rs/cv-template-resolver-and-underflow.md v1.5.
 **Prior:** 1.44 (2026-06-23) -- Phase 8b (Recruiter reply stance) implemented: soft `warm-open` default replaces the hardcoded agency criteria-wall; 4 learned presets (warm-open/eager/curt/gatekeeper) in _profile.md → `## Your Recruiter Handling`; 3-tier precedence + debounced learning loop (Step 6.5); Type shapes content not tone; stance never licenses fabrication. recruiter.md + phase8 spec reconciled. Spec: plan_rs/phase8b-recruiter-stance.md v0.2.
 **Prior:** 1.43 (2026-06-23) -- Phase 8 hardening after 3rd Gemini pass (post-implementation review): recruiter.md patched for roster read-before-write (dedup), active dir listing, unknown-type resolution ask, fact-hoisting before dead-thread compaction, Unicode-accent slugging, pasted-transcript handling. Spec → v0.4.
@@ -896,6 +898,67 @@ produced cold, demanding replies) with a **soft default + learned, per-user stan
 - [ ] Scenario tests (§6 of 8b spec) — run with real recruiter messages
 
 **Spec:** `plan_rs/phase8b-recruiter-stance.md` (v0.2 — 2 Gemini passes)
+
+### Phase 9: LinkedIn Profile Optimization ✅ Complete (2026-09-05)
+
+**Goal:** A lazy-loaded `linkedin` mode that optimizes the user's LinkedIn profile for
+recruiter discovery, using the same no-fabrication provenance rules as `cv`.
+**Detailed plan:** `plan_rs/linkedin-mode.md` v1.1 (IMPLEMENTED — 1 Gemini round +
+post-review staleness fix; all 6 open questions resolved; §5 was the execution order,
+§8 records implementation deviations)
+
+Design decisions already locked:
+
+- **Isolated from `_shared.md`** — no job-fit composite, so the mode never loads it.
+  Cost of that isolation: UX Convention P6 (User Layer write confirmation) is restated
+  verbatim inside the mode, with a maintenance note flagging the duplication.
+- **Dual-target keyword rule** — every priority keyword appears at least once as an
+  exact literal string inside a natural sentence, covering both Boolean sourcing tools
+  and LLM-backed semantic ranking.
+- **Visibility Score is audit-path-only.** Scoring the user's existing profile is
+  allowed; projecting a post-rewrite score for the mode's own output is forbidden.
+- **Provenance** — claims trace to `cv.md` or `stories.md`. `career-log.md` is never
+  read here, matching `evaluate` Block E.
+- **Cut from v1:** `--for <company>` (coupled the mode to `reports/` format).
+  **Deferred:** any `auto-pipeline` hook.
+
+New User layer files this introduces (port-manifest impact):
+
+- [x] `data/linkedin-profile.md` — captured profile snapshots (`copy-missing`; merge-append is not a supported manifest strategy, so `port.md` documents the manual append path)
+- [x] `output/linkedin/*` — explicit `*.md` + `*.html` globs, since `expandGlob` in `port-profile.mjs` is non-recursive
+
+Deliverables:
+
+- [x] `modes/linkedin.md` (415 lines) from §3 of the spec
+- [x] Routing: `AGENTS.md` row + `/in/` vs `/jobs/` disambiguation guard (+108 tokens always-loaded, under the 150 budget)
+- [x] Routing: `GEMINI.md` row + CRITICAL MANDATE carve-out (+185 tokens — over the 150 budget by design; see spec §8)
+- [x] `.agents/skills/career-scout/SKILL.md` — argument-hint, routing table, auto-detect precedence, discovery menu, standalone-mode map
+- [x] `docs/DATA_CONTRACT.md` — 3 User layer rows + 1 System layer row
+- [x] `modes/port.md` + `config/port-manifest.yml` — new `linkedin` group, `output/*` exclude fix, dry-run verified
+- [x] `README.md` — new usage section + 3 project-tree entries
+
+**Discovered during implementation:**
+
+- **`output/*` in the port manifest was a latent bug.** `expandGlob` in
+  `scripts/port-profile.mjs` is non-recursive and feeds every entry to
+  `copyFileSync`, so the new `output/linkedin/` directory would have been passed
+  as a file. Fixed with `exclude: ["linkedin"]` plus explicit subdirectory globs.
+  Any future `output/` subdirectory must do the same.
+- **`merge-append` is not a real strategy.** The manifest supports `overwrite`,
+  `copy-missing` and `append-dedup` (TSV-only). `data/linkedin-profile.md` uses
+  `copy-missing`; `modes/port.md` documents the manual append for the both-populated case.
+- **GEMINI.md exceeds the token budget and should stay that way.** The CRITICAL
+  MANDATE carve-out costs ~185 tokens against a 150 budget. It leaks no LinkedIn
+  optimization knowledge — it is pure routing safety, and trimming it risks
+  reintroducing Gemini review finding 1 (evaluation silently disabled for non-LinkedIn
+  job URLs). Accepted deliberately.
+
+**Not yet run (require a live session with real user data):** §5 steps 7, 7a, 7b —
+the end-to-end headline smoke test, the P6 write-confirmation test, and the
+corpus-source branch test.
+
+**Note:** this phase unblocks the `linkedin.md` item deferred in the career-log
+architecture work (see the 1.46 header note).
 
 ### Phase 2b: Templates 3 & 4 (next up)
 

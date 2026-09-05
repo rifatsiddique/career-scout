@@ -194,6 +194,15 @@ groups:
         required: false
         description: "User-added custom fonts (e.g., proprietary employer fonts). System-shipped fonts in fonts/*.woff2 are NOT ported — they re-clone with the repo. Only fonts you added manually to fonts/user/ need porting."
 
+  - id: linkedin
+    name: "LinkedIn"
+    description: "Captured LinkedIn profile snapshots"
+    files:
+      - path: "data/linkedin-profile.md"
+        strategy: copy-missing
+        required: false
+        description: "Captured LinkedIn profile text (dated, append-only snapshots) — copied only if absent, so an existing capture history is never clobbered"
+
   - id: output
     name: "Output"
     description: "Generated CVs, cover letters, comparison reports, and DOCX exports"
@@ -202,4 +211,17 @@ groups:
         strategy: copy-missing
         glob: true
         required: false
-        description: "Generated PDFs, HTML drafts, DOCX exports, and compare reports"
+        exclude: ["linkedin"]
+        description: "Generated PDFs, HTML drafts, DOCX exports, and compare reports. NOTE: the glob is non-recursive, so subdirectories of output/ must be excluded here and given their own explicit entry below."
+
+      - path: "output/linkedin/*.md"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "Generated LinkedIn rewrites and audits (markdown source — source of truth)"
+
+      - path: "output/linkedin/*.html"
+        strategy: copy-missing
+        glob: true
+        required: false
+        description: "HTML companions for LinkedIn outputs"

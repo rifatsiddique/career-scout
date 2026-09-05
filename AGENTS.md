@@ -172,6 +172,7 @@ follow-ups to pin down a number or scope, then save in their own words.
 | `data/batch/results/*.json` | Per-worker result artifacts (ephemeral — archived after merge) |
 | `stories.md` | Accumulated STAR+R stories across evaluations |
 | `reports/` | Evaluation reports (`{###}-{company-slug}-{YYYY-MM-DD}.md`) |
+| `data/linkedin-profile.md` | Captured LinkedIn profile text (dated snapshots, append-only) |
 | `output/` | Generated CVs and cover letters |
 
 ---
@@ -201,11 +202,16 @@ loading rules per mode.
 | Types "interview-prep" | Read `modes/interview-prep.md` |
 | Types "recruiter" (or pastes a recruiter message) | Read `modes/recruiter.md` (it lazily pulls `modes/_shared.md` only when a fit check is needed) |
 | Types "deep" | Read `modes/deep.md` |
+| Types "linkedin" or pastes a LinkedIn profile URL (`/in/`) | Read `modes/linkedin.md` (does NOT load `_shared.md`) |
 | Types "log", "curate", or "fix" | Read `modes/curate.md` — career log → cv.md + stories.md |
 | Types "auto" + URL | Read `modes/_shared.md` + `modes/evaluate.md` + `modes/cv.md` + `modes/auto-pipeline.md`, execute hands-off pipeline |
 | Types "batch" | Read `modes/_shared.md` + `modes/batch.md`, orchestrate subagents |
 | Types "port" or "import profile" | Read `modes/port.md`, execute guided profile porting |
 | Types nothing / asks for help | Show `.agents/skills/career-scout/SKILL.md` discovery menu |
+
+**LinkedIn URL disambiguation:** `linkedin.com/in/...` is a PROFILE → route to
+`modes/linkedin.md`. `linkedin.com/jobs/...` is a JOB POSTING → route to
+`modes/evaluate.md`. Never load both mode files for one input.
 
 ---
 

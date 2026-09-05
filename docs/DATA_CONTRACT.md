@@ -33,7 +33,10 @@ They are created during setup and evolve as you use the system.
 | `reports/*.md` | Your evaluation reports (generated, but yours) |
 | `reports/*.html` | Auto-generated HTML companions to `.md` reports — regenerated each eval run; safe to delete; `.md` is source of truth; do not edit directly |
 | `interview-prep/*.html` | Auto-generated HTML companions to prep and deep-research docs — same rules as reports/*.html |
+| `data/linkedin-profile.md` | Captured LinkedIn profile text — dated snapshots, append-only, never overwritten |
 | `output/*` | Your generated CVs, cover letters, comparisons, and DOCX exports |
+| `output/linkedin/*.md` | Generated LinkedIn rewrites and audits |
+| `output/linkedin/*.html` | Auto-generated HTML companions to `output/linkedin/*.md` — regenerated each run; safe to delete; `.md` is source of truth; do not edit directly |
 
 ## System Layer (safe to auto-update)
 
@@ -54,6 +57,7 @@ They can be updated without affecting your data.
 | `modes/pipeline.md` | Pipeline management instructions |
 | `modes/setup.md` | Profile setup instructions |
 | `modes/curate.md` | Career log curation instructions (log / curate / fix) |
+| `modes/linkedin.md` | LinkedIn profile optimization mode instructions |
 | `templates/cv/*.html` | CV HTML templates |
 | `templates/prompts/*` | Externalized prompt templates |
 | `templates/states.yml` | Canonical status definitions |
