@@ -70,6 +70,16 @@ Rules section below and MUST be followed. Before writing, surface:
    Proceed? [y/N]
 ```
 
+**First run has no backup line.** `data/linkedin-profile.md` does not exist until
+the first capture, so there is nothing to back up and claiming otherwise is false.
+When the file is absent, drop the backup line and say so:
+
+```
+⚠️ This will create data/linkedin-profile.md (your first {YYYY-MM-DD} profile capture).
+   Nothing exists to back up yet.
+   Proceed? [y/N]
+```
+
 Default is N. Honor `--yes` / `--no-confirm`.
 
 If the user has no existing profile text and wants a from-scratch draft, skip to

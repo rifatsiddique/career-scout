@@ -343,6 +343,10 @@ Before writing to any User Layer file, surface a confirmation prompt:
 
 Rules:
 - **Backup before write** — `.bak` files written automatically; old `.bak` replaced
+- **Creating a new file has no backup** — when the target does not exist yet, drop the
+  backup line rather than claiming one was saved, and say "This will create {file} ...
+  Nothing exists to back up yet." Asserting a backup that does not exist is a false
+  statement about the user's data
 - **Show what changes** — "adding 3 stories", "appending debrief section" — concrete, not vague
 - **One confirmation per logical change** — interactive sub-modes confirm per decision
 - **Default is N (cancel)** — typo safety; user must type y or yes
