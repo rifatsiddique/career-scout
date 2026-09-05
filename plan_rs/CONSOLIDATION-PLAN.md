@@ -1,7 +1,8 @@
 # Consolidation Plan: career-scout
 
-**Version:** 1.48
-**Last Updated:** 2026-09-05 16:45 -- Phase 9 (LinkedIn Profile Optimization) IMPLEMENTED. New `modes/linkedin.md` (415 lines, never loads `_shared.md`, restates P6 verbatim); routing wired into AGENTS.md (+108 tokens, under budget), GEMINI.md (mandate carve-out narrowly scoped to `/in/`), SKILL.md (auto-detect precedence before job-URL matching); DATA_CONTRACT + port manifest + port.md updated. Fixed a latent `output/*` glob bug in the port manifest that any output subdirectory would have triggered. Steps 7/7a/7b deferred - they need a live session with real profile data.
+**Version:** 1.49
+**Last Updated:** 2026-09-05 18:10 -- Phase 9 verification steps 7/7a/7b run against real profile data; all pass. Two defects found and fixed: P6 asserted a backup that cannot exist on a first create (corrected in `_shared.md` and `modes/linkedin.md` together), and the keyword gate rejected a headline overclaiming 95% efficiency at 20kW. Phase 9 fully verified.
+**Prior:** 1.48 (2026-09-05) -- Phase 9 (LinkedIn Profile Optimization) IMPLEMENTED. New `modes/linkedin.md` (415 lines, never loads `_shared.md`, restates P6 verbatim); routing wired into AGENTS.md (+108 tokens, under budget), GEMINI.md (mandate carve-out narrowly scoped to `/in/`), SKILL.md (auto-detect precedence before job-URL matching); DATA_CONTRACT + port manifest + port.md updated. Fixed a latent `output/*` glob bug in the port manifest that any output subdirectory would have triggered. Steps 7/7a/7b deferred - they need a live session with real profile data.
 **Prior:** 1.47 (2026-09-05) -- Phase 9 (LinkedIn Profile Optimization) added to roadmap as planned-not-implemented. `plan_rs/linkedin-mode.md` moved DRAFT -> REVIEWED: Q6 raised and resolved (spec was written against the retired `article-digest.md`; re-pointed at `stories.md` with an explicit never-read-`career-log.md` guard, mirroring evaluate Block E). All 6 open questions now closed; no system files touched yet.
 **Prior:** 1.46 (2026-08-23) -- Career-log architecture implemented (Phases 1-9). New `curate` mode (log/curate/fix) + `scripts/curate-state.mjs` owning backup/watermark/append invariants. `career-log.md` is now canonical; `cv.md` and `stories.md` are curated cuts, never regenerated (curate proposes diffs only, so hand edits survive). `interview-prep/story-bank.md` -> `stories.md`; `article-digest.md` retired (absorbed by the log + stories). evaluate Block E re-pointed at `stories.md`; role-drift check against profile.yml added. linkedin.md deferred until modes/linkedin.md ships. Spec: plan_rs/career-log-architecture.md v2.0 (3 review rounds; v1 archived).
 **Prior:** 1.45 (2026-06-26) -- Phase 2 hardening implemented: deterministic CV template resolver (`scripts/lib/cv-template.mjs`) + unbypassable leak gate (exit 3) and contact gate (exit 4) in `generate-pdf.mjs`; `FILL_RATIO` measure-then-expand underflow loop; technical-template Projects-after-Experience; cv.md contract rewrite. Spec: plan_rs/cv-template-resolver-and-underflow.md v1.5.
@@ -953,9 +954,11 @@ Deliverables:
   reintroducing Gemini review finding 1 (evaluation silently disabled for non-LinkedIn
   job URLs). Accepted deliberately.
 
-**Not yet run (require a live session with real user data):** §5 steps 7, 7a, 7b —
-the end-to-end headline smoke test, the P6 write-confirmation test, and the
-corpus-source branch test.
+**All verification steps complete.** §5 steps 7, 7a and 7b ran 2026-09-05 against the
+working instance in `C:\Work\Git-Local_AI\career-scout` and passed. They caught two
+real defects: P6 claimed a `.bak` that cannot exist on a first create (fixed in both
+`linkedin.md` and `_shared.md`), and the keyword verification gate rejected a drafted
+headline that implied 95% efficiency at 20kW when the CV supports it only at 5kW.
 
 **Note:** this phase unblocks the `linkedin.md` item deferred in the career-log
 architecture work (see the 1.46 header note).

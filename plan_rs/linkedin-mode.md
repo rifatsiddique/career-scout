@@ -861,8 +861,36 @@ explicit glob** — the manifest now carries a comment saying so.
 | §5 step 6 — port dry-run lists both new paths | Pass (scratch instance; `output/*` correctly skipped the `linkedin` directory) |
 | §5 step 8 — always-loaded delta | AGENTS.md +108 tokens (budget 150) |
 
-### Not yet run
+### Steps 7 / 7a / 7b — run 2026-09-05 against the working instance
 
-Steps 7, 7a and 7b need a live session with real profile data: the end-to-end
-`--headline` smoke test, the P6 write-confirmation test (the isolation decision's
-main failure mode — do not skip it), and the three-way corpus-source branch test.
+Run against real data in `C:\Work\Git-Local_AI\career-scout` (20 reports, populated
+`cv.md` / `profile.yml` / `_profile.md`). No User layer file was written.
+
+| Step | Result |
+|---|---|
+| 7 — `--headline` end-to-end | **Pass.** 3 variants at 184 / 202 / 188 of 220 chars, all above the 150 floor; 18/18 keywords traced to `cv.md`; gap list produced separately; no fit-category labels; no em-dashes, honoring the `_profile.md` writing rule |
+| 7a — P6 write confirmation | **Pass after a fix** — see below |
+| 7b — corpus-source branches | **Pass.** (a) pasted postings become the corpus; (b) bounded `sed` extract cut 5 reports from 96–128 lines to 24–33 each; (c) suppression fires correctly at fewer than 2 usable reports |
+
+**Two real defects caught, both now fixed:**
+
+1. **P6 claimed a backup that does not exist.** The prompt states "A backup has been
+   saved to {file}.bak" unconditionally. `data/linkedin-profile.md` is new in Phase 9,
+   so it is absent on every user's first run and the prompt asserted something false.
+   Fixed in `modes/linkedin.md` and in `modes/_shared.md` P6 together, keeping the
+   intentional duplication in sync. This is a pre-existing `_shared.md` bug that
+   Phase 9 merely made unavoidable.
+2. **The verification gate caught a live overclaim in a draft headline.** `cv.md` reads
+   "reaching 5kW at 95% efficiency" on a 20kW-target platform. A drafted variant said
+   "20kW DCX at 95% efficiency", which implies 95% at full power and fails the
+   interview-backtrack test. Corrected to "20kW DCX, 5kW bring-up at 95%". The gate
+   working on real data is the strongest evidence the no-fabrication rule holds.
+
+**Note on report size:** §2 estimated reports at 55–95 lines. Real ones run 96–128.
+The bounded extract still costs ~1–2k tokens for five, so the design holds, but the
+figure in §2 is optimistic.
+
+**Note on Option B matching:** §3a says to take reports "whose filename company/role
+matches the target". Filenames carry only a company slug, never a role, so role
+matching is not possible from filenames alone. In practice recency is the usable
+filter. Worth tightening if Option B proves noisy.
